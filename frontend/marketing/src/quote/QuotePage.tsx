@@ -2,7 +2,6 @@ import { useEffect, useRef, useState, type ReactNode } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { ArrowLeft, Building2, ChevronDown, CircleAlert, House, LoaderCircle } from 'lucide-react';
 import { Icon } from '../components/Icon';
-import { InfoNotice } from '../components/Notice';
 import { STATES } from '../content/states';
 import { prefersReducedMotion } from '../lib/motion';
 import type { CustomerUser } from '../lib/customerAuthContext';
@@ -185,9 +184,6 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <li><span className="n">02</span><span>We contact you at the time of day you choose.</span></li>
             <li><span className="n">03</span><span>If you want to go ahead, we book a site survey.</span></li>
           </ol>
-          <InfoNotice title="This is a demo">
-            Sol Energy is fictional. Your request is stored and you get a confirmation email, but nobody contacts you. Use an address you're happy to receive that email at.
-          </InfoNotice>
         </div>
 
         <form className="form-card" ref={formRef} noValidate onSubmit={submit}>

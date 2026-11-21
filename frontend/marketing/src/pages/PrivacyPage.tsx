@@ -1,4 +1,3 @@
-import { InfoNotice } from '../components/Notice';
 import { CONTACT } from '../content/contact';
 
 export function PrivacyPage() {
@@ -25,7 +24,6 @@ export function PrivacyPage() {
           <div><h2>Who sees them</h2><p>Sol staff. The confirmation email is sent through Google's Gmail service. While you type the street address, what you've typed is sent to Geoapify, our address provider, so it can suggest complete addresses.</p></div>
           <div><h2>How long we keep them</h2><p>We keep your request until you ask us to delete it.</p></div>
           <div><h2>Your choices</h2><p>Write to <a className="link" href={`mailto:${CONTACT.email}`}>{CONTACT.email}</a> to correct your details or to have them deleted, and we delete them.</p></div>
-          <InfoNotice>Sol Energy is fictional; this site is a software demo. Requests are stored and confirmed by email, but nobody follows them up.</InfoNotice>
         </div>
       </section>
     </>

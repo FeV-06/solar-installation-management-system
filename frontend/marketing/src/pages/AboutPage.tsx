@@ -2,7 +2,6 @@ import { useEffect, useRef } from 'react';
 import { Link } from 'react-router-dom';
 import { Mail, MapPin, Phone } from 'lucide-react';
 import { Icon } from '../components/Icon';
-import { InfoNotice } from '../components/Notice';
 import { CONTACT } from '../content/contact';
 import { drawOnView, prepareSteps } from '../lib/draw';
 
@@ -49,9 +48,6 @@ export function AboutPage() {
               <a href={`mailto:${CONTACT.email}`}><Icon icon={Mail} />{CONTACT.email}</a>
               <Link to="/about"><Icon icon={MapPin} />{CONTACT.base}</Link>
             </div>
-            <InfoNotice title="A fictional company" style={{ alignSelf: 'start' }}>
-              Sol Energy doesn't exist. This site, and the staff app behind it, are a software project. Requests sent through the form are stored and confirmed by email, but nobody follows them up.
-            </InfoNotice>
           </div>
         </div>
       </section>

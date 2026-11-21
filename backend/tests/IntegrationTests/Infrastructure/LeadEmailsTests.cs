@@ -48,12 +48,10 @@ public class LeadEmailsTests
             .And.Contain("House, you own it")
             .And.Contain("$100 to $200")
             .And.Contain("href=\"https://sol.test/how-it-works\"")
-            .And.Contain($"src=\"cid:{Wordmark.ContentId}\"")
-            .And.Contain("Sol Energy is fictional");
+            .And.Contain($"src=\"cid:{Wordmark.ContentId}\"");
         email.Text.Should().Contain("01  We call you on (512) 555-0147 in the morning (8 am to 12 pm).")
             .And.Contain("Property:      2104 Oak Hollow Dr, Austin, TX 78704")
-            .And.Contain("See what happens at each one: https://sol.test/how-it-works")
-            .And.Contain("Sol Energy is fictional");
+            .And.Contain("See what happens at each one: https://sol.test/how-it-works");
     }
 
     [Fact]

@@ -82,9 +82,6 @@ public static partial class LeadEmails
               {{Rows(details)}}
               <p style="margin:14px 0 0;font:400 14px/1.6 {{Sans}};color:{{Muted}};">Something wrong? Reply to this email and we'll correct it.</p>
             </td></tr>
-            <tr><td class="px" style="padding:28px 32px 0;">
-              <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0" style="background:{{InfoBg}};border:1px solid {{InfoLine}};border-radius:12px;"><tr><td style="padding:14px 16px;font:400 14px/1.55 {{Sans}};color:{{Ink}};"><b style="color:{{Info}};">A demonstration.</b> Sol Energy is fictional: nobody will call you. This email shows what a real customer would receive.</td></tr></table>
-            </td></tr>
             """ + Foot("Sol Energy. You're receiving this email because this address was used to ask for a quote on our website. If it wasn't you, you can ignore it.");
 
         var text = $"""
@@ -106,8 +103,6 @@ public static partial class LeadEmails
             We call:       {lead.PhoneNumber}, {call}{(hasNote ? $"\nYour note:     {NoteReceived}" : "")}
 
             Something wrong? Reply to this email and we'll correct it.
-
-            A demonstration: Sol Energy is fictional, so nobody will call you. This email shows what a real customer would receive.
 
             --
             Sol Energy. You're receiving this email because this address was used to ask for a quote on our website. If it wasn't you, you can ignore it.

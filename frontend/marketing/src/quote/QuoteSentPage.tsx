@@ -1,5 +1,4 @@
 import { Link, useLocation } from 'react-router-dom';
-import { InfoNotice } from '../components/Notice';
 
 /** After a request: what happens next. The email and time come from the form; opened directly, the page says it generally. */
 export function QuoteSentPage() {
@@ -18,7 +17,6 @@ export function QuoteSentPage() {
           <Link className="btn btn-secondary btn-lg" to="/how-it-works">See the six steps</Link>
           <Link className="btn btn-quiet btn-lg" to="/">Back to the home page</Link>
         </div>
-        <InfoNotice style={{ marginTop: '2.5rem' }}>Sol Energy is fictional: nobody will contact you. This page shows what a real visitor would see.</InfoNotice>
       </div>
     </section>
   );

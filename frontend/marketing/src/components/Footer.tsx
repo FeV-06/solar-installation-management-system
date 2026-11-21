@@ -34,8 +34,7 @@ export function Footer() {
         </div>
         <p className="giant" aria-hidden="true">Sol<i className="dot" /></p>
         <div className="f-note">
-          <span>Sol Energy is a fictional company. This site is a software demo: requests sent through it are not followed up.</span>
-          <span>© 2026 Sol Energy India</span>
+          <span>© 2026 Sol Energy India. All rights reserved.</span>
         </div>
       </div>
     </footer>
