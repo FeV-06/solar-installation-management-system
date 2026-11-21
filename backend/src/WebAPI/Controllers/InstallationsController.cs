@@ -6,11 +6,18 @@ using WebAPI.Security;
 
 namespace WebAPI.Controllers;
 
-/// <summary>Read one installation for the office's survey scheduling workflow.</summary>
+/// <summary>Read installations for the office's workflow.</summary>
 [Route("api/installations")]
-[Authorize(Policy = Policies.Admin)]
+[Authorize(Policy = Policies.Staff)]
 public class InstallationsController(IInstallationRepo installations) : ApiControllerBase
 {
+    [HttpGet]
+    public async Task<ActionResult<IReadOnlyList<InstallationResponse>>> GetAll()
+    {
+        var items = await installations.GetAllWithSiteAsync();
+        return Ok(items.Select(InstallationResponse.From).ToList());
+    }
+
     [HttpGet("{id:int}")]
     public async Task<ActionResult<InstallationResponse>> GetById(int id)
     {

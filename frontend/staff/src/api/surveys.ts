@@ -31,9 +31,13 @@ export const installationSchema = z.object({
 export type Installation = z.infer<typeof installationSchema>;
 
 export const SURVEYS_KEY = ['surveys'] as const;
+export const INSTALLATIONS_KEY = ['installations'] as const;
 export const surveyKey = (id: number) => [...SURVEYS_KEY, 'detail', id] as const;
 export const installationKey = (id: number) => ['installation', id] as const;
 export const SURVEY_PAGE_SIZE = 20;
+
+export const fetchInstallations = (signal?: AbortSignal) =>
+  request('/installations', { schema: z.array(installationSchema), signal });
 
 export function fetchSurveys(options: { page?: number; status?: SurveyStatus; installationId?: number; pageSize?: number }, signal?: AbortSignal) {
   const query = new URLSearchParams({ page: String(options.page ?? 1), pageSize: String(options.pageSize ?? SURVEY_PAGE_SIZE) });

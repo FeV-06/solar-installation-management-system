@@ -11,6 +11,13 @@ public class InstallationRepo(AppDbContext context) : GenericRepo<Installation>(
     public Task<Installation?> GetWithSiteAsync(int id) => Context.Installations
         .Include(i => i.Customer).Include(i => i.Address).FirstOrDefaultAsync(i => i.Id == id);
 
+    public async Task<IReadOnlyList<Installation>> GetAllWithSiteAsync() =>
+        await Context.Installations
+            .Include(i => i.Customer)
+            .Include(i => i.Address)
+            .OrderByDescending(i => i.CreatedAt)
+            .ToListAsync();
+
     public async Task<int?> GetIdForLeadAsync(int leadId)
     {
         return await Context.Installations
