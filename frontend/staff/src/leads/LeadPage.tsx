@@ -128,7 +128,7 @@ function LeadView({ lead }: { lead: Lead }) {
               {isAdmin && <button className="btn btn-secondary" type="button" onClick={() => show('edit')}><Icon icon={Pencil} />Edit</button>}
               {isAdmin && can.disqualify && <button className="btn btn-secondary" type="button" onClick={() => show('disqualify')}><Icon icon={Ban} />Disqualify…</button>}
               {isAdmin && can.lose && <button className="btn btn-secondary" type="button" onClick={() => show('lose')}><Icon icon={CircleDashed} />Mark as lost…</button>}
-              {can.contact && (
+              {role === 'Sales' && can.contact && (
                 <button className={`btn btn-primary${contact.isPending ? ' is-loading' : ''}`} type="button" aria-busy={contact.isPending || undefined} onClick={() => void doContact()}>
                   <Icon icon={LoaderCircle} className="spin" />
                   {!contact.isPending && <Icon icon={Phone} />}

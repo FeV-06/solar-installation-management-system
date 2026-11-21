@@ -7,7 +7,7 @@ const messages = (result: { success: boolean; error?: { issues: { path: Property
 describe('the account forms', () => {
   it('sends the name and email trimmed, and the password as typed', () => {
     expect(technicianSchema.parse({ name: '  Lena Park ', email: ' lena.park@sol.test ', password: ' Kq7#vLm2tR9p ' }))
-      .toEqual({ name: 'Lena Park', email: 'lena.park@sol.test', password: ' Kq7#vLm2tR9p ' });
+      .toEqual({ name: 'Lena Park', email: 'lena.park@sol.test', password: ' Kq7#vLm2tR9p ', role: 'Technician' });
   });
 
   it('asks for each empty field, and for an email shaped like one', () => {

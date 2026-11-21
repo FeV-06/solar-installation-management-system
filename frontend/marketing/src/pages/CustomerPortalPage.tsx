@@ -298,12 +298,11 @@ export function CustomerPortalPage() {
         {/* Welcome bar */}
         <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
-            <p className="label eyebrow" style={{ marginBottom: '0.6rem' }}>Customer Workspace</p>
             <h1 className="display" style={{ fontSize: '2.5rem', margin: 0, color: 'var(--fg)' }}>
-              Welcome, {customer?.firstName || customer?.email}<i className="dot" />
+              Welcome, {customer?.firstName || customer?.email}<span className="dot" />
             </h1>
             <p className="body" style={{ marginTop: '0.4rem' }}>
-              Track your solar request, review quotation & Bill of Materials, and manage installation.
+              Track your solar request, review quotation &amp; Bill of Materials, and manage installation.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
@@ -390,24 +389,19 @@ export function CustomerPortalPage() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '1rem', marginBottom: '1.5rem' }}>
               <div>
-                <span className="label eyebrow" style={{ color: 'var(--accent)', marginBottom: '0.4rem', display: 'block' }}>
-                  Ready Package Proposal &bull; Quote #{proposal.id}
-                </span>
                 <h2 className="display" style={{ fontSize: '1.75rem', margin: 0, color: 'var(--fg)' }}>
                   {proposal.systemCapacityKw} kW {proposal.systemType === 'OnGrid' ? 'On-Grid' : 'Off-Grid'} Solar System
                 </h2>
                 <p className="body" style={{ margin: '0.35rem 0 0', color: 'var(--muted)', fontSize: '0.95rem' }}>
-                  Estimated generation: ~{Math.round(proposal.systemCapacityKw * 120)}–{Math.round(proposal.systemCapacityKw * 140)} units (kWh)/month. Complete turnkey installation.
+                  Estimated generation: ~{Math.round(proposal.systemCapacityKw * 120)} to {Math.round(proposal.systemCapacityKw * 140)} units (kWh)/month. Complete turnkey installation.
                 </p>
               </div>
 
               <div style={{ textAlign: 'right' }}>
-                <span className="label" style={{
-                  padding: '0.35rem 0.8rem',
-                  borderRadius: 'var(--radius-pill)',
-                  background: proposal.paymentStatus === 'Pending' ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'color-mix(in srgb, var(--positive, #5fd39a) 15%, transparent)',
-                  color: proposal.paymentStatus === 'Pending' ? 'var(--accent)' : 'var(--positive, #5fd39a)',
-                  fontWeight: 600,
+                <span className="chip" style={{
+                  color: proposal.paymentStatus === 'Pending' ? 'var(--accent)' : 'var(--positive)',
+                  background: proposal.paymentStatus === 'Pending' ? 'color-mix(in srgb, var(--accent) 15%, transparent)' : 'color-mix(in srgb, var(--positive) 15%, transparent)',
+                  boxShadow: 'inset 0 0 0 1px color-mix(in srgb, currentColor 30%, transparent)',
                   fontSize: '0.85rem'
                 }}>
                   {proposal.paymentStatus === 'Pending' ? 'Proposal Ready' : `Confirmed (${proposal.paymentStatus})`}
@@ -431,8 +425,8 @@ export function CustomerPortalPage() {
               </div>
 
               <div style={{ padding: '1.25rem', background: 'var(--bg)', borderRadius: 'var(--radius-lg)', border: '1px solid var(--line)' }}>
-                <div className="label" style={{ color: 'var(--positive, #5fd39a)', marginBottom: '0.25rem' }}>PM Surya Ghar Subsidy</div>
-                <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--positive, #5fd39a)' }}>
+                <div className="label" style={{ color: 'var(--positive)', marginBottom: '0.25rem' }}>PM Surya Ghar Subsidy</div>
+                <div style={{ fontSize: '1.35rem', fontWeight: 700, color: 'var(--positive)' }}>
                   - ₹{proposal.estimatedSubsidyRupees.toLocaleString('en-IN')}
                 </div>
                 <div style={{ fontSize: '0.75rem', color: 'var(--muted)', marginTop: '0.2rem' }}>Direct central grant</div>
@@ -535,20 +529,20 @@ export function CustomerPortalPage() {
             ) : (
               <div style={{
                 padding: '1.25rem',
-                background: 'color-mix(in srgb, var(--positive, #5fd39a) 8%, var(--bg))',
+                background: 'color-mix(in srgb, var(--positive) 8%, var(--bg))',
                 borderRadius: 'var(--radius-lg)',
-                border: '1px solid color-mix(in srgb, var(--positive, #5fd39a) 30%, transparent)',
+                border: '1px solid color-mix(in srgb, var(--positive) 30%, transparent)',
                 display: 'flex',
                 alignItems: 'center',
                 gap: '0.75rem'
               }}>
-                <ShieldCheck color="var(--positive, #5fd39a)" size={24} />
+                <ShieldCheck color="var(--positive)" size={24} />
                 <div>
                   <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.95rem' }}>
-                    Order Confirmed & Paid: ₹{proposal.amountPaidRupees.toLocaleString('en-IN')} ({proposal.paymentStatus})
+                    Order Confirmed &amp; Paid: ₹{proposal.amountPaidRupees.toLocaleString('en-IN')} ({proposal.paymentStatus})
                   </div>
                   <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                    Payment Reference: {proposal.paymentReference} &bull; Warehouse packing list generated &bull; Field crew scheduled
+                    Payment Reference: {proposal.paymentReference}, warehouse packing list generated, field crew scheduled
                   </div>
                 </div>
               </div>
@@ -635,7 +629,7 @@ export function CustomerPortalPage() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Icon icon={ShieldCheck} size={22} color="#16a34a" />
+                <Icon icon={ShieldCheck} color="var(--positive)" />
                 <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
                   Equipment &amp; Warranty Protection
                 </h3>
@@ -658,7 +652,6 @@ export function CustomerPortalPage() {
                     background: 'var(--bg)',
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'inset 0 0 0 1px var(--line)',
-                    borderLeft: w.isCovered ? '4px solid #16a34a' : '4px solid #dc2626',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.5rem',
@@ -666,16 +659,7 @@ export function CustomerPortalPage() {
                 >
                   <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
                     <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '9999px',
-                        background: w.isCovered ? '#dcfce7' : '#fee2e2',
-                        color: w.isCovered ? '#166534' : '#991b1b',
-                        fontWeight: 700,
-                      }}
-                    >
+                    <span className={`chip ${w.isCovered ? 'tone-positive' : 'tone-negative'}`}>
                       {w.isCovered ? `${w.remainingDays} days left` : 'Expired'}
                     </span>
                   </div>
@@ -686,7 +670,7 @@ export function CustomerPortalPage() {
                   </div>
 
                   <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>
-                    {w.warrantyYears}-Year Manufacturer Guarantee &bull; Valid through {new Date(w.expiryDate).toLocaleDateString()}
+                    {w.warrantyYears}-Year Manufacturer Guarantee, valid through {new Date(w.expiryDate).toLocaleDateString()}
                   </div>
                 </div>
               ))}
@@ -702,28 +686,27 @@ export function CustomerPortalPage() {
             background: 'var(--bg-raised)',
             borderRadius: 'var(--radius-xl)',
             boxShadow: 'inset 0 0 0 1px var(--line)',
-            borderLeft: '4px solid #16a34a',
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Icon icon={CheckCircle2} size={22} color="#16a34a" />
+                <Icon icon={CheckCircle2} color="var(--positive)" />
                 <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
                   Commissioning &amp; Handover Certificate
                 </h3>
               </div>
-              <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '9999px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>
-                ✓ Official Customer Sign-Off
+              <span className="chip tone-positive">
+                Customer sign-off verified
               </span>
             </div>
 
             <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Your rooftop solar system has been installed, commissioned, and synchronized with the electricity grid. Tested live generation: <b style={{ color: '#16a34a' }}>{data.handoverProof.testedGenerationKw} kW</b> on your {data.handoverProof.systemCapacityKw} kW array.
+              Your rooftop solar system has been installed, commissioned, and synchronized with the electricity grid. Tested live generation: <b style={{ color: 'var(--positive)' }}>{data.handoverProof.testedGenerationKw} kW</b> on your {data.handoverProof.systemCapacityKw} kW array.
             </p>
 
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Rooftop Solar Array</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: 'var(--surface)' }}>
                   <img
                     src={data.handoverProof.panelArrayPhotoUrl}
                     alt="Panels"
@@ -734,7 +717,7 @@ export function CustomerPortalPage() {
               </div>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Inverter &amp; DCDB</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: 'var(--surface)' }}>
                   <img
                     src={data.handoverProof.inverterPhotoUrl}
                     alt="Inverter"
@@ -745,7 +728,7 @@ export function CustomerPortalPage() {
               </div>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Net Meter &amp; Earthing</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: 'var(--surface)' }}>
                   <img
                     src={data.handoverProof.meterPhotoUrl}
                     alt="Meter"
@@ -773,8 +756,8 @@ export function CustomerPortalPage() {
                   <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.9rem' }}>{data.handoverProof.signedByName}</div>
                   <div style={{ fontSize: '0.75rem', color: 'var(--faint)' }}>{new Date(data.handoverProof.signedAt).toLocaleString()}</div>
                 </div>
-                <div style={{ background: '#000', padding: '0.25rem 0.6rem', borderRadius: '6px' }}>
-                  <img src={data.handoverProof.customerSignatureData} alt="Signature" style={{ maxHeight: '45px', maxWidth: '160px', objectFit: 'contain', filter: 'brightness(1.2)' }} />
+                <div style={{ background: 'var(--surface)', padding: '0.25rem 0.6rem', borderRadius: '6px' }}>
+                  <img src={data.handoverProof.customerSignatureData} alt="Signature" style={{ maxHeight: '45px', maxWidth: '160px', objectFit: 'contain' }} />
                 </div>
               </div>
             )}
@@ -801,10 +784,10 @@ export function CustomerPortalPage() {
                 type="button"
                 className="btn btn-primary btn-sm"
                 onClick={() => setShowTicketModal(true)}
-                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px', whiteSpace: 'nowrap' }}
               >
                 <Icon icon={Wrench} size={15} />
-                <span>Report Breakdown / File Claim</span>
+                <span>Report breakdown</span>
               </button>
             </div>
 
@@ -814,8 +797,9 @@ export function CustomerPortalPage() {
             </p>
 
             {ticketActionMsg && (
-              <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: '#eff6ff', color: '#1e40af', borderRadius: 'var(--radius-md)', fontSize: '0.85rem' }}>
-                {ticketActionMsg}
+              <div className="notice tone-info" style={{ marginBottom: '1rem' }}>
+                <Icon icon={Info} />
+                <span>{ticketActionMsg}</span>
               </div>
             )}
 
@@ -832,7 +816,6 @@ export function CustomerPortalPage() {
                         background: 'var(--bg)',
                         borderRadius: 'var(--radius-lg)',
                         boxShadow: 'inset 0 0 0 1px var(--line)',
-                        borderLeft: t.status === 'Closed' ? '4px solid #16a34a' : isPendingConfirm ? '4px solid #3b82f6' : '4px solid var(--accent)',
                         display: 'flex',
                         flexDirection: 'column',
                         gap: '0.75rem',
@@ -840,33 +823,19 @@ export function CustomerPortalPage() {
                     >
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
                         <div>
-                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', flexWrap: 'wrap' }}>
                             <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--fg)' }}>Ticket #{t.id}: {t.faultCode}</span>
-                            <span style={{
-                              fontSize: '0.75rem',
-                              padding: '0.15rem 0.5rem',
-                              borderRadius: '9999px',
-                              background: t.status === 'Closed' ? '#dcfce7' : isPendingConfirm ? '#dbeafe' : '#fef3c7',
-                              color: t.status === 'Closed' ? '#166534' : isPendingConfirm ? '#1e40af' : '#92400e',
-                              fontWeight: 600,
-                            }}>
-                              {isPendingConfirm ? 'Power Restored - Signoff Required' : t.status}
+                            <span className={`chip ${t.status === 'Closed' ? 'tone-positive' : isPendingConfirm ? 'tone-info' : 'tone-warning'}`}>
+                              {isPendingConfirm ? 'Power restored, sign-off required' : t.status}
                             </span>
                           </div>
                           <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
-                            Hardware: {t.hardwareItem} (S/N: <code>{t.serialNumber}</code>)
+                            Hardware: {t.hardwareItem} (Serial: <code>{t.serialNumber}</code>)
                           </div>
                         </div>
 
-                        <span style={{
-                          fontSize: '0.8rem',
-                          fontWeight: 700,
-                          padding: '0.2rem 0.6rem',
-                          borderRadius: '6px',
-                          background: t.isWarrantyCovered ? '#dcfce7' : '#fee2e2',
-                          color: t.isWarrantyCovered ? '#166534' : '#991b1b',
-                        }}>
-                          {t.isWarrantyCovered ? '100% Free Warranty Replacement (₹0)' : `Chargeable Repair: ₹${t.totalBilledRupees.toLocaleString()}`}
+                        <span className={`chip ${t.isWarrantyCovered ? 'tone-positive' : 'tone-negative'}`}>
+                          {t.isWarrantyCovered ? 'Warranty covered (₹0)' : `Chargeable repair: ₹${t.totalBilledRupees.toLocaleString()}`}
                         </span>
                       </div>
 
@@ -876,64 +845,45 @@ export function CustomerPortalPage() {
 
                       {/* Terms Reviewed Banner */}
                       {t.status === 'Reviewed' && (
-                        <div style={{
-                          padding: '0.85rem 1rem',
-                          background: '#f8fafc',
-                          border: '1px solid var(--line)',
-                          borderRadius: 'var(--radius-md)',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '0.75rem',
-                        }}>
+                        <div className="notice tone-info" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                           <div>
-                            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--fg)' }}>
-                              Office Terms Sent: {t.isWarrantyCovered ? 'Zero Cost Warranty Swap' : `Invoice for ₹${t.totalBilledRupees.toLocaleString()} (Parts + Service Labor)`}
-                            </div>
-                            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                            <p className="notice-title">
+                              Office terms sent: {t.isWarrantyCovered ? 'Zero cost warranty swap' : `Invoice for ₹${t.totalBilledRupees.toLocaleString()} (parts + service labor)`}
+                            </p>
+                            <p style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
                               {t.adminNotes ?? 'Verified against installation specs.'}
-                            </div>
+                            </p>
                           </div>
                           <button
                             type="button"
                             className="btn btn-primary btn-sm"
+                            style={{ whiteSpace: 'nowrap' }}
                             onClick={() => handleApproveTicket(t.id)}
                           >
-                            Approve Replacement &amp; Dispatch
+                            Approve replacement and dispatch
                           </button>
                         </div>
                       )}
 
-                      {/* On-Site Resolution Confirmation Banner (Hard Invariant) */}
+                      {/* On-Site Resolution Confirmation Banner */}
                       {isPendingConfirm && (
-                        <div style={{
-                          padding: '1rem',
-                          background: '#eff6ff',
-                          border: '1px solid #bfdbfe',
-                          borderRadius: 'var(--radius-md)',
-                          display: 'flex',
-                          justifyContent: 'space-between',
-                          alignItems: 'center',
-                          flexWrap: 'wrap',
-                          gap: '0.75rem',
-                        }}>
+                        <div className="notice tone-positive" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.75rem' }}>
                           <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              <Icon icon={Zap} size={16} />
-                              <span>Technician Replaced Unit &bull; S/N: {t.replacementSerialNumber}</span>
-                            </div>
-                            <div style={{ fontSize: '0.825rem', color: '#1e3a8a', marginTop: '0.2rem' }}>
+                            <p className="notice-title" style={{ display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <Icon icon={Zap} />
+                              <span>Technician replaced unit, Serial: {t.replacementSerialNumber}</span>
+                            </p>
+                            <p style={{ fontSize: '0.825rem', marginTop: '0.2rem' }}>
                               {t.technicianResolutionNotes ?? 'Hardware swap complete. Confirm your rooftop power generation is restored.'}
-                            </div>
+                            </p>
                           </div>
                           <button
                             type="button"
                             className="btn btn-primary btn-sm"
-                            style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                            style={{ whiteSpace: 'nowrap' }}
                             onClick={() => handleConfirmRestoration(t.id)}
                           >
-                            Confirm Power Restored &amp; Close Ticket
+                            Confirm power restored and close ticket
                           </button>
                         </div>
                       )}
@@ -1069,7 +1019,7 @@ export function CustomerPortalPage() {
                 <div>
                   <h3 className="display" style={{ fontSize: '1.15rem', margin: 0, color: 'var(--fg)' }}>All Your Requests</h3>
                   <span className="label" style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
-                    Showing {filteredQuotes.length === 0 ? 0 : (quotePage - 1) * QUOTES_PER_PAGE + 1}–{Math.min(quotePage * QUOTES_PER_PAGE, filteredQuotes.length)} of {filteredQuotes.length} requests
+                    Showing {filteredQuotes.length === 0 ? 0 : (quotePage - 1) * QUOTES_PER_PAGE + 1} to {Math.min(quotePage * QUOTES_PER_PAGE, filteredQuotes.length)} of {filteredQuotes.length} requests
                   </span>
                 </div>
 

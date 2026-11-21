@@ -26,51 +26,49 @@ export function CommissioningPage() {
     enabled: id !== null,
   });
 
-  if (id === null) return <NotFound noun="installation" back={back} />;
+  if (id === null || user.role === 'Admin') return <NotFound noun="installation" back={back} />;
 
   return (
     <QueryView query={query} what="this installation" notFound={<NotFound noun="installation" back={back} />}>
       {installation => (
         <>
-          {/* Page Head */}
           <div className="page-head">
             <Link className="btn btn-quiet btn-sm back" to={back.to}>
               <Icon icon={ArrowLeft} />
               <span>{back.label}</span>
             </Link>
-            <div className="row" style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
-              <h1 className="a-title" id="page-title" tabIndex={-1} style={{ margin: 0 }}>
-                Field Commissioning &amp; Handover
+            <div className="row">
+              <h1 className="a-title" id="page-title" tabIndex={-1}>
+                Field commissioning and handover
               </h1>
               <StageChip status={installation.status} />
             </div>
           </div>
 
           <p className="page-intro">
-            Installation #{installation.id} &bull; {installation.customerName} &bull; {installation.address.street}, {cityLine(installation.address)}
+            Installation #{installation.id}, {installation.customerName}, {installation.address.street}, {cityLine(installation.address)}
           </p>
 
-          {/* Technician & On-Site Overview Cards */}
-          <div className="rec-grid" style={{ marginBottom: '1.75rem' }}>
+          <div className="rec-grid" style={{ marginBottom: '1.5rem' }}>
             <div className="rec-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Icon icon={HardHat} size={18} color="var(--accent, #eab308)" />
-                <h2 className="a-heading" style={{ margin: 0 }}>On-Site Technician Crew</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Icon icon={HardHat} color="var(--accent)" />
+                <h2 className="a-heading" style={{ margin: 0 }}>On-site technician crew</h2>
               </div>
               <dl className="kv">
-                <dt>Assigned Tech</dt>
+                <dt>Assigned tech</dt>
                 <dd><b>{user.name}</b> ({user.email})</dd>
-                <dt>Role Access</dt>
-                <dd>{user.role} &bull; Field Verification Authorized</dd>
+                <dt>Role access</dt>
+                <dd>{user.role}, field verification authorized</dd>
                 <dt>Timezone</dt>
                 <dd>{installation.timeZone}</dd>
               </dl>
             </div>
 
             <div className="rec-card">
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem', marginBottom: '0.75rem' }}>
-                <Icon icon={SolarPanel} size={18} color="#16a34a" />
-                <h2 className="a-heading" style={{ margin: 0 }}>Site &amp; Property Details</h2>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                <Icon icon={SolarPanel} color="var(--positive)" />
+                <h2 className="a-heading" style={{ margin: 0 }}>Site and property details</h2>
               </div>
               <dl className="kv">
                 <dt>Customer</dt>
@@ -87,7 +85,6 @@ export function CommissioningPage() {
             </div>
           </div>
 
-          {/* Dedicated Commissioning Section */}
           <RooftopFieldProofSection
             installationId={installation.id}
             customerName={installation.customerName}

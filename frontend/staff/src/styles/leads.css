@@ -1,11 +1,47 @@
 /* The lead and customer screens, from the approved Leads design. */
 
 /* A list's filters, in its address (the UI kit's filters) */
-.filters { display: flex; gap: .25rem; flex-wrap: wrap; }
-.filters a { display: inline-flex; align-items: center; height: 2rem; padding: 0 .7rem; border-radius: var(--radius-sm); font: 500 .66rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--muted); text-decoration: none; transition: background-color var(--duration-fast), color var(--duration-fast); }
-.filters a:hover { background: var(--surface); color: var(--fg); }
-.filters a[aria-current="true"] { background: var(--surface); color: var(--fg); box-shadow: inset 0 -2px 0 var(--accent-fill); }
-.filters a:focus-visible { outline: 2px solid var(--focus); outline-offset: 2px; }
+.filters {
+  display: flex;
+  gap: 1.25rem;
+  align-items: flex-end;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 0.25rem;
+}
+.filters a, .filters button {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  height: 2.25rem;
+  padding: 0 0.25rem 0.45rem;
+  margin-bottom: -1px;
+  border: 0;
+  border-bottom: 2px solid transparent;
+  border-radius: 0;
+  background: transparent;
+  font: 500 0.875rem/1 var(--font-sans);
+  letter-spacing: -0.005em;
+  text-transform: none;
+  color: var(--muted);
+  text-decoration: none;
+  cursor: pointer;
+  transition: color var(--duration-fast), border-color var(--duration-fast);
+}
+.filters a:hover, .filters button:hover {
+  color: var(--fg);
+  background: transparent;
+}
+.filters a[aria-current="true"], .filters button[aria-current="true"] {
+  color: var(--fg);
+  font-weight: 600;
+  background: transparent;
+  border-bottom: 2px solid var(--accent);
+  box-shadow: none;
+}
+.filters a:focus-visible, .filters button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
+}
 .list-search { width: min(100%, 16rem); }
 
 /* The lists: a table, or below 768 px a card per row */
@@ -30,7 +66,7 @@
 .lead-progress { display: grid; gap: .6rem; margin-top: 1.5rem; }
 .lead-steps { display: grid; grid-template-columns: repeat(3, 1fr); gap: .5rem; }
 .lead-steps li { display: grid; gap: .15rem; align-content: start; padding-top: .6rem; border-top: 2px solid var(--line); font-size: .875rem; color: var(--faint); }
-.lead-steps li > span { font: 400 .66rem/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.lead-steps li > span { font: 400 .75rem/1 var(--font-sans); color: var(--faint); }
 .lead-steps li b { font-weight: 600; color: inherit; }
 .lead-steps li small { font-size: .8rem; }
 .lead-steps li.done { border-color: var(--fg); color: var(--muted); }

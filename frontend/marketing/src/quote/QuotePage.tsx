@@ -74,7 +74,12 @@ const STEP_TITLES = ['Who should we contact?', 'Where is the property?', 'Last d
 export function QuotePage({ customer }: { customer: CustomerUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState<QuoteValues>(() => ({ ...EMPTY_VALUES, email: customer.email }));
+  const [values, setValues] = useState<QuoteValues>(() => ({
+    ...EMPTY_VALUES,
+    firstName: customer.firstName?.trim() ?? '',
+    lastName: customer.lastName?.trim() ?? '',
+    email: customer.email,
+  }));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [picked, setPicked] = useState<PickedAddress | null>(null);
   const [sending, setSending] = useState(false);

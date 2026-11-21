@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft, Zap } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { fetchInstallation, fetchSurveys, installationKey, SURVEYS_KEY, type Installation, type SurveyPage } from '../api/surveys';
 import { Icon } from '../components/Icon';
 
@@ -47,28 +47,6 @@ function InstallationView({ installation }: { installation: Installation }) {
     <InstallationQuote installation={installation} />
     {installation.status !== 'Survey' && installation.status !== 'Design' && (
       <WarehousePackingSection installation={installation} />
-    )}
-    {installation.status !== 'Survey' && installation.status !== 'Design' && (
-      <div className="rec-card" style={{ marginTop: '1.5rem', borderLeft: installation.status === 'Active' ? '4px solid #16a34a' : '4px solid var(--accent, #eab308)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h2 className="a-heading" style={{ margin: 0 }}>Field Commissioning &amp; Handover</h2>
-            <p className="page-intro" style={{ margin: '0.25rem 0 0' }}>
-              {installation.status === 'Active'
-                ? 'On-site installation and field commissioning have been verified, active grid connected, and signed off.'
-                : 'Technician on-site commissioning checklist, photo evidence verification, and digital handover.'}
-            </p>
-          </div>
-          <Link
-            to={`/installations/${installation.id}/commission`}
-            className="btn btn-primary"
-            style={{ minWidth: '13rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
-          >
-            <Icon icon={Zap} />
-            <span>{installation.status === 'Active' ? 'View Certificate →' : 'Open Commissioning →'}</span>
-          </Link>
-        </div>
-      </div>
     )}
   </>;
 }

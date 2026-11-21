@@ -59,33 +59,33 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
         <p className="notice-title">Survey approved</p>
         <p>The system quotation and exact Bill of Materials (BOM) have been automatically generated for this installation.</p>
         {isAdmin && (
-          <div className="actions" style={{ marginTop: '0.75rem' }}>
-            <Link className="btn btn-primary btn-sm" to={`/installations/${survey.installationId}`}>
-              View Quote & BOM →
+          <div className="actions">
+            <Link className="btn btn-secondary btn-sm" to={`/installations/${survey.installationId}`}>
+              View quote and BOM
             </Link>
           </div>
         )}
       </div>
     )}
-    {survey.status === 'Approved' && (
-      <div className="rec-card" style={{ marginTop: '1.5rem', borderLeft: '4px solid var(--accent, #eab308)' }}>
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
-          <div>
-            <h2 className="a-heading" style={{ margin: 0 }}>Field Commissioning &amp; Handover</h2>
-            <p className="page-intro" style={{ margin: '0.25rem 0 0' }}>
-              On-site crew work checklist: test measured kW generation, capture 3-angle photo proofs, and obtain customer screen sign-off.
-            </p>
-          </div>
+    {survey.status === 'Approved' && !isAdmin && (
+      <section className="survey-panel" aria-labelledby="commissioning-title">
+        <div className="section-title">
+          <h2 className="a-heading" id="commissioning-title">Field commissioning and handover</h2>
+          <span className="a-label">On-site checklist</span>
+        </div>
+        <p className="a-body">
+          On-site crew work checklist: test measured generation, capture 3-angle photo proofs, and obtain customer screen sign-off.
+        </p>
+        <div className="survey-actions">
           <Link
             to={`/installations/${survey.installationId}/commission`}
             className="btn btn-primary"
-            style={{ minWidth: '13rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
           >
             <Icon icon={Zap} />
-            <span>Open Commissioning Form →</span>
+            <span>Open commissioning form</span>
           </Link>
         </div>
-      </div>
+      </section>
     )}
   </>;
 }
