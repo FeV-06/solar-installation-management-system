@@ -1,7 +1,7 @@
-// How to reach Sol: in the 555-01xx range reserved for fiction, and a reserved domain.
+// How to reach Sol India: contact info for inquiries and service.
 export const CONTACT = {
-  phone: '(512) 555-0134',
-  phoneHref: 'tel:+15125550134',
+  phone: '+91 (80) 5550-0134',
+  phoneHref: 'tel:+918055500134',
   email: 'hello@sol.example',
-  base: 'Based in Austin, Texas',
+  base: 'Based in Bengaluru, Karnataka',
 };

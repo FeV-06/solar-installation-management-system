@@ -23,7 +23,7 @@ export function AboutPage() {
         <div className="wrap">
           <p className="label eyebrow">About</p>
           <h1 className="display">Who we are<i className="dot" /></h1>
-          <p className="lead">Sol Energy sells, installs and looks after solar systems for homes and small businesses across the United States, from its base in Austin, Texas.</p>
+          <p className="lead">Sol Energy sells, installs and looks after solar systems for homes and commercial establishments across India, from its base in Bengaluru, Karnataka.</p>
         </div>
       </section>
       <section className="band" data-theme="limestone">

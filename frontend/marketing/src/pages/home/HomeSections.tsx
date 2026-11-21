@@ -127,7 +127,7 @@ export function WhoItsFor() {
       <div className="wrap">
         <div className="intro reveal">
           <div><p className="label eyebrow">04 — Who it's for</p><h2 className="headline">Homes and small businesses<i className="dot" /></h2></div>
-          <p className="body">Anywhere in the United States. The same six steps either way.</p>
+          <p className="body">Anywhere in India. The same six steps either way.</p>
         </div>
         <div className="whom reveal">
           <article>

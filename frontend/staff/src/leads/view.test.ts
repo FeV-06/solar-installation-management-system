@@ -23,9 +23,12 @@ describe('the lead list filters', () => {
 
 describe('a lead in words', () => {
   it("reads the quote form's bill ranges, and shows an older value as it is", () => {
-    expect(billLabel('under100')).toBe('Under $100 a month');
-    expect(billLabel('300plus')).toBe('$300 or more a month');
-    expect(billLabel('$100-$200')).toBe('$100-$200');
+    expect(billLabel('under100')).toBe('Under ₹1,500 a month');
+    expect(billLabel('300plus')).toBe('₹7,000 or more a month');
+    expect(billLabel('under2000')).toBe('Under ₹2,000 a month');
+    expect(billLabel('2000-5000')).toBe('₹2,000–5,000 a month');
+    expect(billLabel('under1500')).toBe('Under ₹1,500 a month');
+    expect(billLabel('₹1,500–3,500')).toBe('₹1,500–3,500');
   });
 
   it('writes the address and the property as the office reads them', () => {

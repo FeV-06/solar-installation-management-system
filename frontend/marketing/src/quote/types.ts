@@ -1,7 +1,23 @@
 // The quote form's values, as the visitor enters them.
 
 export type PropertyType = 'House' | 'Apartment' | 'Commercial';
-export type BillRange = 'under100' | '100-200' | '200-300' | '300plus';
+export type BillRange =
+  | 'under2000'
+  | '2000-5000'
+  | '5000-10000'
+  | '10000plus'
+  | 'under20000'
+  | '20000-60000'
+  | '60000-150000'
+  | '150000plus'
+  | 'under1500'
+  | '1500-3500'
+  | '3500-7000'
+  | '7000plus'
+  | 'under100'
+  | '100-200'
+  | '200-300'
+  | '300plus';
 export type ContactTime = 'Morning' | 'Afternoon' | 'Evening';
 
 export type QuoteValues = {

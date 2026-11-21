@@ -18,15 +18,15 @@ describe('validateStep', () => {
       firstName: 'Enter your first name.',
       lastName: 'Enter your last name.',
       email: 'Enter an email address, like name@example.com.',
-      phone: 'Enter a phone number, like (512) 555-0134.',
+      phone: 'Enter a phone number, like +91 98765 43210.',
     });
   });
 
-  it.each(['7870', '787040', 'ABCDE', '78704-12'])('refuses the ZIP code %s', zip => {
-    expect(validateStep(1, { ...complete, zip }).zip).toBe('Enter a 5-digit ZIP code, like 78704.');
+  it.each(['7870', '7870401', 'ABCDE', '78704-12'])('refuses the ZIP / PIN code %s', zip => {
+    expect(validateStep(1, { ...complete, zip }).zip).toBe('Enter a 6-digit PIN code (or 5-digit ZIP), like 560001.');
   });
 
-  it.each(['78704', '78704-1234'])('accepts the ZIP code %s', zip => {
+  it.each(['78704', '78704-1234', '560001', '110001'])('accepts the ZIP / PIN code %s', zip => {
     expect(validateStep(1, { ...complete, zip }).zip).toBeUndefined();
   });
 

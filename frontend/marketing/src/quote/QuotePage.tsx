@@ -221,7 +221,7 @@ export function QuotePage() {
               <TextField name="lastName" label="Last name" autoComplete="family-name" value={values.lastName} error={err('lastName')} onChange={change} />
             </div>
             <TextField name="email" label="Email" type="email" autoComplete="email" inputMode="email" help="We send a copy of your request here." value={values.email} error={err('email')} onChange={change} />
-            <TextField name="phone" label="Phone" type="tel" autoComplete="tel" inputMode="tel" value={values.phone} error={err('phone')} onChange={change} />
+            <TextField name="phone" label="Phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="+91 98765 43210" value={values.phone} error={err('phone')} onChange={change} />
           </div>
 
           <div className="form-step" hidden={step !== 1}>
@@ -229,15 +229,15 @@ export function QuotePage() {
             <AddressField value={values.street} error={err('street')} onChange={street => change('street', street)} onPick={pickAddress} />
             <div className="two">
               <TextField name="city" label="City" autoComplete="address-level2" value={values.city} error={err('city')} onChange={change} />
-              <TextField name="zip" label="ZIP code" autoComplete="postal-code" inputMode="numeric" value={values.zip} error={err('zip')} onChange={change} />
+              <TextField name="zip" label="PIN / ZIP code" autoComplete="postal-code" inputMode="numeric" placeholder="e.g. 560001" value={values.zip} error={err('zip')} onChange={change} />
             </div>
             <div className={`field${err('state') ? ' has-error' : ''}`}>
-              <label className="field-label" htmlFor="q-state">State</label>
+              <label className="field-label" htmlFor="q-state">State / UT</label>
               <div className="control control-lg">
                 <select id="q-state" name="state" autoComplete="address-level1" value={values.state}
                   aria-describedby={err('state') ? 'q-state-err' : undefined} aria-invalid={err('state') ? true : undefined}
                   onChange={e => change('state', e.target.value)}>
-                  <option value="">Choose a state</option>
+                  <option value="">Choose a state or UT</option>
                   {STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
                 </select>
                 <Icon icon={ChevronDown} className="chev" />
@@ -259,10 +259,10 @@ export function QuotePage() {
             <Choice name="bill" legend="Your usual monthly electricity bill" className="c4" value={values.bill} error={err('bill')} onChange={change}
               help="A rough idea is enough. It tells us how big a system to look at."
               options={[
-                { value: 'under100', label: 'Under $100' },
-                { value: '100-200', label: '$100 to $200' },
-                { value: '200-300', label: '$200 to $300' },
-                { value: '300plus', label: 'Over $300' },
+                { value: 'under2000', label: 'Under ₹2,000' },
+                { value: '2000-5000', label: '₹2,000 to ₹5,000' },
+                { value: '5000-10000', label: '₹5,000 to ₹10,000' },
+                { value: '10000plus', label: 'Over ₹10,000' },
               ]} />
             <Choice name="time" legend="When should we contact you?" className="c3" value={values.time} error={err('time')} onChange={change}
               options={[

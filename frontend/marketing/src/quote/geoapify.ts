@@ -68,7 +68,7 @@ export function narrowAnswer(addresses: PickedAddress[], answeredText: string, t
 
 export async function searchAddresses(text: string, signal: AbortSignal): Promise<PickedAddress[]> {
   const url = new URL('https://api.geoapify.com/v1/geocode/autocomplete');
-  url.search = new URLSearchParams({ text, filter: 'countrycode:us', format: 'json', lang: 'en', limit: '10', apiKey: GEOAPIFY_KEY }).toString();
+  url.search = new URLSearchParams({ text, filter: 'countrycode:in,us', format: 'json', lang: 'en', limit: '10', apiKey: GEOAPIFY_KEY }).toString();
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`The address service answered ${response.status}`);
   return parseSuggestions(await response.json());

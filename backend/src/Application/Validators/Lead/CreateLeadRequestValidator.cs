@@ -32,11 +32,12 @@ public class CreateLeadRequestValidator : AbstractValidator<CreateLeadRequest>
         RuleFor(x => x.PropertyState)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("State is required")
-            .Must(UsStates.IsCode).WithMessage("State must be the two-letter code of a US state or DC, such as TX");
+            .Must(s => UsStates.IsCode(s) || IndiaStates.IsCode(s))
+            .WithMessage("State must be a valid state code (such as KA, MH, DL, or TX)");
 
         RuleFor(x => x.PropertyZipCode)
             .NotEmpty().WithMessage("Zip code is required")
-            .Matches(@"^\d{5}(-\d{4})?$").WithMessage("Zip code must be in format 12345 or 12345-6789");
+            .Matches(@"^(\d{5}(-\d{4})?|\d{6})$").WithMessage("Zip code must be in format 12345, 12345-6789, or 6-digit PIN code like 560001");
 
         // Coordinates are optional, but come as a pair
         RuleFor(x => x.PropertyLatitude)
