@@ -17,12 +17,56 @@ The current code includes enquiry intake, staff sessions, staff-account manageme
 
 Requirements: Git, .NET 10 SDK, Node.js 22.13+ (or a supported newer release), pnpm 11.15.1 and Docker with Compose. The database image is PostgreSQL 18. Do not commit credentials or genuine customer information.
 
-1. Copy `.env.example` to `.env` and set a local PostgreSQL password, database connection string, JWT secret, initial admin details and email sender address. The backend **does not load `.env` itself**: pass the variables to its process through your IDE, shell or another trusted local environment manager. Docker Compose reads the root `.env` automatically. Do not use a real email address or Gmail credentials for local tests unless explicitly intended.
-2. From the repository root, start only this project's database with `docker compose up -d postgres`. Verify port `127.0.0.1:5433` is free first. Keep other running services untouched.
-3. From `backend/`, after providing the environment variables, run `dotnet restore` and `dotnet run --project src/WebAPI`. Development applies pending EF migrations. See the launch profile and appsettings for the local API endpoint.
-4. In separate terminals, run `pnpm install` then `pnpm dev` from `frontend/marketing/` and `frontend/staff/`. The staff app is served beneath `/staff/`; the visitor site uses `/`. Configure the marketing API URL and CORS origin where needed. The staff dev server proxies `/api` to its configured API target.
+### Quick Start / Running the Apps
 
-Local development defaults to the Recording email provider: it stores/simulates delivery and **does not send real mail**. Geoapify address suggestions are optional; entering an address manually does not require the key. Staff session cookies are Secure; a phone connecting over plain LAN HTTP generally needs HTTPS for sign-in.
+Open **three separate PowerShell terminals** at the repository root.
+
+#### 1. Start the Database (PostgreSQL)
+Ensure Docker Desktop is running. Copy `.env.example` to `.env` and set a local PostgreSQL password, connection string, JWT secret, initial admin details and email sender address. Do not use a real email address or Gmail credentials for local tests unless explicitly intended. Verify port `127.0.0.1:5433` is free, then run:
+```powershell
+docker compose up -d postgres
+```
+
+
+#### 2. Start Backend API (Terminal 1)
+The backend does not load `.env` itself; load environment variables into PowerShell and launch the API:
+```powershell
+Get-Content .env | ForEach-Object {
+  if ($_ -match '^\s*([^#=\s]+)\s*=\s*(.*)\s*$') {
+    $name = $Matches[1]
+    $value = $Matches[2].Trim()
+    if ($value.Length -ge 2 -and $value[0] -eq '"' -and $value[$value.Length - 1] -eq '"') {
+      $value = $value.Substring(1, $value.Length - 2)
+    }
+    [Environment]::SetEnvironmentVariable($name, $value, 'Process')
+  }
+}
+dotnet restore backend/Sol.slnx
+dotnet run --project backend/src/WebAPI
+```
+- Listens at: `http://localhost:5228`. Development applies pending EF migrations.
+
+#### 3. Start Customer / Marketing Site (Terminal 2)
+Public website and enquiry/quote form:
+```powershell
+cd frontend/marketing
+pnpm install
+pnpm dev
+```
+- Serves at: `http://localhost:5173`
+
+#### 4. Start Sales & Staff Panel (Terminal 3)
+Staff dashboard for managing leads, customers, and operations:
+```powershell
+cd frontend/staff
+pnpm install
+pnpm dev
+```
+- Serves at: `http://localhost:5174/staff/`
+- Proxies `/api` requests to `http://localhost:5228`. Log in using `Admin__Email` and `Admin__Password` from `.env`.
+
+> [!NOTE]
+> Local development defaults to the `Recording` email provider: it simulates email delivery and does not send actual emails. Address suggestions via Geoapify are optional. Staff session cookies are secure; a phone connecting over plain LAN HTTP generally needs HTTPS for sign-in. Configure the marketing API URL and CORS origin where needed.
 
 ## Checks
 
