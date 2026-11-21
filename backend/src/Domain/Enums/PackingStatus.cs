@@ -4,5 +4,6 @@ public enum PackingStatus
 {
     Pending,
     Packed,
-    Dispatched
+    Dispatched,
+    Delivered
 }

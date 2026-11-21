@@ -56,12 +56,38 @@ export const packingOrderSchema = z.object({
   createdAt: z.string(),
   packedAt: z.string().nullable().optional(),
   dispatchedAt: z.string().nullable().optional(),
+  deliveredAt: z.string().nullable().optional(),
   items: z.array(packingOrderItemSchema),
 });
 export type PackingOrder = z.infer<typeof packingOrderSchema>;
 
+export const warrantySchema = z.object({
+  id: z.number().int(),
+  installationId: z.number().int(),
+  customerId: z.number().int(),
+  customerName: z.string(),
+  itemName: z.string(),
+  category: z.string(),
+  serialNumber: z.string(),
+  warrantyYears: z.number().int(),
+  startDate: z.string(),
+  expiryDate: z.string(),
+  status: z.string(),
+  isCovered: z.boolean(),
+  remainingDays: z.number().int(),
+});
+export type Warranty = z.infer<typeof warrantySchema>;
+
+export const warrantyLookupResultSchema = z.object({
+  query: z.string(),
+  found: z.boolean(),
+  warranties: z.array(warrantySchema),
+});
+export type WarrantyLookupResult = z.infer<typeof warrantyLookupResultSchema>;
+
 export const QUOTE_KEY = (installationId: number) => ['quote', installationId] as const;
 export const PACKING_ORDER_KEY = (installationId: number) => ['packing-order', installationId] as const;
+export const WARRANTIES_KEY = (installationId: number) => ['warranties', installationId] as const;
 
 export const fetchInstallationQuote = (installationId: number, signal?: AbortSignal) =>
   request(`/installations/${installationId}/quote`, { schema: quoteSchema, signal });
@@ -80,4 +106,28 @@ export const updatePackingItem = (packingOrderId: number, itemId: number, isPack
     method: 'PUT',
     body: { isPacked, serialNumber: serialNumber || null },
     schema: packingOrderSchema,
+  });
+
+export const dispatchPackingOrder = (packingOrderId: number) =>
+  request(`/packing-orders/${packingOrderId}/dispatch`, {
+    method: 'POST',
+    schema: packingOrderSchema,
+  });
+
+export const deliverPackingOrder = (packingOrderId: number) =>
+  request(`/packing-orders/${packingOrderId}/deliver`, {
+    method: 'POST',
+    schema: packingOrderSchema,
+  });
+
+export const fetchWarranties = (installationId: number, signal?: AbortSignal) =>
+  request(`/installations/${installationId}/warranties`, {
+    schema: z.array(warrantySchema),
+    signal,
+  });
+
+export const lookupWarranty = (query: string, signal?: AbortSignal) =>
+  request(`/warranties/lookup?query=${encodeURIComponent(query)}`, {
+    schema: warrantyLookupResultSchema,
+    signal,
   });

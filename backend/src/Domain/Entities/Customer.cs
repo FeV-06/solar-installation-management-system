@@ -35,6 +35,7 @@ public class Customer
     public Address? ContactAddress { get; set; }
 
     public ICollection<Installation> Installations { get; set; } = [];
+    public ICollection<Warranty> Warranties { get; set; } = [];
 
     public string FullName => $"{FirstName} {LastName}";
 

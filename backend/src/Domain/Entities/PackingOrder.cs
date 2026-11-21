@@ -20,6 +20,7 @@ public class PackingOrder
     public DateTime CreatedAt { get; set; }
     public DateTime? PackedAt { get; set; }
     public DateTime? DispatchedAt { get; set; }
+    public DateTime? DeliveredAt { get; set; }
 
     public List<PackingOrderItem> Items { get; set; } = [];
 }

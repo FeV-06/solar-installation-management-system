@@ -18,6 +18,7 @@ public class PackingOrderConfig : IEntityTypeConfiguration<PackingOrder>
         builder.Property(p => p.CreatedAt).HasColumnName("created_at");
         builder.Property(p => p.PackedAt).HasColumnName("packed_at");
         builder.Property(p => p.DispatchedAt).HasColumnName("dispatched_at");
+        builder.Property(p => p.DeliveredAt).HasColumnName("delivered_at");
 
         builder.HasIndex(p => p.InstallationId).HasDatabaseName("ix_packing_orders_installation_id");
         builder.HasIndex(p => p.QuoteId).IsUnique().HasDatabaseName("ux_packing_orders_quote_id");

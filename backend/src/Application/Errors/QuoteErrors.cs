@@ -14,4 +14,9 @@ public static class QuoteErrors
     public static readonly Error InvalidPaymentType = new(ErrorKind.Invalid, "quote.invalid_payment_type", "Payment type must be 'Advance' or 'Full'.", "PaymentType");
     public static readonly Error Unauthorized = new(ErrorKind.Unauthorized, "quote.unauthorized", "You are not authorized to view or accept this quote.");
     public static readonly Error Concurrency = new(ErrorKind.Conflict, "quote.concurrency", "The quote or installation was modified concurrently. Please reload.");
+
+    public static Error UnpackedItemsRemaining(int count) => new(ErrorKind.Conflict, "packing_order.unpacked_items", $"Cannot dispatch truck: {count} item(s) are not yet marked as packed.");
+    public static Error MissingSerialNumbers(string missingItems) => new(ErrorKind.Conflict, "packing_order.missing_serials", $"Cannot dispatch truck: High-value hardware requires scanned serial numbers before dispatch. Missing serial numbers on: {missingItems}.");
+    public static readonly Error PackingOrderNotDispatched = new(ErrorKind.Conflict, "packing_order.not_dispatched", "Cannot record delivery: The packing order has not been dispatched yet.");
+    public static readonly Error AlreadyDelivered = new(ErrorKind.Conflict, "packing_order.already_delivered", "This packing order has already been delivered and warranties are active.");
 }

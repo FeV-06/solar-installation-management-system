@@ -32,6 +32,7 @@ public class Installation
 
     public List<Quote> Quotes { get; set; } = [];
     public List<PackingOrder> PackingOrders { get; set; } = [];
+    public List<Warranty> Warranties { get; set; } = [];
 
     /// <summary>A new installation for a converted lead: at Survey, at the lead's property, in its state's time zone.</summary>
     public static Installation ForConvertedLead(Lead lead, int customerId, string timeZone, DateTime now) => new()

@@ -91,6 +91,27 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
                     i.TotalCostRupees)).ToList());
         }
 
-        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto));
+        var now = DateTime.UtcNow;
+        var warranties = await db.Warranties
+            .Where(w => w.CustomerId == customerId)
+            .OrderBy(w => w.Category)
+            .ThenBy(w => w.ItemName)
+            .Select(w => new WarrantyDto(
+                w.Id,
+                w.InstallationId,
+                w.CustomerId,
+                customer.FullName,
+                w.ItemName,
+                w.Category.ToString(),
+                w.SerialNumber,
+                w.WarrantyYears,
+                w.StartDate,
+                w.ExpiryDate,
+                w.Status.ToString(),
+                w.IsCovered(now),
+                w.RemainingDays(now)))
+            .ToListAsync(cancellationToken);
+
+        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto, warranties));
     }
 }

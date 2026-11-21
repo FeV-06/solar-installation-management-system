@@ -23,4 +23,5 @@ public record CustomerPortalData(
     CustomerQuoteSummary? ActiveQuote,
     IReadOnlyList<CustomerQuoteSummary> Quotes,
     IReadOnlyList<CustomerInstallationSummary> Installations,
-    QuoteDto? Proposal = null);
+    QuoteDto? Proposal = null,
+    IReadOnlyList<WarrantyDto>? Warranties = null);

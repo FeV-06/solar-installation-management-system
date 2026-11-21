@@ -2,6 +2,7 @@ using Application.Common.Models;
 using Application.DTOs.Quote;
 using Application.Errors;
 using Application.Interfaces.Services;
+using Domain.Common;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
@@ -213,6 +214,196 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         return Result.Success(MapPackingOrderToDto(packingOrder));
     }
 
+    public async Task<Result<PackingOrderDto>> DispatchPackingOrderAsync(int packingOrderId, CancellationToken ct = default)
+    {
+        var packingOrder = await db.PackingOrders
+            .Include(p => p.Items)
+            .FirstOrDefaultAsync(p => p.Id == packingOrderId, ct);
+
+        if (packingOrder == null)
+            return Result.Failure<PackingOrderDto>(QuoteErrors.PackingOrderNotFound(packingOrderId));
+
+        if (packingOrder.Status == PackingStatus.Dispatched || packingOrder.Status == PackingStatus.Delivered)
+            return Result.Success(MapPackingOrderToDto(packingOrder));
+
+        // Gate 1: All items must be packed
+        var unpackedItems = packingOrder.Items.Where(i => !i.IsPacked).ToList();
+        if (unpackedItems.Count > 0)
+        {
+            return Result.Failure<PackingOrderDto>(QuoteErrors.UnpackedItemsRemaining(unpackedItems.Count));
+        }
+
+        // Gate 2: High-value serialized items (Inverter, Battery, ChargeController) MUST have scanned serial numbers
+        var missingSerials = packingOrder.Items
+            .Where(i => i.RequiresSerialNumber && string.IsNullOrWhiteSpace(i.SerialNumber))
+            .Select(i => i.ItemName)
+            .ToList();
+
+        if (missingSerials.Count > 0)
+        {
+            return Result.Failure<PackingOrderDto>(QuoteErrors.MissingSerialNumbers(string.Join(", ", missingSerials)));
+        }
+
+        var now = DateTime.UtcNow;
+        packingOrder.Status = PackingStatus.Dispatched;
+        packingOrder.DispatchedAt = now;
+
+        await db.SaveChangesAsync(ct);
+        return Result.Success(MapPackingOrderToDto(packingOrder));
+    }
+
+    public async Task<Result<PackingOrderDto>> DeliverPackingOrderAsync(int packingOrderId, CancellationToken ct = default)
+    {
+        var packingOrder = await db.PackingOrders
+            .Include(p => p.Items)
+            .Include(p => p.Installation)
+                .ThenInclude(i => i.Customer)
+            .FirstOrDefaultAsync(p => p.Id == packingOrderId, ct);
+
+        if (packingOrder == null)
+            return Result.Failure<PackingOrderDto>(QuoteErrors.PackingOrderNotFound(packingOrderId));
+
+        if (packingOrder.Status == PackingStatus.Delivered)
+            return Result.Success(MapPackingOrderToDto(packingOrder));
+
+        // Ensure dispatched before delivered (or dispatch automatically if ready)
+        if (packingOrder.Status == PackingStatus.Pending)
+        {
+            var dispatchResult = await DispatchPackingOrderAsync(packingOrderId, ct);
+            if (!dispatchResult.IsSuccess)
+                return dispatchResult;
+        }
+
+        var now = DateTime.UtcNow;
+        packingOrder.Status = PackingStatus.Delivered;
+        packingOrder.DeliveredAt = now;
+
+        // Auto-start warranty clock for hardware units
+        var existingWarranties = await db.Warranties
+            .Where(w => w.InstallationId == packingOrder.InstallationId)
+            .ToListAsync(ct);
+
+        foreach (var item in packingOrder.Items)
+        {
+            // Solar Panels: 20-year warranty (Scene 3 & 5)
+            if (item.Category == BOMCategory.SolarPanels)
+            {
+                var serial = !string.IsNullOrWhiteSpace(item.SerialNumber)
+                    ? item.SerialNumber.Trim()
+                    : $"PANEL-BATCH-INS{packingOrder.InstallationId}-{packingOrder.QuoteId}";
+
+                if (!existingWarranties.Any(w => w.SerialNumber == serial && w.Category == BOMCategory.SolarPanels))
+                {
+                    db.Warranties.Add(new Warranty
+                    {
+                        InstallationId = packingOrder.InstallationId,
+                        CustomerId = packingOrder.Installation.CustomerId,
+                        ItemName = item.ItemName,
+                        Category = item.Category,
+                        SerialNumber = serial,
+                        WarrantyYears = 20,
+                        StartDate = now,
+                        ExpiryDate = now.AddYears(20),
+                        Status = WarrantyStatus.Active,
+                        CreatedAt = now
+                    });
+                }
+            }
+            // Inverter, Battery, ChargeController: 2-year warranty (Scene 3 & 5)
+            else if (item.RequiresSerialNumber && !string.IsNullOrWhiteSpace(item.SerialNumber))
+            {
+                var serial = item.SerialNumber.Trim();
+                if (!existingWarranties.Any(w => w.SerialNumber == serial))
+                {
+                    db.Warranties.Add(new Warranty
+                    {
+                        InstallationId = packingOrder.InstallationId,
+                        CustomerId = packingOrder.Installation.CustomerId,
+                        ItemName = item.ItemName,
+                        Category = item.Category,
+                        SerialNumber = serial,
+                        WarrantyYears = 2,
+                        StartDate = now,
+                        ExpiryDate = now.AddYears(2),
+                        Status = WarrantyStatus.Active,
+                        CreatedAt = now
+                    });
+                }
+            }
+        }
+
+        await db.SaveChangesAsync(ct);
+        return Result.Success(MapPackingOrderToDto(packingOrder));
+    }
+
+    public async Task<Result<IReadOnlyList<WarrantyDto>>> GetWarrantiesByInstallationAsync(int installationId, CancellationToken ct = default)
+    {
+        var now = DateTime.UtcNow;
+        var warranties = await db.Warranties
+            .Include(w => w.Customer)
+            .Where(w => w.InstallationId == installationId)
+            .OrderBy(w => w.Category)
+            .ThenBy(w => w.ItemName)
+            .Select(w => new WarrantyDto(
+                w.Id,
+                w.InstallationId,
+                w.CustomerId,
+                w.Customer.FullName,
+                w.ItemName,
+                w.Category.ToString(),
+                w.SerialNumber,
+                w.WarrantyYears,
+                w.StartDate,
+                w.ExpiryDate,
+                w.Status.ToString(),
+                w.IsCovered(now),
+                w.RemainingDays(now)))
+            .ToListAsync(ct);
+
+        return Result.Success<IReadOnlyList<WarrantyDto>>(warranties);
+    }
+
+    public async Task<Result<WarrantyLookupResultDto>> LookupWarrantyAsync(string query, CancellationToken ct = default)
+    {
+        if (string.IsNullOrWhiteSpace(query))
+        {
+            return Result.Success(new WarrantyLookupResultDto(query, false, []));
+        }
+
+        var trimmed = query.Trim();
+        var lower = trimmed.ToLower();
+        var normalizedEmail = Emails.Normalize(trimmed);
+        var now = DateTime.UtcNow;
+
+        var warranties = await db.Warranties
+            .Include(w => w.Customer)
+            .Where(w =>
+                w.SerialNumber.ToLower() == lower ||
+                w.SerialNumber.ToLower().Contains(lower) ||
+                w.Customer.NormalizedEmail == normalizedEmail ||
+                w.Customer.PhoneNumber == trimmed ||
+                w.Customer.FirstName.ToLower().Contains(lower) ||
+                w.Customer.LastName.ToLower().Contains(lower))
+            .OrderByDescending(w => w.CreatedAt)
+            .Select(w => new WarrantyDto(
+                w.Id,
+                w.InstallationId,
+                w.CustomerId,
+                w.Customer.FullName,
+                w.ItemName,
+                w.Category.ToString(),
+                w.SerialNumber,
+                w.WarrantyYears,
+                w.StartDate,
+                w.ExpiryDate,
+                w.Status.ToString(),
+                w.IsCovered(now),
+                w.RemainingDays(now)))
+            .ToListAsync(ct);
+
+        return Result.Success(new WarrantyLookupResultDto(query, warranties.Count > 0, warranties));
+    }
+
     private static QuoteDto MapToDto(Quote q) => new(
         q.Id,
         q.InstallationId,
@@ -250,6 +441,7 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         p.CreatedAt,
         p.PackedAt,
         p.DispatchedAt,
+        p.DeliveredAt,
         p.Items.Select(i => new PackingOrderItemDto(
             i.Id,
             i.ItemName,

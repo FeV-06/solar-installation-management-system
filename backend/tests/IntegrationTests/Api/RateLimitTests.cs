@@ -290,6 +290,7 @@ public class RateLimitTests(PostgresFixture database) : ApiTestBase(database)
 
         limited.Should().BeEquivalentTo(
             $"{RateLimits.QuoteForm}: WebAPI.Controllers.LeadsController.Create",
+            $"{RateLimits.QuoteForm}: WebAPI.Controllers.CustomerPortalController.CreateQuoteRequest",
             $"{RateLimits.PasswordChecks}: WebAPI.Controllers.AuthController.Login",
             $"{RateLimits.PasswordChecks}: WebAPI.Controllers.AuthController.ChangePassword");
     }

@@ -12,4 +12,8 @@ public interface IQuoteService
     Task<Result<QuoteDto>> AcceptAndPayAsync(int quoteId, CustomerPayQuoteRequest request, int? customerId, CancellationToken ct = default);
     Task<Result<PackingOrderDto>> GetPackingOrderByInstallationAsync(int installationId, CancellationToken ct = default);
     Task<Result<PackingOrderDto>> UpdatePackingItemAsync(int packingOrderId, int itemId, bool isPacked, string? serialNumber, CancellationToken ct = default);
+    Task<Result<PackingOrderDto>> DispatchPackingOrderAsync(int packingOrderId, CancellationToken ct = default);
+    Task<Result<PackingOrderDto>> DeliverPackingOrderAsync(int packingOrderId, CancellationToken ct = default);
+    Task<Result<IReadOnlyList<WarrantyDto>>> GetWarrantiesByInstallationAsync(int installationId, CancellationToken ct = default);
+    Task<Result<WarrantyLookupResultDto>> LookupWarrantyAsync(string query, CancellationToken ct = default);
 }

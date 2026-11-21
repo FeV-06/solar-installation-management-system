@@ -56,11 +56,25 @@ type Proposal = {
   items: QuoteItem[];
 };
 
+type WarrantyItem = {
+  id: number;
+  itemName: string;
+  category: string;
+  serialNumber: string;
+  warrantyYears: number;
+  startDate: string;
+  expiryDate: string;
+  status: string;
+  isCovered: boolean;
+  remainingDays: number;
+};
+
 type PortalData = {
   activeQuote?: QuoteSummary;
   quotes: QuoteSummary[];
   installations: InstallationSummary[];
   proposal?: Proposal;
+  warranties?: WarrantyItem[];
 };
 
 const STAGES = [
@@ -485,6 +499,76 @@ export function CustomerPortalPage() {
             )}
           </div>
         </div>
+
+        {/* Active Warranties Card (Scene 3 & 5) */}
+        {data?.warranties && data.warranties.length > 0 && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1.75rem',
+            background: 'var(--bg-raised)',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'inset 0 0 0 1px var(--line)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Icon icon={ShieldCheck} size={22} color="#16a34a" />
+                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
+                  Equipment &amp; Warranty Protection
+                </h3>
+              </div>
+              <span className="a-label" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                Automated Digital Certificate
+              </span>
+            </div>
+
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+              Your serialized hardware is protected by SunPower Solutions. In the event of a breakdown or fault, our support desk tracks your unit directly by serial number.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {data.warranties.map((w) => (
+                <div
+                  key={w.id}
+                  style={{
+                    padding: '1.25rem',
+                    background: 'var(--bg)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'inset 0 0 0 1px var(--line)',
+                    borderLeft: w.isCovered ? '4px solid #16a34a' : '4px solid #dc2626',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '9999px',
+                        background: w.isCovered ? '#dcfce7' : '#fee2e2',
+                        color: w.isCovered ? '#166534' : '#991b1b',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {w.isCovered ? `${w.remainingDays} days left` : 'Expired'}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    <span>Serial: </span>
+                    <code style={{ fontWeight: 700, color: 'var(--fg)' }}>{w.serialNumber}</code>
+                  </div>
+
+                  <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>
+                    {w.warrantyYears}-Year Manufacturer Guarantee &bull; Valid through {new Date(w.expiryDate).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
 
         {/* All quotes history table */}
         {data?.quotes && data.quotes.length > 1 && (

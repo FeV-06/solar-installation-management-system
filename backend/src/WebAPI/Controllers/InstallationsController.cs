@@ -19,6 +19,7 @@ public class InstallationsController(IInstallationRepo installations) : ApiContr
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = Policies.Admin)]
     public async Task<ActionResult<InstallationResponse>> GetById(int id)
     {
         var installation = await installations.GetWithSiteAsync(id);

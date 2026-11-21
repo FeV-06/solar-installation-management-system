@@ -57,4 +57,25 @@ public record PackingOrderDto(
     DateTime CreatedAt,
     DateTime? PackedAt,
     DateTime? DispatchedAt,
+    DateTime? DeliveredAt,
     IReadOnlyList<PackingOrderItemDto> Items);
+
+public record WarrantyDto(
+    int Id,
+    int InstallationId,
+    int CustomerId,
+    string CustomerName,
+    string ItemName,
+    string Category,
+    string SerialNumber,
+    int WarrantyYears,
+    DateTime StartDate,
+    DateTime ExpiryDate,
+    string Status,
+    bool IsCovered,
+    int RemainingDays);
+
+public record WarrantyLookupResultDto(
+    string Query,
+    bool Found,
+    IReadOnlyList<WarrantyDto> Warranties);

@@ -62,4 +62,38 @@ public class QuotesController(IQuoteService service) : ApiControllerBase
         var result = await service.UpdatePackingItemAsync(packingOrderId, itemId, request.IsPacked, request.SerialNumber, ct);
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
+
+    [HttpPost("packing-orders/{packingOrderId:int}/dispatch")]
+    [Authorize(Policy = Policies.Admin)]
+    public async Task<ActionResult<PackingOrderDto>> DispatchPackingOrder(int packingOrderId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
+        var result = await service.DispatchPackingOrderAsync(packingOrderId, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
+    [HttpPost("packing-orders/{packingOrderId:int}/deliver")]
+    [Authorize(Policy = Policies.Admin)]
+    public async Task<ActionResult<PackingOrderDto>> DeliverPackingOrder(int packingOrderId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
+        var result = await service.DeliverPackingOrderAsync(packingOrderId, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
+    [HttpGet("installations/{installationId:int}/warranties")]
+    public async Task<ActionResult<IReadOnlyList<WarrantyDto>>> GetWarranties(int installationId, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
+        var result = await service.GetWarrantiesByInstallationAsync(installationId, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
+    [HttpGet("warranties/lookup")]
+    public async Task<ActionResult<WarrantyLookupResultDto>> LookupWarranty([FromQuery] string query, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
+        var result = await service.LookupWarrantyAsync(query, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
 }
