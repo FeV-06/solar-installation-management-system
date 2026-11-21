@@ -1,6 +1,6 @@
 /* Failed notifications, from the approved design: the table, its rows' details, and the cards below 768 px. */
 
-.page-intro { color: var(--muted); font-size: .875rem; max-width: 70ch; margin: -.6rem 0 1.25rem; }
+.page-intro { color: var(--muted); font-size: .9375rem; line-height: 1.6; max-width: 68ch; margin: 0 0 2rem; }
 
 /* The list measures its own width, so the table can fit the space the frame leaves it */
 .fail-list { container-type: inline-size; }

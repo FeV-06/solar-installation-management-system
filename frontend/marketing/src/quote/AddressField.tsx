@@ -16,7 +16,7 @@ type Note = 'none' | 'hint' | 'searching' | 'nothing';
 
 const MIN_LENGTH = 3;
 const DEBOUNCE_MS = 300;   // a pause between words, not between letters: each lookup counts against the daily limit
-const EXAMPLE = '12 MG Road';
+const EXAMPLE = '12 MG Road, Indiranagar';
 
 /** The part of a suggestion that matches what was typed, in bold */
 function Marked({ text, query }: { text: string; query: string }) {

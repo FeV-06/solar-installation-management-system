@@ -222,7 +222,7 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
               <TextField name="lastName" label="Last name" autoComplete="family-name" value={values.lastName} error={err('lastName')} onChange={change} />
             </div>
             <TextField name="email" label="Verified email" type="email" autoComplete="email" inputMode="email" help="This request belongs to your signed-in account." value={values.email} error={err('email')} onChange={change} readOnly />
-            <TextField name="phone" label="Phone" type="tel" autoComplete="tel" inputMode="tel" value={values.phone} error={err('phone')} onChange={change} />
+            <TextField name="phone" label="Phone" type="tel" autoComplete="tel" inputMode="tel" placeholder="+91 98765 43210" value={values.phone} error={err('phone')} onChange={change} />
           </div>
 
           <div className="form-step" hidden={step !== 1}>
@@ -230,7 +230,7 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <AddressField value={values.street} error={err('street')} onChange={street => change('street', street)} onPick={pickAddress} />
             <div className="two">
               <TextField name="city" label="City" autoComplete="address-level2" value={values.city} error={err('city')} onChange={change} />
-              <TextField name="zip" label="PIN code" autoComplete="postal-code" inputMode="numeric" value={values.zip} error={err('zip')} onChange={change} />
+              <TextField name="zip" label="PIN code" autoComplete="postal-code" inputMode="numeric" placeholder="e.g. 560001" value={values.zip} error={err('zip')} onChange={change} />
             </div>
             <div className={`field${err('state') ? ' has-error' : ''}`}>
               <label className="field-label" htmlFor="q-state">State or union territory</label>
@@ -260,10 +260,11 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <Choice name="bill" legend="Your usual monthly electricity bill" className="c4" value={values.bill} error={err('bill')} onChange={change}
               help="A rough idea is enough. It tells us how big a system to look at."
               options={[
-                { value: 'in-under1500', label: 'Under ₹1,500' },
-                { value: 'in-1500-3000', label: '₹1,500–₹3,000' },
-                { value: 'in-3000-5000', label: '₹3,000–₹5,000' },
-                { value: 'in-5000plus', label: '₹5,000 or more' },
+              options={[
+                { value: 'under2000', label: 'Under ₹2,000' },
+                { value: '2000-5000', label: '₹2,000 to ₹5,000' },
+                { value: '5000-10000', label: '₹5,000 to ₹10,000' },
+                { value: '10000plus', label: 'Over ₹10,000' },
               ]} />
             <Choice name="time" legend="When should we contact you?" className="c3" value={values.time} error={err('time')} onChange={change}
               options={[

@@ -1,5 +1,8 @@
 // The request the form sends to POST /api/customer-portal/quote-requests (CreateLeadRequest).
+import { INDIAN_STATES } from '../content/states';
 import type { PickedAddress, QuoteValues } from './types';
+
+const INDIAN_STATE_CODES = new Set(INDIAN_STATES.map(([code]) => code));
 
 export type CreateLeadRequest = {
   firstName: string;
@@ -10,7 +13,7 @@ export type CreateLeadRequest = {
   propertyCity: string;
   propertyState: string;
   propertyZipCode: string;
-  propertyCountry: 'IN';
+  propertyCountry: 'IN' | 'US';
   /** Only when the address was picked from the suggestions and not changed since; never guessed */
   propertyLatitude: number | null;
   propertyLongitude: number | null;
@@ -44,7 +47,7 @@ export function buildLeadRequest(values: QuoteValues, picked: PickedAddress | nu
     propertyCity: values.city.trim(),
     propertyState: values.state,
     propertyZipCode: values.zip.trim(),
-    propertyCountry: 'IN',
+    propertyCountry: INDIAN_STATE_CODES.has(values.state) ? 'IN' : 'US',
     propertyLatitude: located ? coordinate(picked.latitude) : null,
     propertyLongitude: located ? coordinate(picked.longitude) : null,
     propertyType: values.type,

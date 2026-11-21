@@ -19,20 +19,19 @@ public static class UsTimeZones
     public const string Aleutian = "America/Adak";
     /// <summary>Hawaii–Aleutian time without daylight saving.</summary>
     public const string Hawaii = "Pacific/Honolulu";
-
+    /// <summary>India Standard Time (UTC+05:30).</summary>
     public const string India = "Asia/Kolkata";
 
     /// <summary>Every zone, east to west, with the name the staff app shows.</summary>
     public static readonly IReadOnlyList<(string Id, string Name)> All =
     [
-        (India, "India (IST)"),
+        (India, "India Standard Time (IST)"),
         (Eastern, "Eastern"), (Central, "Central"), (Mountain, "Mountain"), (Arizona, "Arizona"), (Pacific, "Pacific"),
         (Alaska, "Alaska"), (Aleutian, "Aleutian"), (Hawaii, "Hawaii")
     ];
 
     private static readonly IReadOnlyDictionary<string, string> ByState = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-
         ["CT"] = Eastern, ["DE"] = Eastern, ["DC"] = Eastern, ["FL"] = Eastern, ["GA"] = Eastern, ["IN"] = Eastern,
         ["KY"] = Eastern, ["ME"] = Eastern, ["MD"] = Eastern, ["MA"] = Eastern, ["MI"] = Eastern, ["NH"] = Eastern,
         ["NJ"] = Eastern, ["NY"] = Eastern, ["NC"] = Eastern, ["OH"] = Eastern, ["PA"] = Eastern, ["RI"] = Eastern,
@@ -55,12 +54,20 @@ public static class UsTimeZones
         ?? throw new ArgumentException($"'{stateCode}' isn't the code of a US state or DC.", nameof(stateCode));
 
     /// <summary>The zone proposed for this state, with its name; null if it isn't a state's code.</summary>
-    public static (string Id, string Name)? ProposalFor(string stateCode) =>
-        ByState.TryGetValue(stateCode, out var zone) ? All.Single(z => z.Id == zone) : null;
+    public static (string Id, string Name)? ProposalFor(string stateCode)
+    {
+        if (ByState.TryGetValue(stateCode, out var zone))
+            return All.Single(z => z.Id == zone);
+
+        if (IndiaStates.IsCode(stateCode))
+            return (India, "India Standard Time (IST)");
+
+        return null;
+    }
 
     public static (string Id, string Name)? ProposalFor(string country, string stateCode) =>
         country.Equals("IN", StringComparison.OrdinalIgnoreCase) && IndiaStates.IsCode(stateCode)
-            ? (India, "India (IST)")
+            ? (India, "India Standard Time (IST)")
             : country.Equals("US", StringComparison.OrdinalIgnoreCase) ? ProposalFor(stateCode) : null;
 
     public static string ProposedFor(string country, string stateCode) =>
