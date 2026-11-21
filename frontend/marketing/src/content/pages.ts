@@ -14,8 +14,8 @@ export const SITE_NAME = 'Sol Energy';
 export const PAGES: PageMeta[] = [
   {
     path: '/',
-    title: 'Sol Energy — Solar for homes and small businesses across the US',
-    description: 'Solar systems for homes and small businesses across the United States, installed in six steps you see before they start. Get a free quote.',
+    title: 'Sol Energy — Solar for homes and small businesses across India',
+    description: 'Solar systems for homes and small businesses across India, installed in six steps you see before they start. Get a free quote.',
   },
   {
     path: '/how-it-works',
@@ -30,7 +30,7 @@ export const PAGES: PageMeta[] = [
   {
     path: '/about',
     title: 'About — Sol Energy',
-    description: 'A solar installer for the whole United States, based in Austin, Texas: how we work, and how to reach us.',
+    description: 'A solar installer for India, based in New Delhi: how we work, and how to reach us.',
   },
   {
     path: '/quote',
