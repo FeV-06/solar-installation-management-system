@@ -344,6 +344,7 @@ export function TicketsPage() {
               <div className="control">
                 <select
                   id="review-damage-type"
+                  className="review-cause-select"
                   value={damageType}
                   onChange={(e) => {
                     const val = e.target.value;

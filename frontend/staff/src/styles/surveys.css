@@ -1,4 +1,5 @@
 /* Survey screens extend the staff app's existing tokens, cards, tables and fields. */
+.survey-visit-head { display: flex; align-items: center; justify-content: space-between; flex-wrap: wrap; gap: .5rem 1rem; }
 .survey-panel { display: grid; gap: .85rem; margin-top: 1.5rem; padding: 1.25rem 1.4rem; background: var(--bg-raised); border-radius: var(--radius-lg); box-shadow: inset 0 0 0 1px var(--line); }
 .survey-panel > p, .survey-empty { color: var(--muted); font-size: .875rem; }
 .survey-form { display: grid; gap: 1rem; }

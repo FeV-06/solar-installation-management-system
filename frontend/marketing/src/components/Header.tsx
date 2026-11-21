@@ -47,7 +47,11 @@ export function Header({ logoRef, mainRef }: Props) {
           <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
             {customer ? (
               <>
-                <Link className="btn btn-primary btn-sm" to="/quote">Get a quote</Link>
+                {pathname === '/portal' ? (
+                  <button className="btn btn-primary btn-sm" type="button" onClick={() => void logout()}>Sign out</button>
+                ) : (
+                  <Link className="btn btn-primary btn-sm" to="/quote">Get a quote</Link>
+                )}
                 <Link className="btn btn-quiet btn-sm" to="/portal" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
                   <Icon icon={User} />
                   <span>Dashboard</span>
@@ -73,11 +77,13 @@ export function Header({ logoRef, mainRef }: Props) {
           {NAV.map(([to, name]) => <NavLink key={to} to={to} end>{name}</NavLink>)}
           {customer ? (
             <>
-              <NavLink to="/quote" end>Get a quote</NavLink>
+              {pathname === '/portal' ? (
+                <button type="button" className="btn btn-quiet" style={{ textAlign: 'left', padding: '12px 0' }} onClick={() => void logout()}>Sign out</button>
+              ) : (
+                <NavLink to="/quote" end>Get a quote</NavLink>
+              )}
               <NavLink to="/portal" end>Dashboard</NavLink>
-              <button type="button" className="btn btn-quiet" style={{ textAlign: 'left', padding: '12px 0' }} onClick={() => logout()}>
-                Sign Out
-              </button>
+              {pathname !== '/portal' && <button type="button" className="btn btn-quiet" style={{ textAlign: 'left', padding: '12px 0' }} onClick={() => void logout()}>Sign out</button>}
             </>
           ) : (
             <NavLink to="/signin" end>Sign In</NavLink>

@@ -36,12 +36,12 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
     </div>
     <p className="page-intro">{survey.customerName} · {survey.address.street}, {cityLine(survey.address)}</p>
     <div className="rec-grid">
-      <div className="rec-card"><h2 className="a-heading">Visit</h2><dl className="kv">
+      <div className="rec-card"><div className="survey-visit-head"><h2 className="a-heading">Visit</h2>{isAdmin && <Link className="link" to={`/installations/${survey.installationId}`}>Open installation</Link>}</div><dl className="kv">
         <dt>Appointment</dt><dd>{formatMoment(survey.scheduledAt)}</dd><dt>Technician</dt><dd>{survey.technicianName}</dd>
         <dt>Customer</dt><dd>{isAdmin ? <Link to={`/customers/${survey.customerId}`}>{survey.customerName}</Link> : survey.customerName}</dd>
         <dt>Phone</dt><dd><a href={`tel:${survey.customerPhone.replace(/[^\d+]/g, '')}`}>{survey.customerPhone}</a></dd>
         <dt>Site</dt><dd>{survey.address.street}<br />{cityLine(survey.address)}</dd>
-      </dl>{isAdmin && <Link className="link" to={`/installations/${survey.installationId}`}>Open installation</Link>}</div>
+      </dl></div>
       <div className="rec-card"><h2 className="a-heading">Progress</h2><dl className="kv">
         <dt>Scheduled</dt><dd>{formatMoment(survey.createdAt)}</dd>
         <dt>Report</dt><dd>{survey.submittedAt ? `Submitted ${formatMoment(survey.submittedAt)}` : 'Not submitted yet'}</dd>

@@ -150,7 +150,7 @@ function getStageIndex(status?: string, installationStatus?: string): number {
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export function CustomerPortalPage() {
-  const { customer, loading: authLoading, error: authError, refresh, logout } = useCustomerAuth();
+  const { customer, loading: authLoading, error: authError, refresh } = useCustomerAuth();
 
   const [data, setData] = useState<PortalData | null>(null);
   const [loading, setLoading] = useState(true);
@@ -383,9 +383,6 @@ export function CustomerPortalPage() {
             >
               <Icon icon={Plus} size={16} />
               <span>Request New Solar System</span>
-            </button>
-            <button type="button" className="btn btn-quiet btn-sm" onClick={() => void logout().catch(() => setError('Could not sign out. Try again.'))}>
-              <span>Sign Out</span>
             </button>
           </div>
         </div>
