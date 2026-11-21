@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { CheckCircle2, CircleAlert, Clock, Info, LoaderCircle, Sun } from 'lucide-react';
+import { CheckCircle2, CircleAlert, Clock, Info, LoaderCircle } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuth';
 
@@ -111,10 +111,6 @@ export function CustomerPortalPage() {
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-            <Link to="/quote" className="btn btn-primary btn-sm">
-              <Icon icon={Sun} />
-              <span>New Quote</span>
-            </Link>
             <button type="button" className="btn btn-quiet btn-sm" onClick={() => logout()}>
               <span>Sign Out</span>
             </button>
