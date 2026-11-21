@@ -10,10 +10,12 @@ public static class CustomerEmails
     private const string Sans = "Arial,Helvetica,sans-serif";
     private const string Mono = "ui-monospace,Menlo,Consolas,'Courier New',monospace";
 
-    public static RenderedEmail OtpVerification(string otp, string recipientEmail, int expiryMinutes = 5)
+    public static RenderedEmail OtpVerification(string otp, string recipientEmail, int expiryMinutes = 5, string? siteUrl = null)
     {
         var subject = "Your Sol verification code";
         var preheader = $"Use this code to sign in to your Sol customer account. Valid for {expiryMinutes} minutes.";
+        var resolvedUrl = !string.IsNullOrWhiteSpace(siteUrl) ? siteUrl.TrimEnd('/') : "https://sol.fev06.xyz";
+        var portalLink = $"{resolvedUrl}/signin";
 
         var html = $@"<!DOCTYPE html>
 <html lang=""en"">
@@ -47,6 +49,10 @@ public static class CustomerEmails
                 <span style=""font-family:{Mono};font-size:36px;font-weight:bold;letter-spacing:8px;color:{SunDeep};"">{WebUtility.HtmlEncode(otp)}</span>
               </div>
 
+              <div style=""text-align:center;margin:0 0 24px 0;"">
+                <a href=""{WebUtility.HtmlEncode(portalLink)}"" style=""display:inline-block;padding:12px 24px;background-color:{Sun};color:{Night};font-family:{Sans};font-size:14px;font-weight:bold;text-decoration:none;border-radius:8px;"">Open Customer Portal</a>
+              </div>
+
               <p style=""font-size:13px;line-height:20px;color:{Faint};margin:0 0 16px 0;"">
                 This code will expire in <strong>{expiryMinutes} minutes</strong>. If you did not request this sign-in, you can safely ignore this email.
               </p>
@@ -68,7 +74,7 @@ public static class CustomerEmails
 </body>
 </html>";
 
-        var text = $"SOL ENERGY - VERIFICATION CODE\n\nYour code: {otp}\n\nUse this code to sign in to your Sol customer portal. This code expires in {expiryMinutes} minutes.\n\nIf you did not request this code, you can safely ignore this email.\n\nSent to: {recipientEmail}";
+        var text = $"SOL ENERGY - VERIFICATION CODE\n\nYour code: {otp}\n\nUse this code to sign in to your Sol customer portal: {portalLink}\n\nThis code expires in {expiryMinutes} minutes.\n\nIf you did not request this code, you can safely ignore this email.\n\nSent to: {recipientEmail}";
 
         return new RenderedEmail(subject, preheader, html, text);
     }

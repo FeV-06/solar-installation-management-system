@@ -16,6 +16,16 @@ namespace Infrastructure.Services;
 /// </summary>
 public class EmailService(IEmailSender sender, IOptions<EmailOptions> options) : IEmailService
 {
+    private static readonly System.Collections.Concurrent.ConcurrentDictionary<int, string> LeadSiteUrls = new();
+
+    public static void RecordLeadSiteUrl(int leadId, string? url)
+    {
+        if (!string.IsNullOrWhiteSpace(url) && Uri.TryCreate(url, UriKind.Absolute, out var uri))
+        {
+            LeadSiteUrls[leadId] = uri.GetLeftPart(UriPartial.Authority);
+        }
+    }
+
     private readonly EmailOptions _settings = options.Value;
 
     public EmailAddress RecipientOf(OutboxMessageType type, Lead lead) => type switch
@@ -28,7 +38,8 @@ public class EmailService(IEmailSender sender, IOptions<EmailOptions> options) :
     public async Task SendLeadWelcomeAsync(Lead lead, Guid? outboxMessageId = null,
         CancellationToken cancellationToken = default)
     {
-        var email = LeadEmails.Welcome(lead, _settings.SiteUrl);
+        var siteUrl = LeadSiteUrls.TryRemove(lead.Id, out var captured) ? captured : _settings.SiteUrl;
+        var email = LeadEmails.Welcome(lead, siteUrl);
         var to = RecipientOf(OutboxMessageType.LeadWelcome, lead);
         await sender.SendAsync(new EmailMessage($"LeadWelcome:{lead.Id}", to.Address, to.Name, email.Subject,
             email.Html, email.Text) { OutboxMessageId = outboxMessageId, InlineImages = [Wordmark.Image] },

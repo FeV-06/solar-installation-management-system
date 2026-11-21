@@ -42,8 +42,10 @@ public sealed class SameOriginCheck(RequestDelegate next, IProblemDetailsService
         !(HttpMethods.IsGet(method) || HttpMethods.IsHead(method) || HttpMethods.IsOptions(method) ||
           HttpMethods.IsTrace(method));
 
-    // The page's host and port against the API's own: the staff app and the API are served on one site (ADR 7).
+    // The page's host and port against the API's own: the staff app and the API are served on one site (ADR 7),
+    // and allowed frontend hosts such as sol.fev06.xyz.
     private static bool IsSameOrigin(string origin, HttpRequest request) =>
         Uri.TryCreate(origin, UriKind.Absolute, out var uri) &&
-        string.Equals(uri.Authority, request.Host.Value, StringComparison.OrdinalIgnoreCase);
+        (string.Equals(uri.Authority, request.Host.Value, StringComparison.OrdinalIgnoreCase) ||
+         string.Equals(uri.Host, "sol.fev06.xyz", StringComparison.OrdinalIgnoreCase));
 }

@@ -49,6 +49,13 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     public async Task<ActionResult<LeadCreatedResponse>> Create([FromBody] CreateLeadRequest request)
     {
         var created = await service.CreateAsync(request);
+        var origin = Request.Headers.Origin.ToString();
+        var siteUrl = !string.IsNullOrWhiteSpace(origin) ? origin : Request.Headers.Referer.ToString();
+        if (!string.IsNullOrWhiteSpace(siteUrl))
+        {
+            Infrastructure.Services.EmailService.RecordLeadSiteUrl(created.Id, siteUrl);
+        }
+
         var body = new LeadCreatedResponse(created.Id);
         return created.IsNew ? CreatedAtAction(nameof(GetById), new { id = created.Id }, body) : Ok(body);
     }

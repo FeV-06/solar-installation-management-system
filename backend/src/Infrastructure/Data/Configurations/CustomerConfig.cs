@@ -46,6 +46,10 @@ public class CustomerConfig : IEntityTypeConfiguration<Customer>
             .HasMaxLength(20)
             .IsRequired();
 
+        builder.Property(c => c.PasswordHash)
+            .HasColumnName("password_hash")
+            .HasMaxLength(255);
+
         builder.Property(c => c.Status)
             .HasColumnName("status")
             .HasConversion<string>() // Store enum as string in database

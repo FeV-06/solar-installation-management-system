@@ -1,5 +1,5 @@
-using System.Globalization;
 using System.ComponentModel.DataAnnotations;
+using System.Globalization;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Common.Models;
@@ -24,12 +24,13 @@ namespace Infrastructure.Services;
 public class CustomerAuthService(
     AppDbContext db,
     IEmailSender emailSender,
+    IPasswordHasher passwordHasher,
     IOptions<JwtOptions> jwtOptions,
     ILogger<CustomerAuthService> logger) : ICustomerAuthService
 {
     private static readonly JsonWebTokenHandler TokenHandler = new();
 
-    public async Task<Result<bool>> RequestOtpAsync(RequestOtpRequest request, string? clientIp, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> RequestOtpAsync(RequestOtpRequest request, string? clientIp, string? siteUrl = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Trim().Length > 255 ||
             !new EmailAddressAttribute().IsValid(request.Email.Trim()))
@@ -74,7 +75,7 @@ public class CustomerAuthService(
         }
 
         // Send Email via configured EmailSender
-        var rendered = CustomerEmails.OtpVerification(otpString, request.Email.Trim(), 5);
+        var rendered = CustomerEmails.OtpVerification(otpString, request.Email.Trim(), 5, siteUrl);
         var emailMessage = new EmailMessage(
             $"CustomerOtp:{otpRecord.Id}",
             request.Email.Trim(),
@@ -139,7 +140,6 @@ public class CustomerAuthService(
         // OTP verified successfully
         otpRecord.ConsumedAtUtc = now;
 
-        // Find or create customer
         var existing = await db.Customers.AsNoTracking()
             .FirstOrDefaultAsync(c => c.NormalizedEmail == normalizedEmail, cancellationToken);
         if (existing is { IsActive: false })
@@ -170,6 +170,145 @@ public class CustomerAuthService(
         customer.LastLoginAt = now;
         await db.SaveChangesAsync(cancellationToken);
         await transaction.CommitAsync(cancellationToken);
+
+        var (token, expiresAt) = IssueCustomerToken(customer);
+        var response = new CustomerSessionResponse(
+            customer.Id,
+            customer.Email,
+            customer.FirstName,
+            customer.LastName,
+            customer.FullName);
+
+        return Result.Success(new CustomerSignedIn(response, token, expiresAt));
+    }
+
+    public async Task<Result<VerifySignUpOtpResponse>> VerifySignUpOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Trim().Length > 255 ||
+            string.IsNullOrWhiteSpace(request.Code) || request.Code.Length != 6 || request.Code.Any(c => c is < '0' or > '9'))
+            return Result.Failure<VerifySignUpOtpResponse>(CustomerAuthErrors.InvalidCode);
+
+        var normalizedEmail = Emails.Normalize(request.Email);
+        var now = DateTime.UtcNow;
+
+        var otpRecord = await db.CustomerOtps
+            .Where(o => o.NormalizedEmail == normalizedEmail && o.ConsumedAtUtc == null)
+            .OrderByDescending(o => o.CreatedAtUtc)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        if (otpRecord == null)
+            return Result.Failure<VerifySignUpOtpResponse>(CustomerAuthErrors.InvalidCode);
+
+        if (otpRecord.IsExpired(now))
+            return Result.Failure<VerifySignUpOtpResponse>(CustomerAuthErrors.CodeExpired);
+
+        if (otpRecord.IsLockedOut)
+            return Result.Failure<VerifySignUpOtpResponse>(CustomerAuthErrors.LockedOut);
+
+        var computedHash = HashOtp(request.Code.Trim(), otpRecord.Salt);
+
+        // Constant-time check
+        if (!CryptographicOperations.FixedTimeEquals(
+            Encoding.UTF8.GetBytes(computedHash),
+            Encoding.UTF8.GetBytes(otpRecord.OtpHash)))
+        {
+            otpRecord.FailedAttempts++;
+            await db.SaveChangesAsync(cancellationToken);
+
+            return Result.Failure<VerifySignUpOtpResponse>(
+                otpRecord.IsLockedOut ? CustomerAuthErrors.LockedOut : CustomerAuthErrors.InvalidCode);
+        }
+
+        // OTP verified successfully
+        otpRecord.ConsumedAtUtc = now;
+        await db.SaveChangesAsync(cancellationToken);
+
+        // Issue a tamper-proof verification ticket valid for 15 minutes
+        var ticket = GenerateTicket(normalizedEmail);
+        return Result.Success(new VerifySignUpOtpResponse(ticket));
+    }
+
+    public async Task<Result<CustomerSignedIn>> CompleteSignUpAsync(CompleteSignUpRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || !ValidateTicket(request.Email, request.VerificationTicket))
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidTicket);
+
+        if (string.IsNullOrWhiteSpace(request.Password) || request.Password.Length < 8)
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.PasswordTooShort);
+
+        var normalizedEmail = Emails.Normalize(request.Email);
+        var now = DateTime.UtcNow;
+
+        var customer = await db.Customers
+            .FirstOrDefaultAsync(c => c.NormalizedEmail == normalizedEmail, cancellationToken);
+
+        var passwordHash = passwordHasher.Hash(request.Password);
+
+        if (customer == null)
+        {
+            customer = new Customer
+            {
+                Email = request.Email.Trim(),
+                NormalizedEmail = normalizedEmail,
+                FirstName = !string.IsNullOrWhiteSpace(request.FirstName) ? request.FirstName.Trim() : "Customer",
+                LastName = !string.IsNullOrWhiteSpace(request.LastName) ? request.LastName.Trim() : "",
+                PhoneNumber = "",
+                PasswordHash = passwordHash,
+                Status = CustomerStatus.Prospect,
+                RegistrationDate = now,
+                IsActive = true,
+                LastLoginAt = now
+            };
+            db.Customers.Add(customer);
+        }
+        else
+        {
+            if (!customer.IsActive)
+                return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.Deactivated);
+
+            customer.PasswordHash = passwordHash;
+            if (!string.IsNullOrWhiteSpace(request.FirstName)) customer.FirstName = request.FirstName.Trim();
+            if (!string.IsNullOrWhiteSpace(request.LastName)) customer.LastName = request.LastName.Trim();
+            customer.LastLoginAt = now;
+        }
+
+        await db.SaveChangesAsync(cancellationToken);
+
+        var (token, expiresAt) = IssueCustomerToken(customer);
+        var response = new CustomerSessionResponse(
+            customer.Id,
+            customer.Email,
+            customer.FirstName,
+            customer.LastName,
+            customer.FullName);
+
+        return Result.Success(new CustomerSignedIn(response, token, expiresAt));
+    }
+
+    public async Task<Result<CustomerSignedIn>> LoginAsync(CustomerLoginRequest request, CancellationToken cancellationToken = default)
+    {
+        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Password))
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCredentials);
+
+        var normalizedEmail = Emails.Normalize(request.Email);
+        var customer = await db.Customers
+            .FirstOrDefaultAsync(c => c.NormalizedEmail == normalizedEmail, cancellationToken);
+
+        if (customer == null || string.IsNullOrEmpty(customer.PasswordHash))
+        {
+            passwordHasher.VerifyNothing(request.Password);
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCredentials);
+        }
+
+        var check = passwordHasher.Verify(customer.PasswordHash, request.Password);
+        if (check == PasswordCheck.Failed || !customer.IsActive)
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCredentials);
+
+        if (check == PasswordCheck.SucceededRehashNeeded)
+            customer.PasswordHash = passwordHasher.Hash(request.Password);
+
+        customer.LastLoginAt = DateTime.UtcNow;
+        await db.SaveChangesAsync(cancellationToken);
 
         var (token, expiresAt) = IssueCustomerToken(customer);
         var response = new CustomerSessionResponse(
@@ -224,10 +363,51 @@ public class CustomerAuthService(
         return (token, expiresAt);
     }
 
-    private string HashOtp(string otp, string salt)
+    private string GenerateTicket(string normalizedEmail)
     {
+        var timestamp = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+        var payload = $"{normalizedEmail}:{timestamp}";
+        using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret));
+        var signature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)));
+        return Convert.ToBase64String(Encoding.UTF8.GetBytes($"{payload}:{signature}"));
+    }
+
+    private bool ValidateTicket(string email, string ticketBase64)
+    {
+        try
+        {
+            var raw = Encoding.UTF8.GetString(Convert.FromBase64String(ticketBase64));
+            var parts = raw.Split(':');
+            if (parts.Length != 3) return false;
+
+            var ticketEmail = parts[0];
+            var timestamp = long.Parse(parts[1], CultureInfo.InvariantCulture);
+            var signature = parts[2];
+
+            if (ticketEmail != Emails.Normalize(email)) return false;
+
+            var now = DateTimeOffset.UtcNow.ToUnixTimeSeconds();
+            if (now - timestamp > 900) return false; // 15 minutes validity
+
+            var payload = $"{ticketEmail}:{timestamp}";
+            using var hmac = new HMACSHA256(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret));
+            var expectedSignature = Convert.ToBase64String(hmac.ComputeHash(Encoding.UTF8.GetBytes(payload)));
+
+            return CryptographicOperations.FixedTimeEquals(
+                Encoding.UTF8.GetBytes(signature),
+                Encoding.UTF8.GetBytes(expectedSignature));
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private static string HashOtp(string otp, string salt)
+    {
+        using var sha = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(otp + ":" + salt);
-        var hash = HMACSHA256.HashData(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret), bytes);
+        var hash = sha.ComputeHash(bytes);
         return Convert.ToBase64String(hash);
     }
 }
