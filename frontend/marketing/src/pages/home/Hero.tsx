@@ -176,13 +176,13 @@ export function Hero() {
       </svg>
       <div className="hero-grid wrap">
         <div>
-          <p className="label eyebrow">Sol Energy — Solar for homes and small businesses across the US</p>
+          <p className="label eyebrow">Sol Energy — Solar for homes and small businesses across India</p>
           <h1 className="display rise" ref={titleRef}>
             <span className="ln"><span>Solar for</span></span>
             <span className="ln"><span>your <em className="serif" ref={wordRef}>home</em><i className="dot" /></span></span>
           </h1>
           <div className="hero-copy">
-            <p>We design and install solar systems across the United States. From the site survey to the day your system is switched on, you see every step before it starts.</p>
+            <p>We design and install solar systems across India. From the site survey to the day your system is switched on, you see every step before it starts.</p>
             <div className="btn-row stretch">
               <Link className="btn btn-primary btn-lg" to="/quote">Get a free quote</Link>
               <Link className="btn btn-secondary btn-lg" to="/how-it-works">See how it works</Link>

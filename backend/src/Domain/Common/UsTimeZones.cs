@@ -20,15 +20,25 @@ public static class UsTimeZones
     /// <summary>Hawaii–Aleutian time without daylight saving.</summary>
     public const string Hawaii = "Pacific/Honolulu";
 
+    public const string India = "Asia/Kolkata";
+
     /// <summary>Every zone, east to west, with the name the staff app shows.</summary>
     public static readonly IReadOnlyList<(string Id, string Name)> All =
     [
+        (India, "India (IST)"),
         (Eastern, "Eastern"), (Central, "Central"), (Mountain, "Mountain"), (Arizona, "Arizona"), (Pacific, "Pacific"),
         (Alaska, "Alaska"), (Aleutian, "Aleutian"), (Hawaii, "Hawaii")
     ];
 
     private static readonly IReadOnlyDictionary<string, string> ByState = new Dictionary<string, string>(StringComparer.Ordinal)
     {
+        // India (Asia/Kolkata)
+        ["AN"] = India, ["AP"] = India, ["AR"] = India, ["AS"] = India, ["BR"] = India, ["CH"] = India,
+        ["CG"] = India, ["DN"] = India, ["DL"] = India, ["GA"] = India, ["GJ"] = India, ["HR"] = India,
+        ["HP"] = India, ["JK"] = India, ["JH"] = India, ["KA"] = India, ["KL"] = India, ["LA"] = India,
+        ["LD"] = India, ["MP"] = India, ["MH"] = India, ["MN"] = India, ["ML"] = India, ["MZ"] = India,
+        ["NL"] = India, ["OD"] = India, ["PY"] = India, ["PB"] = India, ["RJ"] = India, ["SK"] = India,
+        ["TN"] = India, ["TS"] = India, ["TR"] = India, ["UP"] = India, ["UK"] = India, ["WB"] = India,
         ["CT"] = Eastern, ["DE"] = Eastern, ["DC"] = Eastern, ["FL"] = Eastern, ["GA"] = Eastern, ["IN"] = Eastern,
         ["KY"] = Eastern, ["ME"] = Eastern, ["MD"] = Eastern, ["MA"] = Eastern, ["MI"] = Eastern, ["NH"] = Eastern,
         ["NJ"] = Eastern, ["NY"] = Eastern, ["NC"] = Eastern, ["OH"] = Eastern, ["PA"] = Eastern, ["RI"] = Eastern,

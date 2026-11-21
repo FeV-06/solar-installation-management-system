@@ -13,7 +13,7 @@ export const QUESTIONS: Question[] = [
   {
     group: 'Before you ask',
     question: 'Who can get solar with you?',
-    answer: 'Homes and small businesses anywhere in the United States. For a house or an apartment, the owner has to ask; a business can ask whether it owns or leases its premises.',
+    answer: 'Homes and small businesses anywhere in India. For a house or an apartment, the owner has to ask; a business can ask whether it owns or leases its premises.',
     top: true,
   },
   {

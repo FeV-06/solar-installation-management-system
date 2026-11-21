@@ -8,7 +8,7 @@ export function Footer() {
         <div className="f-grid">
           <div className="f-brand">
             <Link className="logo" to="/" style={{ fontSize: '1.3rem' }}>Sol<i className="dot" /></Link>
-            <p>Solar for homes and small businesses across the United States. Solar, step by step.</p>
+            <p>Solar for homes and small businesses across India. Solar, step by step.</p>
           </div>
           <div>
             <h3>The site</h3>
