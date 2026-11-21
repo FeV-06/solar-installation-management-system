@@ -36,6 +36,8 @@ bld/
 
 # .env
 .env
+whatsapp-bot/.env
+whatsapp-bot/runtime/
 
 # Visual Studio 2015/2017 cache/options directory
 .vs/

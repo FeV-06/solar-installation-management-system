@@ -8,6 +8,7 @@ Sol is a solar-installation management project with a public enquiry site, a sep
 - `frontend/staff/` — staff workspace (React, TypeScript and Vite).
 - `frontend/brand/` — shared styling, fonts and brand assets.
 - `backend/` — .NET 10 API, EF Core, application/domain code and tests.
+- `whatsapp-bot/` — separate Baileys Node.js service for WhatsApp quote intake and customer handoff.
 - `docker-compose.yml` — local PostgreSQL 18 development database.
 - `perf/` — imported performance scripts and recorded reference results; they do not establish the performance of this project's future changes.
 
@@ -78,3 +79,16 @@ pnpm dev
 - Test actual cross-frontend → API → PostgreSQL workflows with synthetic data. Passing a build or unit test does not mean every product workflow is implemented.
 
 The project is under active development. Follow existing permissions and privacy boundaries; avoid exposing development endpoints publicly. Communicate shared API changes to frontend and testing contributors before integrating them.
+
+### WhatsApp bot (local pilot)
+
+The Baileys bot is a separate service. Start PostgreSQL, the backend API, and marketing site using the steps above, then open a fourth PowerShell terminal:
+
+```powershell
+cd whatsapp-bot
+if (-not (Test-Path .env)) { Copy-Item .env.example .env }
+npm install
+npm start
+```
+
+Scan the displayed QR code using **WhatsApp → Settings → Linked devices → Link a device**. Keep the linked-device session in `whatsapp-bot/runtime/` private. Send `MENU` to the linked account from a separate WhatsApp account to try the quote intake. The `.env` file is local and ignored by Git. In-progress answers are memory-only and clear on restart.
