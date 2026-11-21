@@ -13,4 +13,10 @@ public static class Session
 
     /// <summary>Admin or Technician; authorization reads it.</summary>
     public const string RoleClaim = "role";
+
+    /// <summary>The cookie the customer portal sends with every API request.</summary>
+    public const string CustomerCookieName = "sol_customer_session";
+
+    /// <summary>Role value for customer JWT claims.</summary>
+    public const string CustomerRole = "Customer";
 }

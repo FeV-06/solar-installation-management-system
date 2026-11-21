@@ -50,6 +50,9 @@ public sealed class SmtpOptions
 
     [Range(1, 65535)]
     public int Port { get; set; }
+
+    public string? Username { get; set; }
+    public string? Password { get; set; }
 }
 
 /// <summary>The Gmail OAuth client the SMTP login uses. All three values are secrets.</summary>

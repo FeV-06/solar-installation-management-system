@@ -24,6 +24,10 @@ public class Customer
     /// <summary>When the first conversion created it.</summary>
     public DateTime RegistrationDate { get; set; }
 
+    public bool IsActive { get; set; } = true;
+    public DateTime? LastLoginAt { get; set; }
+    public DateTime? SessionsValidFrom { get; set; }
+
     /// <summary>Where they live: the property of the lead that created them.</summary>
     public int? ContactAddressId { get; set; }
     public Address? ContactAddress { get; set; }

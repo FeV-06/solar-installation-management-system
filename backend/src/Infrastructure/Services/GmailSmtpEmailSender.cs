@@ -19,7 +19,6 @@ public sealed class GmailSmtpEmailSender(IGmailAuthService authService, IOptions
     {
         var mime = BuildMime(message, _settings);
 
-        var accessToken = await authService.GetAccessTokenAsync();
         using var smtp = new SmtpClient();
         try
         {
@@ -32,7 +31,17 @@ public sealed class GmailSmtpEmailSender(IGmailAuthService authService, IOptions
                 $"The mail server {_settings.Smtp.Host}:{_settings.Smtp.Port} can't be reached.", ex);
         }
 
-        await smtp.AuthenticateAsync(new SaslMechanismOAuth2(_settings.FromAddress, accessToken), cancellationToken);
+        if (!string.IsNullOrWhiteSpace(_settings.Smtp.Password))
+        {
+            var user = !string.IsNullOrWhiteSpace(_settings.Smtp.Username) ? _settings.Smtp.Username : _settings.FromAddress;
+            await smtp.AuthenticateAsync(user, _settings.Smtp.Password, cancellationToken);
+        }
+        else
+        {
+            var accessToken = await authService.GetAccessTokenAsync();
+            await smtp.AuthenticateAsync(new SaslMechanismOAuth2(_settings.FromAddress, accessToken), cancellationToken);
+        }
+
         await smtp.SendAsync(mime, cancellationToken);
         await smtp.DisconnectAsync(true, cancellationToken);
     }

@@ -18,13 +18,17 @@ public static class Policies
     /// <summary>Any staff account: an Admin or a technician.</summary>
     public const string Staff = nameof(Staff);
 
+    /// <summary>An authenticated customer.</summary>
+    public const string Customer = nameof(Customer);
+
     public static IServiceCollection AddStaffPolicies(this IServiceCollection services)
     {
         services.AddAuthorizationBuilder()
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
             .AddPolicy(Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
             .AddPolicy(Technician, policy => policy.RequireRole(nameof(UserRole.Technician)))
-            .AddPolicy(Staff, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Technician)));
+            .AddPolicy(Staff, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Technician)))
+            .AddPolicy(Customer, policy => policy.RequireRole(Infrastructure.Auth.Session.CustomerRole));
         return services;
     }
 }
