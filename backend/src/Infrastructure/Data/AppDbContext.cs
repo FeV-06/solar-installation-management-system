@@ -17,6 +17,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<PackingOrder> PackingOrders { get; set; }
     public DbSet<PackingOrderItem> PackingOrderItems { get; set; }
     public DbSet<Warranty> Warranties { get; set; }
+    public DbSet<ServiceTicket> ServiceTickets { get; set; }
     public DbSet<InstallationProof> InstallationProofs { get; set; }
     public DbSet<User> Users { get; set; }
 

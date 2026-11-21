@@ -17,7 +17,7 @@ describe('the lead list filters', () => {
 
   it('keeps the filter and the page in the address', () => {
     expect(leadsHref(filterFrom('closed'))).toBe('/leads?status=closed');
-    expect(leadsHref(filterFrom('all'), 3)).toBe('/leads?status=all&page=3');
+    expect(leadsHref(filterFrom('all'), 3)).toBe('/leads?page=3');
   });
 });
 

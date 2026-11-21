@@ -1,4 +1,5 @@
 using Application.DTOs.Quote;
+using Application.DTOs.ServiceTickets;
 
 namespace Application.DTOs.CustomerPortal;
 
@@ -37,4 +38,5 @@ public record CustomerPortalData(
     IReadOnlyList<CustomerInstallationSummary> Installations,
     QuoteDto? Proposal = null,
     IReadOnlyList<WarrantyDto>? Warranties = null,
-    CustomerHandoverProof? HandoverProof = null);
+    CustomerHandoverProof? HandoverProof = null,
+    IReadOnlyList<ServiceTicketDto>? Tickets = null);

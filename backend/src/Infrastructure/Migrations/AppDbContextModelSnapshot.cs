@@ -370,13 +370,15 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("work_started_at");
 
-                    b.HasKey("Id");
+                    b.HasKey("Id")
+                        .HasName("pk_installation_proofs");
 
                     b.HasIndex("InstallationId")
                         .IsUnique()
                         .HasDatabaseName("ix_installation_proofs_installation_id");
 
-                    b.HasIndex("TechnicianId");
+                    b.HasIndex("TechnicianId")
+                        .HasDatabaseName("ix_installation_proofs_technician_id");
 
                     b.ToTable("installation_proofs", (string)null);
                 });
@@ -846,6 +848,161 @@ namespace Infrastructure.Migrations
                     b.ToTable("quote_items", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.ServiceTicket", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("AdminNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("admin_notes");
+
+                    b.Property<int?>("AssignedTechnicianId")
+                        .HasColumnType("integer")
+                        .HasColumnName("assigned_technician_id");
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("category");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("CustomerApprovedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("customer_approved_at");
+
+                    b.Property<DateTime?>("CustomerConfirmedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("customer_confirmed_at");
+
+                    b.Property<int>("CustomerId")
+                        .HasColumnType("integer")
+                        .HasColumnName("customer_id");
+
+                    b.Property<string>("CustomerSignatureData")
+                        .HasColumnType("text")
+                        .HasColumnName("customer_signature_data");
+
+                    b.Property<string>("DamageType")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("damage_type");
+
+                    b.Property<string>("Description")
+                        .IsRequired()
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("description");
+
+                    b.Property<string>("FaultCode")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("fault_code");
+
+                    b.Property<string>("HardwareItem")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("hardware_item");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<bool>("IsWarrantyCovered")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_warranty_covered");
+
+                    b.Property<decimal>("LaborCostRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("labor_cost_rupees");
+
+                    b.Property<decimal>("PartsCostRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("parts_cost_rupees");
+
+                    b.Property<string>("PhotoUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("photo_url");
+
+                    b.Property<int?>("ReplacementPackingOrderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("replacement_packing_order_id");
+
+                    b.Property<string>("ReplacementSerialNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("replacement_serial_number");
+
+                    b.Property<DateTime?>("ResolvedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("resolved_at");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<string>("SerialNumber")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("serial_number");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<string>("TechnicianResolutionNotes")
+                        .HasColumnType("text")
+                        .HasColumnName("technician_resolution_notes");
+
+                    b.Property<DateTime?>("TechnicianSignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("technician_signed_at");
+
+                    b.Property<decimal>("TotalBilledRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("total_billed_rupees");
+
+                    b.HasKey("Id")
+                        .HasName("pk_service_tickets");
+
+                    b.HasIndex("AssignedTechnicianId")
+                        .HasDatabaseName("ix_service_tickets_assigned_technician_id");
+
+                    b.HasIndex("CustomerId")
+                        .HasDatabaseName("ix_service_tickets_customer_id");
+
+                    b.HasIndex("InstallationId")
+                        .HasDatabaseName("ix_service_tickets_installation_id");
+
+                    b.HasIndex("ReplacementPackingOrderId")
+                        .HasDatabaseName("ix_service_tickets_replacement_packing_order_id");
+
+                    b.HasIndex("SerialNumber")
+                        .HasDatabaseName("ix_service_tickets_serial_number");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_service_tickets_status");
+
+                    b.ToTable("service_tickets", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -1186,13 +1343,15 @@ namespace Infrastructure.Migrations
                         .WithOne("Proof")
                         .HasForeignKey("Domain.Entities.InstallationProof", "InstallationId")
                         .OnDelete(DeleteBehavior.Cascade)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_installation_proofs_installations_installation_id");
 
                     b.HasOne("Domain.Entities.User", "Technician")
                         .WithMany()
                         .HasForeignKey("TechnicianId")
                         .OnDelete(DeleteBehavior.Restrict)
-                        .IsRequired();
+                        .IsRequired()
+                        .HasConstraintName("fk_installation_proofs_users_technician_id");
 
                     b.Navigation("Installation");
 
@@ -1296,6 +1455,43 @@ namespace Infrastructure.Migrations
                     b.Navigation("Quote");
                 });
 
+            modelBuilder.Entity("Domain.Entities.ServiceTicket", b =>
+                {
+                    b.HasOne("Domain.Entities.User", "AssignedTechnician")
+                        .WithMany()
+                        .HasForeignKey("AssignedTechnicianId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_service_tickets_users_assigned_technician_id");
+
+                    b.HasOne("Domain.Entities.Customer", "Customer")
+                        .WithMany("ServiceTickets")
+                        .HasForeignKey("CustomerId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_tickets_customers_customer_id");
+
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithMany("ServiceTickets")
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_service_tickets_installations_installation_id");
+
+                    b.HasOne("Domain.Entities.PackingOrder", "ReplacementPackingOrder")
+                        .WithMany()
+                        .HasForeignKey("ReplacementPackingOrderId")
+                        .OnDelete(DeleteBehavior.SetNull)
+                        .HasConstraintName("fk_service_tickets_packing_orders_replacement_packing_order_id");
+
+                    b.Navigation("AssignedTechnician");
+
+                    b.Navigation("Customer");
+
+                    b.Navigation("Installation");
+
+                    b.Navigation("ReplacementPackingOrder");
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.HasOne("Domain.Entities.User", null)
@@ -1361,6 +1557,8 @@ namespace Infrastructure.Migrations
                 {
                     b.Navigation("Installations");
 
+                    b.Navigation("ServiceTickets");
+
                     b.Navigation("Warranties");
                 });
 
@@ -1371,6 +1569,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Proof");
 
                     b.Navigation("Quotes");
+
+                    b.Navigation("ServiceTickets");
 
                     b.Navigation("Warranties");
                 });

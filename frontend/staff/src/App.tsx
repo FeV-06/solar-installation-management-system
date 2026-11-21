@@ -22,13 +22,14 @@ import { SurveyPage } from './surveys/SurveyPage';
 import { InstallationPage } from './surveys/InstallationPage';
 import { InstallationsPage } from './surveys/InstallationsPage';
 import { CommissioningPage } from './surveys/CommissioningPage';
+import { TicketsPage } from './tickets/TicketsPage';
 
 const handle = (title: string): RouteHandle => ({ title });
 
 /** The screens built so far; the other sections show what they will hold. */
 const BUILT: Record<string, ReactNode> = {
   '/leads': <LeadsPage />, '/customers': <CustomersPage />, '/notifications': <NotificationsPage />, '/users': <UsersPage />,
-  '/surveys': <SurveysPage />, '/my-work': <SurveysPage />, '/installations': <InstallationsPage />,
+  '/surveys': <SurveysPage />, '/my-work': <SurveysPage />, '/installations': <InstallationsPage />, '/tickets': <TicketsPage />,
 };
 
 export const STAFF_BASENAME = '/staff';

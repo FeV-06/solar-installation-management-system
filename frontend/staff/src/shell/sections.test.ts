@@ -3,7 +3,7 @@ import { opensFor, sectionsFor } from './sections';
 
 describe('sectionsFor', () => {
   it("shows the office its sections, in the design's order", () => {
-    expect(sectionsFor('Admin').map(s => s.path)).toEqual(['/leads', '/customers', '/surveys', '/installations', '/production', '/notifications', '/users']);
+    expect(sectionsFor('Admin').map(s => s.path)).toEqual(['/leads', '/customers', '/surveys', '/installations', '/tickets', '/production', '/notifications', '/users']);
   });
 
   it('shows a technician only their own work', () => {

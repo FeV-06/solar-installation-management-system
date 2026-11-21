@@ -10,7 +10,7 @@ public class InstallationProofConfig : IEntityTypeConfiguration<InstallationProo
     {
         builder.ToTable("installation_proofs");
 
-        builder.HasKey(x => x.Id);
+        builder.HasKey(x => x.Id).HasName("pk_installation_proofs");
         builder.Property(x => x.Id).HasColumnName("id");
 
         builder.Property(x => x.InstallationId).HasColumnName("installation_id");
@@ -32,16 +32,19 @@ public class InstallationProofConfig : IEntityTypeConfiguration<InstallationProo
         builder.Property(x => x.SignedAt).HasColumnName("signed_at");
         builder.Property(x => x.CreatedAt).HasColumnName("created_at");
 
+        builder.HasIndex(x => x.InstallationId).IsUnique().HasDatabaseName("ix_installation_proofs_installation_id");
+        builder.HasIndex(x => x.TechnicianId).HasDatabaseName("ix_installation_proofs_technician_id");
+
         builder.HasOne(x => x.Installation)
             .WithOne(i => i.Proof)
             .HasForeignKey<InstallationProof>(x => x.InstallationId)
+            .HasConstraintName("fk_installation_proofs_installations_installation_id")
             .OnDelete(DeleteBehavior.Cascade);
 
         builder.HasOne(x => x.Technician)
             .WithMany()
             .HasForeignKey(x => x.TechnicianId)
+            .HasConstraintName("fk_installation_proofs_users_technician_id")
             .OnDelete(DeleteBehavior.Restrict);
-
-        builder.HasIndex(x => x.InstallationId).IsUnique().HasDatabaseName("ix_installation_proofs_installation_id");
     }
 }

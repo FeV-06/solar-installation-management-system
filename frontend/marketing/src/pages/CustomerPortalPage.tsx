@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Zap } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
 
@@ -82,6 +82,33 @@ type HandoverProof = {
   signedAt: string;
 };
 
+type ServiceTicketItem = {
+  id: number;
+  installationId: number;
+  customerId: number;
+  serialNumber: string;
+  hardwareItem: string;
+  category: string;
+  faultCode: string;
+  description: string;
+  photoUrl?: string;
+  damageType: string;
+  isWarrantyCovered: boolean;
+  partsCostRupees: number;
+  laborCostRupees: number;
+  totalBilledRupees: number;
+  status: string;
+  adminNotes?: string;
+  reviewedAt?: string;
+  customerApprovedAt?: string;
+  replacementPackingOrderId?: number;
+  replacementSerialNumber?: string;
+  technicianResolutionNotes?: string;
+  resolvedAt?: string;
+  customerConfirmedAt?: string;
+  createdAt: string;
+};
+
 type PortalData = {
   activeQuote?: QuoteSummary;
   quotes: QuoteSummary[];
@@ -89,6 +116,7 @@ type PortalData = {
   proposal?: Proposal;
   warranties?: WarrantyItem[];
   handoverProof?: HandoverProof;
+  tickets?: ServiceTicketItem[];
 };
 
 const STAGES = [
@@ -126,6 +154,83 @@ export function CustomerPortalPage() {
   const [quoteSearch, setQuoteSearch] = useState('');
   const [quotePage, setQuotePage] = useState(1);
   const QUOTES_PER_PAGE = 5;
+
+  // Service & Warranty Ticket state (Scene 5)
+  const [showTicketModal, setShowTicketModal] = useState(false);
+  const [ticketSerial, setTicketSerial] = useState('');
+  const [ticketFault, setTicketFault] = useState('E04 - Inverter Fault / Zero Generation');
+  const [ticketDesc, setTicketDesc] = useState('');
+  const [ticketPhotoUrl, setTicketPhotoUrl] = useState('');
+  const [ticketSubmitting, setTicketSubmitting] = useState(false);
+  const [ticketActionMsg, setTicketActionMsg] = useState<string | null>(null);
+
+  const handleCreateTicket = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (!data?.installations?.length) return;
+    try {
+      setTicketSubmitting(true);
+      setTicketActionMsg(null);
+      const res = await fetch(`${API_BASE}/customer-portal/tickets`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          installationId: data.installations[0].id,
+          serialNumber: ticketSerial || (data.warranties?.[0]?.serialNumber ?? 'SERIAL-PENDING'),
+          faultCode: ticketFault,
+          description: ticketDesc,
+          photoUrl: ticketPhotoUrl || null,
+        }),
+      });
+      if (res.ok) {
+        setShowTicketModal(false);
+        setTicketDesc('');
+        setTicketPhotoUrl('');
+        setTicketActionMsg('Your breakdown ticket has been received by SunPower. Support is reviewing your warranty status.');
+        fetchPortal();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setTicketActionMsg(err.title ?? 'Failed to file service ticket.');
+      }
+    } catch {
+      setTicketActionMsg('Network error submitting service ticket.');
+    } finally {
+      setTicketSubmitting(false);
+    }
+  };
+
+  const handleApproveTicket = async (ticketId: number) => {
+    try {
+      setTicketActionMsg(null);
+      const res = await fetch(`${API_BASE}/customer-portal/tickets/${ticketId}/approve`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ customerNotes: 'Approved replacement.' }),
+      });
+      if (res.ok) {
+        setTicketActionMsg('Replacement approved! Warehouse packing order generated; technician scheduled for on-site swap.');
+        fetchPortal();
+      }
+    } catch {
+      setTicketActionMsg('Error approving ticket.');
+    }
+  };
+
+  const handleConfirmRestoration = async (ticketId: number) => {
+    try {
+      setTicketActionMsg(null);
+      const res = await fetch(`${API_BASE}/customer-portal/tickets/${ticketId}/confirm`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ homeownerFeedback: 'Power is restored to my satisfaction.' }),
+      });
+      if (res.ok) {
+        setTicketActionMsg('Thank you! Ticket closed. Your new hardware unit warranty has been activated.');
+        fetchPortal();
+      }
+    } catch {
+      setTicketActionMsg('Error confirming power restoration.');
+    }
+  };
 
   const fetchPortal = async () => {
     try {
@@ -673,6 +778,263 @@ export function CustomerPortalPage() {
                 </div>
               </div>
             )}
+          </div>
+        )}
+
+        {/* Post-Sales Service & Breakdown Claims (Scene 5) */}
+        {data?.installations && data.installations.length > 0 && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1.75rem',
+            background: 'var(--bg-raised)',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'inset 0 0 0 1px var(--line)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Icon icon={Wrench} size={22} color="var(--accent)" />
+                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
+                  Service &amp; Warranty Claims Desk
+                </h3>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowTicketModal(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Icon icon={Wrench} size={15} />
+                <span>Report Breakdown / File Claim</span>
+              </button>
+            </div>
+
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+              In the event of an inverter fault, zero power, or rain breakdown, file a claim directly with our support desk.
+              Equipment covered by warranty is repaired or replaced at ₹0 cost.
+            </p>
+
+            {ticketActionMsg && (
+              <div style={{ padding: '0.75rem 1rem', marginBottom: '1rem', background: '#eff6ff', color: '#1e40af', borderRadius: 'var(--radius-md)', fontSize: '0.85rem' }}>
+                {ticketActionMsg}
+              </div>
+            )}
+
+            {data?.tickets && data.tickets.length > 0 ? (
+              <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
+                {data.tickets.map((t) => {
+                  const isPendingConfirm = t.status === 'ResolvedPendingCustomerConfirmation';
+
+                  return (
+                    <div
+                      key={t.id}
+                      style={{
+                        padding: '1.25rem',
+                        background: 'var(--bg)',
+                        borderRadius: 'var(--radius-lg)',
+                        boxShadow: 'inset 0 0 0 1px var(--line)',
+                        borderLeft: t.status === 'Closed' ? '4px solid #16a34a' : isPendingConfirm ? '4px solid #3b82f6' : '4px solid var(--accent)',
+                        display: 'flex',
+                        flexDirection: 'column',
+                        gap: '0.75rem',
+                      }}
+                    >
+                      <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', flexWrap: 'wrap', gap: '0.5rem' }}>
+                        <div>
+                          <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                            <span style={{ fontWeight: 700, fontSize: '0.95rem', color: 'var(--fg)' }}>Ticket #{t.id}: {t.faultCode}</span>
+                            <span style={{
+                              fontSize: '0.75rem',
+                              padding: '0.15rem 0.5rem',
+                              borderRadius: '9999px',
+                              background: t.status === 'Closed' ? '#dcfce7' : isPendingConfirm ? '#dbeafe' : '#fef3c7',
+                              color: t.status === 'Closed' ? '#166534' : isPendingConfirm ? '#1e40af' : '#92400e',
+                              fontWeight: 600,
+                            }}>
+                              {isPendingConfirm ? 'Power Restored - Signoff Required' : t.status}
+                            </span>
+                          </div>
+                          <div style={{ fontSize: '0.85rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
+                            Hardware: {t.hardwareItem} (S/N: <code>{t.serialNumber}</code>)
+                          </div>
+                        </div>
+
+                        <span style={{
+                          fontSize: '0.8rem',
+                          fontWeight: 700,
+                          padding: '0.2rem 0.6rem',
+                          borderRadius: '6px',
+                          background: t.isWarrantyCovered ? '#dcfce7' : '#fee2e2',
+                          color: t.isWarrantyCovered ? '#166534' : '#991b1b',
+                        }}>
+                          {t.isWarrantyCovered ? '100% Free Warranty Replacement (₹0)' : `Chargeable Repair: ₹${t.totalBilledRupees.toLocaleString()}`}
+                        </span>
+                      </div>
+
+                      <p style={{ margin: 0, fontSize: '0.875rem', color: 'var(--muted)' }}>
+                        {t.description}
+                      </p>
+
+                      {/* Terms Reviewed Banner */}
+                      {t.status === 'Reviewed' && (
+                        <div style={{
+                          padding: '0.85rem 1rem',
+                          background: '#f8fafc',
+                          border: '1px solid var(--line)',
+                          borderRadius: 'var(--radius-md)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '0.75rem',
+                        }}>
+                          <div>
+                            <div style={{ fontWeight: 600, fontSize: '0.875rem', color: 'var(--fg)' }}>
+                              Office Terms Sent: {t.isWarrantyCovered ? 'Zero Cost Warranty Swap' : `Invoice for ₹${t.totalBilledRupees.toLocaleString()} (Parts + Service Labor)`}
+                            </div>
+                            <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                              {t.adminNotes ?? 'Verified against installation specs.'}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            onClick={() => handleApproveTicket(t.id)}
+                          >
+                            Approve Replacement &amp; Dispatch
+                          </button>
+                        </div>
+                      )}
+
+                      {/* On-Site Resolution Confirmation Banner (Hard Invariant) */}
+                      {isPendingConfirm && (
+                        <div style={{
+                          padding: '1rem',
+                          background: '#eff6ff',
+                          border: '1px solid #bfdbfe',
+                          borderRadius: 'var(--radius-md)',
+                          display: 'flex',
+                          justifyContent: 'space-between',
+                          alignItems: 'center',
+                          flexWrap: 'wrap',
+                          gap: '0.75rem',
+                        }}>
+                          <div>
+                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
+                              <Icon icon={Zap} size={16} />
+                              <span>Technician Replaced Unit &bull; S/N: {t.replacementSerialNumber}</span>
+                            </div>
+                            <div style={{ fontSize: '0.825rem', color: '#1e3a8a', marginTop: '0.2rem' }}>
+                              {t.technicianResolutionNotes ?? 'Hardware swap complete. Confirm your rooftop power generation is restored.'}
+                            </div>
+                          </div>
+                          <button
+                            type="button"
+                            className="btn btn-primary btn-sm"
+                            style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                            onClick={() => handleConfirmRestoration(t.id)}
+                          >
+                            Confirm Power Restored &amp; Close Ticket
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                  );
+                })}
+              </div>
+            ) : (
+              <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--muted)', background: 'var(--bg)', borderRadius: 'var(--radius-lg)' }}>
+                No active breakdown or service tickets. Your system is operating normally.
+              </div>
+            )}
+          </div>
+        )}
+
+        {/* Modal: Report Breakdown / File Claim */}
+        {showTicketModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
+            <div className="rec-card" style={{ background: 'var(--bg)', width: '100%', maxWidth: '500px', borderRadius: 'var(--radius-xl)', padding: '1.75rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+              <h3 className="display" style={{ fontSize: '1.25rem', margin: '0 0 1rem', color: 'var(--fg)' }}>
+                Report Equipment Fault / Breakdown
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: '0 0 1.25rem' }}>
+                Select your affected equipment. SunPower support will immediately check your warranty coverage.
+              </p>
+
+              <form onSubmit={handleCreateTicket}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Select Hardware Unit</label>
+                  <select
+                    value={ticketSerial}
+                    onChange={(e) => setTicketSerial(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  >
+                    {data?.warranties?.map((w) => (
+                      <option key={w.id} value={w.serialNumber}>
+                        {w.itemName} (S/N: {w.serialNumber}) - {w.isCovered ? 'Under Warranty' : 'Expired'}
+                      </option>
+                    ))}
+                    {(!data?.warranties || data.warranties.length === 0) && (
+                      <option value="INVERTER-MAIN">Solar String Inverter</option>
+                    )}
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Fault Code / Problem Type</label>
+                  <select
+                    value={ticketFault}
+                    onChange={(e) => setTicketFault(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  >
+                    <option value="E04 - Inverter Fault / Zero Generation">E04 - Inverter Overheat / Zero Generation</option>
+                    <option value="E01 - Grid Synchronization Fault">E01 - Grid Synchronization Fault</option>
+                    <option value="E08 - Earth Leakage / Ground Fault">E08 - Earth Leakage / Ground Fault</option>
+                    <option value="E12 - Accidental Physical Damage">E12 - Accidental / Physical Damage</option>
+                    <option value="OTHER - Generation Drop">OTHER - Severe Generation Drop</option>
+                  </select>
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Detailed Symptom Description</label>
+                  <textarea
+                    rows={3}
+                    required
+                    value={ticketDesc}
+                    placeholder="Describe what occurred (e.g. heavy rain yesterday, inverter screen blinking red)..."
+                    onChange={(e) => setTicketDesc(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Photo Evidence / Screen URL (Optional)</label>
+                  <input
+                    type="url"
+                    value={ticketPhotoUrl}
+                    placeholder="https://... photo of error code screen or damage"
+                    onChange={(e) => setTicketPhotoUrl(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-quiet"
+                    onClick={() => setShowTicketModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={ticketSubmitting || !ticketDesc.trim()}
+                  >
+                    {ticketSubmitting ? 'Submitting...' : 'Submit Claim'}
+                  </button>
+                </div>
+              </form>
+            </div>
           </div>
         )}
 

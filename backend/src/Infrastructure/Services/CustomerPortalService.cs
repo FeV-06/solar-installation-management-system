@@ -1,6 +1,7 @@
 using Application.Common.Models;
 using Application.DTOs.CustomerPortal;
 using Application.DTOs.Quote;
+using Application.DTOs.ServiceTickets;
 using Domain.Entities;
 using Domain.Enums;
 using Infrastructure.Data;
@@ -131,6 +132,50 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
             proof.SignedAt
         );
 
-        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto, warranties, handoverProof));
+        var tickets = await db.ServiceTickets
+            .Include(t => t.Customer)
+            .Include(t => t.Installation)
+                .ThenInclude(i => i.Address)
+            .Include(t => t.AssignedTechnician)
+            .Where(t => t.CustomerId == customerId)
+            .OrderByDescending(t => t.CreatedAt)
+            .Select(t => new ServiceTicketDto(
+                t.Id,
+                t.InstallationId,
+                t.CustomerId,
+                customer.FullName,
+                customer.PhoneNumber,
+                customer.Email,
+                t.Installation.Address != null
+                    ? $"{t.Installation.Address.Street}, {t.Installation.Address.City}, {t.Installation.Address.State} {t.Installation.Address.ZipCode}"
+                    : "Site address",
+                t.AssignedTechnicianId,
+                t.AssignedTechnician != null ? t.AssignedTechnician.Name : null,
+                t.SerialNumber,
+                t.HardwareItem,
+                t.Category.ToString(),
+                t.FaultCode,
+                t.Description,
+                t.PhotoUrl,
+                t.DamageType.ToString(),
+                t.IsWarrantyCovered,
+                t.PartsCostRupees,
+                t.LaborCostRupees,
+                t.TotalBilledRupees,
+                t.Status.ToString(),
+                t.AdminNotes,
+                t.ReviewedAt,
+                t.CustomerApprovedAt,
+                t.ReplacementPackingOrderId,
+                t.ReplacementSerialNumber,
+                t.TechnicianResolutionNotes,
+                t.ResolvedAt,
+                t.CustomerSignatureData,
+                t.TechnicianSignedAt,
+                t.CustomerConfirmedAt,
+                t.CreatedAt))
+            .ToListAsync(cancellationToken);
+
+        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto, warranties, handoverProof, tickets));
     }
 }

@@ -36,6 +36,7 @@ public class Customer
 
     public ICollection<Installation> Installations { get; set; } = [];
     public ICollection<Warranty> Warranties { get; set; } = [];
+    public ICollection<ServiceTicket> ServiceTickets { get; set; } = [];
 
     public string FullName => $"{FirstName} {LastName}";
 

@@ -1,4 +1,4 @@
-import { ChartColumn, ClipboardCheck, House, Inbox, Mail, SolarPanel, Users, type LucideIcon } from 'lucide-react';
+import { ChartColumn, ClipboardCheck, House, Inbox, Mail, SolarPanel, Users, Wrench, type LucideIcon } from 'lucide-react';
 import type { Role } from '../api/auth';
 
 export type Section = {
@@ -18,6 +18,7 @@ export const OFFICE: readonly Section[] = [
   { path: '/customers', label: 'Customers', title: 'Customers', icon: House, holds: 'Every customer, searched by name or email.' },
   { path: '/surveys', label: 'Surveys', title: 'Surveys', icon: ClipboardCheck, holds: 'Site surveys, appointments and reviews.' },
   { path: '/installations', label: 'Installations', title: 'Installations', icon: SolarPanel, holds: 'Every installation, filtered by stage.' },
+  { path: '/tickets', label: 'Tickets', title: 'Service Tickets', icon: Wrench, holds: 'Post-sales breakdown desk, warranty claims, and repairs.' },
   { path: '/production', label: 'Production', title: 'Production', icon: ChartColumn, holds: 'For the last complete day: how many installations are at each health level, and the 20 doing worst.' },
   { path: '/notifications', label: 'Notifications', title: 'Failed notifications', icon: Mail, holds: 'The emails that still failed after 24 hours of retries, each ready to retry.' },
   { path: '/users', label: 'Users', title: 'Users', icon: Users, holds: 'Every staff account, its role, and whether it is active.' },
