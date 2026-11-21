@@ -5,6 +5,7 @@ using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebAPI.Security;
 
 namespace WebAPI.Controllers;
@@ -15,6 +16,7 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
     [HttpPost("request-otp")]
     [AllowAnonymous]
     [EnableCors(CrossSiteCalls.QuoteForm)]
+    [EnableRateLimiting(RateLimits.CustomerOtpRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RequestOtp([FromBody] RequestOtpRequest request)
@@ -31,6 +33,7 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
     [HttpPost("verify-otp")]
     [AllowAnonymous]
     [EnableCors(CrossSiteCalls.QuoteForm)]
+    [EnableRateLimiting(RateLimits.CustomerOtpVerify)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<CustomerSessionResponse>> VerifyOtp([FromBody] VerifyOtpRequest request)
