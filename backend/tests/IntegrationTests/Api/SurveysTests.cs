@@ -70,7 +70,8 @@ public class SurveysTests(PostgresFixture database) : ApiTestBase(database)
         var details = await admin.GetAsync($"/api/installations/{installationId}", Ct);
         details.StatusCode.Should().Be(HttpStatusCode.OK);
         (await Json(details)).GetProperty("customerName").GetString().Should().Be("Jane Doe");
-        (await technician.GetAsync($"/api/installations/{installationId}", Ct)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await technician.GetAsync($"/api/installations/{installationId}", Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await CreateClient().GetAsync($"/api/installations/{installationId}", Ct)).StatusCode.Should().Be(HttpStatusCode.Unauthorized);
         (await admin.GetAsync("/api/installations/9999", Ct)).StatusCode.Should().Be(HttpStatusCode.NotFound);
         var page = await Json(await admin.GetAsync($"/api/surveys?installationId={installationId}", Ct));
         page.GetProperty("items").EnumerateArray().Single().GetProperty("id").GetInt32().Should().Be(surveyId);

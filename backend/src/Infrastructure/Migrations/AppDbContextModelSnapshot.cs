@@ -297,6 +297,90 @@ namespace Infrastructure.Migrations
                     b.ToTable("installations", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.InstallationProof", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<string>("CustomerSignatureData")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("customer_signature_data");
+
+                    b.Property<bool>("GridConnected")
+                        .HasColumnType("boolean")
+                        .HasColumnName("grid_connected");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<string>("InverterPhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("inverter_photo_url");
+
+                    b.Property<string>("MeterPhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("meter_photo_url");
+
+                    b.Property<string>("PanelArrayPhotoUrl")
+                        .IsRequired()
+                        .HasColumnType("text")
+                        .HasColumnName("panel_array_photo_url");
+
+                    b.Property<DateTime>("SignedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("signed_at");
+
+                    b.Property<string>("SignedByName")
+                        .IsRequired()
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("signed_by_name");
+
+                    b.Property<decimal>("SystemCapacityKw")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("system_capacity_kw");
+
+                    b.Property<int>("TechnicianId")
+                        .HasColumnType("integer")
+                        .HasColumnName("technician_id");
+
+                    b.Property<decimal>("TestedGenerationKw")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("tested_generation_kw");
+
+                    b.Property<DateTime>("WorkCompletedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("work_completed_at");
+
+                    b.Property<DateTime>("WorkStartedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("work_started_at");
+
+                    b.HasKey("Id");
+
+                    b.HasIndex("InstallationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_installation_proofs_installation_id");
+
+                    b.HasIndex("TechnicianId");
+
+                    b.ToTable("installation_proofs", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Lead", b =>
                 {
                     b.Property<int>("Id")
@@ -1096,6 +1180,25 @@ namespace Infrastructure.Migrations
                     b.Navigation("Lead");
                 });
 
+            modelBuilder.Entity("Domain.Entities.InstallationProof", b =>
+                {
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithOne("Proof")
+                        .HasForeignKey("Domain.Entities.InstallationProof", "InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired();
+
+                    b.HasOne("Domain.Entities.User", "Technician")
+                        .WithMany()
+                        .HasForeignKey("TechnicianId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired();
+
+                    b.Navigation("Installation");
+
+                    b.Navigation("Technician");
+                });
+
             modelBuilder.Entity("Domain.Entities.Lead", b =>
                 {
                     b.HasOne("Domain.Entities.Address", "Address")
@@ -1264,6 +1367,8 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Installation", b =>
                 {
                     b.Navigation("PackingOrders");
+
+                    b.Navigation("Proof");
 
                     b.Navigation("Quotes");
 
