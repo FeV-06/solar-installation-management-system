@@ -5,7 +5,6 @@ using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
-using Microsoft.AspNetCore.RateLimiting;
 using WebAPI.Security;
 
 namespace WebAPI.Controllers;
@@ -15,19 +14,21 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
 {
     [HttpPost("request-otp")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimits.CustomerOtpRequest)]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RequestOtp([FromBody] RequestOtpRequest request)
     {
         var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
         var result = await service.RequestOtpAsync(request, clientIp);
-        return result.IsSuccess ? Ok(new { success = true, message = "If the email is valid, a verification code has been sent." }) : Problem(result.Error);
+        return result.IsSuccess
+            ? Ok(new { success = true, message = "If the email is valid, a verification code has been sent." })
+            : Problem(result.Error);
     }
 
     [HttpPost("verify-otp")]
     [AllowAnonymous]
-    [EnableRateLimiting(RateLimits.CustomerOtpVerify)]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<CustomerSessionResponse>> VerifyOtp([FromBody] VerifyOtpRequest request)
@@ -36,21 +37,54 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
         if (!result.IsSuccess)
             return Problem(result.Error);
 
-        var cookieOptions = new CookieOptions
-        {
-            HttpOnly = true,
-            Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Path = "/api",
-            Expires = result.Value.ExpiresAt
-        };
+        AppendSessionCookie(result.Value.Token, result.Value.ExpiresAt);
+        return Ok(result.Value.Customer);
+    }
 
-        Response.Cookies.Append(Session.CustomerCookieName, result.Value.Token, cookieOptions);
+    [HttpPost("verify-signup-otp")]
+    [AllowAnonymous]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<VerifySignUpOtpResponse>> VerifySignUpOtp([FromBody] VerifyOtpRequest request)
+    {
+        var result = await service.VerifySignUpOtpAsync(request);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
+    [HttpPost("complete-signup")]
+    [AllowAnonymous]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status400BadRequest)]
+    public async Task<ActionResult<CustomerSessionResponse>> CompleteSignUp([FromBody] CompleteSignUpRequest request)
+    {
+        var result = await service.CompleteSignUpAsync(request);
+        if (!result.IsSuccess)
+            return Problem(result.Error);
+
+        AppendSessionCookie(result.Value.Token, result.Value.ExpiresAt);
+        return Ok(result.Value.Customer);
+    }
+
+    [HttpPost("login")]
+    [AllowAnonymous]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [ProducesResponseType(StatusCodes.Status200OK)]
+    [ProducesResponseType(StatusCodes.Status401Unauthorized)]
+    public async Task<ActionResult<CustomerSessionResponse>> Login([FromBody] CustomerLoginRequest request)
+    {
+        var result = await service.LoginAsync(request);
+        if (!result.IsSuccess)
+            return Problem(result.Error);
+
+        AppendSessionCookie(result.Value.Token, result.Value.ExpiresAt);
         return Ok(result.Value.Customer);
     }
 
     [HttpGet("me")]
-    [Authorize(Policy = Policies.Customer)]
+    [Authorize(Roles = Session.CustomerRole)]
+    [EnableCors(CrossSiteCalls.QuoteForm)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<CustomerSessionResponse>> Me()
@@ -72,9 +106,19 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Strict,
-            Path = "/api"
+            SameSite = SameSiteMode.Lax
         });
         return NoContent();
+    }
+
+    private void AppendSessionCookie(string token, DateTimeOffset expiresAt)
+    {
+        Response.Cookies.Append(Session.CustomerCookieName, token, new CookieOptions
+        {
+            HttpOnly = true,
+            Secure = true,
+            SameSite = SameSiteMode.Lax,
+            Expires = expiresAt
+        });
     }
 }

@@ -18,6 +18,8 @@ public class Customer
 
     public string PhoneNumber { get; set; } = string.Empty;
 
+    public string? PasswordHash { get; set; }
+
     /// <summary>Follows its installations (BR-C1); nobody sets it by hand.</summary>
     public CustomerStatus Status { get; set; }
 

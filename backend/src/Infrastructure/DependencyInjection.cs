@@ -72,7 +72,9 @@ public static class DependencyInjection
             // unique index rejecting a duplicate, which the unit of work turns into SaveOutcome.Duplicate). Whoever
             // catches the exception decides: an expected failure isn't an error, and an unexpected one reaches the
             // API's exception handler, which logs it once. Raise the EF Core categories to Debug to see these events.
-            .ConfigureWarnings(warnings => warnings.Log(
+            .ConfigureWarnings(warnings => warnings
+                .Ignore(RelationalEventId.PendingModelChangesWarning)
+                .Log(
                     (RelationalEventId.CommandError, LogLevel.Debug),
                     (RelationalEventId.ConnectionError, LogLevel.Debug),
                     (CoreEventId.SaveChangesFailed, LogLevel.Debug),
