@@ -12,6 +12,7 @@ public class SurveyRepo(AppDbContext context) : GenericRepo<Survey>(context), IS
     public Task<Survey?> GetVisibleAsync(int id, int userId, bool isAdmin) =>
         Context.Surveys.Include(s => s.Technician).Include(s => s.Installation).ThenInclude(i => i.Customer)
             .Include(s => s.Installation).ThenInclude(i => i.Address)
+            .Include(s => s.Installation).ThenInclude(i => i.Quotes).ThenInclude(q => q.Items)
             .FirstOrDefaultAsync(s => s.Id == id && (isAdmin || s.TechnicianId == userId));
 
     public Task<(IReadOnlyList<Survey> Items, int TotalCount)> GetPageAsync(int userId, bool isAdmin, SurveyStatus? status, int? installationId, int skip, int take)

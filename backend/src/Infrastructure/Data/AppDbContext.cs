@@ -12,6 +12,10 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Lead> Leads { get; set; }
     public DbSet<Installation> Installations { get; set; }
     public DbSet<Survey> Surveys { get; set; }
+    public DbSet<Quote> Quotes { get; set; }
+    public DbSet<QuoteItem> QuoteItems { get; set; }
+    public DbSet<PackingOrder> PackingOrders { get; set; }
+    public DbSet<PackingOrderItem> PackingOrderItems { get; set; }
     public DbSet<User> Users { get; set; }
 
     /// <summary>Notifications waiting to be sent, saved with the event that causes them (BR-N1).</summary>

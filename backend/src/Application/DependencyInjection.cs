@@ -30,6 +30,7 @@ public static class DependencyInjection
         services.AddScoped<IMapper, ServiceMapper>();
 
         //Services
+        services.AddScoped<IQuoteTemplateEngine, QuoteTemplateEngine>();
         services.AddScoped<ILeadService, LeadService>();
         services.AddScoped<ICustomerService, CustomerService>();
         services.AddScoped<ISurveyService, SurveyService>();

@@ -1,5 +1,8 @@
 using Application.Common.Models;
 using Application.DTOs.CustomerPortal;
+using Application.DTOs.Quote;
+using Domain.Entities;
+using Domain.Enums;
 using Infrastructure.Data;
 using Microsoft.EntityFrameworkCore;
 
@@ -16,6 +19,8 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
     {
         var customer = await db.Customers
             .Include(c => c.Installations)
+            .ThenInclude(i => i.Quotes)
+            .ThenInclude(q => q.Items)
             .FirstOrDefaultAsync(c => c.Id == customerId, cancellationToken);
 
         if (customer == null)
@@ -47,6 +52,45 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
             i.TimeZone,
             i.CreatedAt)).ToList();
 
-        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries));
+        // Check if there is an active proposal for the customer's installations
+        QuoteDto? proposalDto = null;
+        var latestQuote = customer.Installations
+            .SelectMany(i => i.Quotes)
+            .OrderByDescending(q => q.CreatedAt)
+            .FirstOrDefault();
+
+        if (latestQuote != null)
+        {
+            proposalDto = new QuoteDto(
+                latestQuote.Id,
+                latestQuote.InstallationId,
+                latestQuote.SystemCapacityKw,
+                latestQuote.SystemType.ToString(),
+                latestQuote.BasePriceRupees,
+                latestQuote.EstimatedSubsidyRupees,
+                latestQuote.TotalAmountRupees,
+                latestQuote.AdvancePercentage,
+                latestQuote.AdvanceRequiredRupees,
+                latestQuote.AmountPaidRupees,
+                latestQuote.Status.ToString(),
+                latestQuote.PaymentStatus.ToString(),
+                latestQuote.Notes,
+                latestQuote.PaymentReference,
+                latestQuote.CreatedAt,
+                latestQuote.SentAt,
+                latestQuote.AcceptedAt,
+                latestQuote.PaidAt,
+                latestQuote.Items.Select(i => new QuoteItemDto(
+                    i.Id,
+                    i.Category.ToString(),
+                    i.ItemName,
+                    i.Specification,
+                    i.Quantity,
+                    i.Unit,
+                    i.UnitCostRupees,
+                    i.TotalCostRupees)).ToList());
+        }
+
+        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto));
     }
 }

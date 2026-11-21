@@ -1,3 +1,5 @@
+using Application.DTOs.Quote;
+
 namespace Application.DTOs.CustomerPortal;
 
 public record CustomerQuoteSummary(
@@ -20,4 +22,5 @@ public record CustomerInstallationSummary(
 public record CustomerPortalData(
     CustomerQuoteSummary? ActiveQuote,
     IReadOnlyList<CustomerQuoteSummary> Quotes,
-    IReadOnlyList<CustomerInstallationSummary> Installations);
+    IReadOnlyList<CustomerInstallationSummary> Installations,
+    QuoteDto? Proposal = null);

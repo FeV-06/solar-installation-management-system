@@ -30,6 +30,9 @@ public class Installation
 
     public DateTime CreatedAt { get; set; }
 
+    public List<Quote> Quotes { get; set; } = [];
+    public List<PackingOrder> PackingOrders { get; set; } = [];
+
     /// <summary>A new installation for a converted lead: at Survey, at the lead's property, in its state's time zone.</summary>
     public static Installation ForConvertedLead(Lead lead, int customerId, string timeZone, DateTime now) => new()
     {

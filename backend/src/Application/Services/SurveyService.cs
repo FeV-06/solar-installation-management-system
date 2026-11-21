@@ -10,7 +10,7 @@ using Domain.Enums;
 namespace Application.Services;
 
 public class SurveyService(
-    ISurveyRepo surveys, IInstallationRepo installations, IUserRepo users, IUnitOfWork unitOfWork, TimeProvider time) : ISurveyService
+    ISurveyRepo surveys, IInstallationRepo installations, IUserRepo users, IUnitOfWork unitOfWork, IQuoteTemplateEngine quoteTemplateEngine, TimeProvider time) : ISurveyService
 {
     public async Task<PagedResponse<SurveyResponse>> GetPageAsync(SurveyPageRequest request, int userId, bool isAdmin)
     {
@@ -89,7 +89,15 @@ public class SurveyService(
         survey.ReviewedAt = Now();
         survey.ReviewNotes = NormalizeNotes(request.Notes);
         survey.Version++;
-        if (request.Approved.Value) survey.Installation.Status = InstallationStatus.Design;
+        if (request.Approved.Value)
+        {
+            survey.Installation.Status = InstallationStatus.Design;
+            if (survey.Installation.Quotes.Count == 0)
+            {
+                var draftQuote = quoteTemplateEngine.Generate(survey.Installation, survey);
+                survey.Installation.Quotes.Add(draftQuote);
+            }
+        }
         return await SaveAsync(survey);
     }
 

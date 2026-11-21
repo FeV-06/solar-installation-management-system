@@ -85,6 +85,42 @@ public class CustomerJourneyTests(PostgresFixture database) : ApiTestBase(databa
         var installed = await Context.Installations.AsNoTracking().SingleAsync(i => i.Id == installationId, Ct);
         installed.Status.Should().Be(InstallationStatus.Design);
         installed.TimeZone.Should().Be("Asia/Kolkata");
+
+        // Scene 2: Getting the kit right - Auto-generated draft quote on survey approval
+        var quoteResponse = await admin.GetAsync($"/api/installations/{installationId}/quote", Ct);
+        quoteResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var quoteJson = await Json(quoteResponse);
+        var quoteId = quoteJson.GetProperty("id").GetInt32();
+        quoteJson.GetProperty("systemCapacityKw").GetDecimal().Should().BeGreaterThan(0);
+        quoteJson.GetProperty("items").EnumerateArray().Should().NotBeEmpty();
+
+        // Admin sends quote to customer
+        var sendResponse = await admin.PutAsync($"/api/quotes/{quoteId}/send", null, Ct);
+        sendResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+
+        // Customer sees proposal in customer portal
+        var portalWithQuote = await Json(await customer.GetAsync("/api/customer-portal", Ct));
+        portalWithQuote.GetProperty("proposal").GetProperty("id").GetInt32().Should().Be(quoteId);
+
+        // Customer accepts and pays advance
+        var payResponse = await customer.PostAsJsonAsync($"/api/customer-portal/quotes/{quoteId}/pay", new { paymentType = "Advance" }, Ct);
+        payResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var paidQuote = await Json(payResponse);
+        paidQuote.GetProperty("status").GetString().Should().Be("Accepted");
+        paidQuote.GetProperty("paymentStatus").GetString().Should().Be("AdvancePaid");
+        paidQuote.GetProperty("amountPaidRupees").GetDecimal().Should().BeGreaterThan(0);
+        paidQuote.GetProperty("paymentReference").GetString().Should().StartWith("PAY-");
+
+        // Installation moves to Installation stage (crew schedule ready)
+        installed = await Context.Installations.AsNoTracking().SingleAsync(i => i.Id == installationId, Ct);
+        installed.Status.Should().Be(InstallationStatus.Installation);
+
+        // Warehouse packing order generated with serial-tracked items
+        var packingResponse = await admin.GetAsync($"/api/installations/{installationId}/packing-order", Ct);
+        packingResponse.StatusCode.Should().Be(HttpStatusCode.OK);
+        var packing = await Json(packingResponse);
+        packing.GetProperty("status").GetString().Should().Be("Pending");
+        packing.GetProperty("items").EnumerateArray().Should().Contain(item => item.GetProperty("requiresSerialNumber").GetBoolean());
     }
 
     [Fact]

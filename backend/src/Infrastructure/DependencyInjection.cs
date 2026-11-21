@@ -221,6 +221,7 @@ public static class DependencyInjection
         services.AddScoped<IUnitOfWork, UnitOfWork>();
         services.AddScoped<ICustomerAuthService, CustomerAuthService>();
         services.AddScoped<ICustomerPortalService, CustomerPortalService>();
+        services.AddScoped<IQuoteService, QuoteService>();
 
         // Email: the provider's sender (Email:Provider), which the measurement harness wraps in Development
         services.AddSingleton<IGmailAuthService, GmailAuthService>();

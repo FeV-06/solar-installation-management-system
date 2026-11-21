@@ -1,5 +1,6 @@
 using Application.DTOs.CustomerPortal;
 using Application.DTOs.Lead;
+using Application.DTOs.Quote;
 using Application.Errors;
 using Application.Interfaces.Services;
 using Infrastructure.Services;
@@ -13,7 +14,7 @@ namespace WebAPI.Controllers;
 
 [Route("api/customer-portal")]
 [Authorize(Policy = Policies.Customer)]
-public class CustomerPortalController(ICustomerPortalService service, ICustomerAuthService auth, ILeadService leads) : ApiControllerBase
+public class CustomerPortalController(ICustomerPortalService service, ICustomerAuthService auth, ILeadService leads, IQuoteService quotes) : ApiControllerBase
 {
     [HttpGet]
     [ProducesResponseType(StatusCodes.Status200OK)]
@@ -39,5 +40,23 @@ public class CustomerPortalController(ICustomerPortalService service, ICustomerA
         var created = await leads.CreateForCustomerAsync(request, customerId);
         var body = new LeadCreatedResponse(created.Id);
         return created.IsNew ? StatusCode(StatusCodes.Status201Created, body) : Ok(body);
+    }
+
+    /// <summary>Accept and pay (Advance or Full) for an issued proposal.</summary>
+    [HttpPost("quotes/{quoteId:int}/pay")]
+    public async Task<ActionResult<QuoteDto>> PayQuote(int quoteId, [FromBody] CustomerPayQuoteRequest request, CancellationToken ct)
+    {
+        if (CurrentUserId is not { } customerId) return Problem(CustomerAuthErrors.SignedOut);
+        var result = await quotes.AcceptAndPayAsync(quoteId, request, customerId, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
+    /// <summary>Get detailed proposal and BOM for the customer.</summary>
+    [HttpGet("quotes/{quoteId:int}")]
+    public async Task<ActionResult<QuoteDto>> GetQuote(int quoteId, CancellationToken ct)
+    {
+        if (CurrentUserId is not { } customerId) return Problem(CustomerAuthErrors.SignedOut);
+        var result = await quotes.GetByIdAsync(quoteId, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
 }

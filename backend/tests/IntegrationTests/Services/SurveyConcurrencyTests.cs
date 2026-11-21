@@ -88,7 +88,7 @@ public class SurveyConcurrencyTests(PostgresFixture database) : IntegrationTestB
     }
 
     private static SurveyService Service(AppDbContext context) => new(new SurveyRepo(context), new InstallationRepo(context),
-        new UserRepo(context), new UnitOfWork(context), TimeProvider.System);
+        new UserRepo(context), new UnitOfWork(context), new QuoteTemplateEngine(), TimeProvider.System);
 
     private async Task<(Installation Installation, User Admin, User Technician)> SeedProjectAsync()
     {

@@ -482,6 +482,277 @@ namespace Infrastructure.Migrations
                     b.ToTable("outbox_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.PackingOrder", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<DateTime?>("DispatchedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("dispatched_at");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<DateTime?>("PackedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("packed_at");
+
+                    b.Property<int>("QuoteId")
+                        .HasColumnType("integer")
+                        .HasColumnName("quote_id");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.HasKey("Id")
+                        .HasName("pk_packing_orders");
+
+                    b.HasIndex("InstallationId")
+                        .HasDatabaseName("ix_packing_orders_installation_id");
+
+                    b.HasIndex("QuoteId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_packing_orders_quote_id");
+
+                    b.ToTable("packing_orders", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.PackingOrderItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("category");
+
+                    b.Property<bool>("IsPacked")
+                        .HasColumnType("boolean")
+                        .HasColumnName("is_packed");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("item_name");
+
+                    b.Property<int>("PackingOrderId")
+                        .HasColumnType("integer")
+                        .HasColumnName("packing_order_id");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("quantity");
+
+                    b.Property<bool>("RequiresSerialNumber")
+                        .HasColumnType("boolean")
+                        .HasColumnName("requires_serial_number");
+
+                    b.Property<string>("SerialNumber")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("serial_number");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("unit");
+
+                    b.HasKey("Id")
+                        .HasName("pk_packing_order_items");
+
+                    b.HasIndex("PackingOrderId")
+                        .HasDatabaseName("ix_packing_order_items_packing_order_id");
+
+                    b.ToTable("packing_order_items", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.Quote", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<DateTime?>("AcceptedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("accepted_at");
+
+                    b.Property<decimal>("AdvancePercentage")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("advance_percentage");
+
+                    b.Property<decimal>("AdvanceRequiredRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("advance_required_rupees");
+
+                    b.Property<decimal>("AmountPaidRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("amount_paid_rupees");
+
+                    b.Property<decimal>("BasePriceRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("base_price_rupees");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<decimal>("EstimatedSubsidyRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("estimated_subsidy_rupees");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<DateTime?>("PaidAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("paid_at");
+
+                    b.Property<string>("PaymentReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("payment_reference");
+
+                    b.Property<string>("PaymentStatus")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("payment_status");
+
+                    b.Property<DateTime?>("SentAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("sent_at");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<decimal>("SystemCapacityKw")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("system_capacity_kw");
+
+                    b.Property<string>("SystemType")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("system_type");
+
+                    b.Property<decimal>("TotalAmountRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("total_amount_rupees");
+
+                    b.HasKey("Id")
+                        .HasName("pk_quotes");
+
+                    b.HasIndex("InstallationId")
+                        .HasDatabaseName("ix_quotes_installation_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_quotes_status");
+
+                    b.ToTable("quotes", (string)null);
+                });
+
+            modelBuilder.Entity("Domain.Entities.QuoteItem", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("Category")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("category");
+
+                    b.Property<string>("ItemName")
+                        .IsRequired()
+                        .HasMaxLength(255)
+                        .HasColumnType("character varying(255)")
+                        .HasColumnName("item_name");
+
+                    b.Property<decimal>("Quantity")
+                        .HasPrecision(10, 2)
+                        .HasColumnType("numeric(10,2)")
+                        .HasColumnName("quantity");
+
+                    b.Property<int>("QuoteId")
+                        .HasColumnType("integer")
+                        .HasColumnName("quote_id");
+
+                    b.Property<string>("Specification")
+                        .IsRequired()
+                        .HasMaxLength(1000)
+                        .HasColumnType("character varying(1000)")
+                        .HasColumnName("specification");
+
+                    b.Property<decimal>("TotalCostRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("total_cost_rupees");
+
+                    b.Property<string>("Unit")
+                        .IsRequired()
+                        .HasMaxLength(20)
+                        .HasColumnType("character varying(20)")
+                        .HasColumnName("unit");
+
+                    b.Property<decimal>("UnitCostRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("unit_cost_rupees");
+
+                    b.HasKey("Id")
+                        .HasName("pk_quote_items");
+
+                    b.HasIndex("QuoteId")
+                        .HasDatabaseName("ix_quote_items_quote_id");
+
+                    b.ToTable("quote_items", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -784,6 +1055,63 @@ namespace Infrastructure.Migrations
                     b.Navigation("RetriedBy");
                 });
 
+            modelBuilder.Entity("Domain.Entities.PackingOrder", b =>
+                {
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithMany("PackingOrders")
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_packing_orders_installations_installation_id");
+
+                    b.HasOne("Domain.Entities.Quote", "Quote")
+                        .WithOne("PackingOrder")
+                        .HasForeignKey("Domain.Entities.PackingOrder", "QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_packing_orders_quotes_quote_id");
+
+                    b.Navigation("Installation");
+
+                    b.Navigation("Quote");
+                });
+
+            modelBuilder.Entity("Domain.Entities.PackingOrderItem", b =>
+                {
+                    b.HasOne("Domain.Entities.PackingOrder", "PackingOrder")
+                        .WithMany("Items")
+                        .HasForeignKey("PackingOrderId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_packing_order_items_packing_orders_packing_order_id");
+
+                    b.Navigation("PackingOrder");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Quote", b =>
+                {
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithMany("Quotes")
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_quotes_installations_installation_id");
+
+                    b.Navigation("Installation");
+                });
+
+            modelBuilder.Entity("Domain.Entities.QuoteItem", b =>
+                {
+                    b.HasOne("Domain.Entities.Quote", "Quote")
+                        .WithMany("Items")
+                        .HasForeignKey("QuoteId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_quote_items_quotes_quote_id");
+
+                    b.Navigation("Quote");
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.HasOne("Domain.Entities.User", null)
@@ -827,6 +1155,25 @@ namespace Infrastructure.Migrations
             modelBuilder.Entity("Domain.Entities.Customer", b =>
                 {
                     b.Navigation("Installations");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Installation", b =>
+                {
+                    b.Navigation("PackingOrders");
+
+                    b.Navigation("Quotes");
+                });
+
+            modelBuilder.Entity("Domain.Entities.PackingOrder", b =>
+                {
+                    b.Navigation("Items");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Quote", b =>
+                {
+                    b.Navigation("Items");
+
+                    b.Navigation("PackingOrder");
                 });
 #pragma warning restore 612, 618
         }

@@ -14,6 +14,8 @@ import { NotAllowed, NotFound } from '../states/States';
 import { QueryView } from '../states/QueryView';
 import { ScheduleForm } from './ScheduleForm';
 import { SurveyChip } from './SurveyChip';
+import { InstallationQuote } from './InstallationQuote';
+import { WarehousePackingSection } from './WarehousePackingSection';
 
 export function InstallationPage() {
   const { role } = useCurrentUser();
@@ -42,6 +44,10 @@ function InstallationView({ installation }: { installation: Installation }) {
     <QueryView query={query} what="this installation’s surveys">
       {surveys => <InstallationSurveys installation={installation} surveys={surveys} page={page} setPage={setPage} />}
     </QueryView>
+    <InstallationQuote installation={installation} />
+    {installation.status !== 'Survey' && installation.status !== 'Design' && (
+      <WarehousePackingSection installation={installation} />
+    )}
   </>;
 }
 
