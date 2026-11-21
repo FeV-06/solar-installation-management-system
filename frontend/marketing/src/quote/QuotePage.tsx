@@ -230,15 +230,15 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <AddressField value={values.street} error={err('street')} onChange={street => change('street', street)} onPick={pickAddress} />
             <div className="two">
               <TextField name="city" label="City" autoComplete="address-level2" value={values.city} error={err('city')} onChange={change} />
-              <TextField name="zip" label="ZIP code" autoComplete="postal-code" inputMode="numeric" value={values.zip} error={err('zip')} onChange={change} />
+              <TextField name="zip" label="PIN code" autoComplete="postal-code" inputMode="numeric" value={values.zip} error={err('zip')} onChange={change} />
             </div>
             <div className={`field${err('state') ? ' has-error' : ''}`}>
-              <label className="field-label" htmlFor="q-state">State</label>
+              <label className="field-label" htmlFor="q-state">State or union territory</label>
               <div className="control control-lg">
                 <select id="q-state" name="state" autoComplete="address-level1" value={values.state}
                   aria-describedby={err('state') ? 'q-state-err' : undefined} aria-invalid={err('state') ? true : undefined}
                   onChange={e => change('state', e.target.value)}>
-                  <option value="">Choose a state</option>
+                  <option value="">Choose a state or union territory</option>
                   {STATES.map(([code, name]) => <option key={code} value={code}>{name}</option>)}
                 </select>
                 <Icon icon={ChevronDown} className="chev" />
@@ -260,10 +260,10 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <Choice name="bill" legend="Your usual monthly electricity bill" className="c4" value={values.bill} error={err('bill')} onChange={change}
               help="A rough idea is enough. It tells us how big a system to look at."
               options={[
-                { value: 'under100', label: 'Under $100' },
-                { value: '100-200', label: '$100 to $200' },
-                { value: '200-300', label: '$200 to $300' },
-                { value: '300plus', label: 'Over $300' },
+                { value: 'in-under1500', label: 'Under ₹1,500' },
+                { value: 'in-1500-3000', label: '₹1,500–₹3,000' },
+                { value: 'in-3000-5000', label: '₹3,000–₹5,000' },
+                { value: 'in-5000plus', label: '₹5,000 or more' },
               ]} />
             <Choice name="time" legend="When should we contact you?" className="c3" value={values.time} error={err('time')} onChange={change}
               options={[

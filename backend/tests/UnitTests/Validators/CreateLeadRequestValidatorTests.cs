@@ -30,6 +30,35 @@ public class CreateLeadRequestValidatorTests
     };
 
     [Theory]
+    [InlineData("IN", "GA", "403001", "Asia/Kolkata")]
+    [InlineData("US", "GA", "30301", "America/New_York")]
+    [InlineData("IN", "DL", "110001", "Asia/Kolkata")]
+    [InlineData("US", "TX", "78701", "America/Chicago")]
+    public void Validate_CountryStateAndPostalCode_SelectTheCorrectTimeZone(string country, string state, string postalCode, string expectedZone)
+    {
+        var request = ValidRequest();
+        request.PropertyCountry = country;
+        request.PropertyState = state;
+        request.PropertyZipCode = postalCode;
+        Validator.Validate(request).IsValid.Should().BeTrue();
+        global::Domain.Common.UsTimeZones.ProposedFor(country, state).Should().Be(expectedZone);
+    }
+
+    [Theory]
+    [InlineData("IN", "DL", "78701")]
+    [InlineData("IN", "TX", "110001")]
+    [InlineData("US", "DL", "110001")]
+    [InlineData("XX", "DL", "110001")]
+    public void Validate_CountryMustMatchStateAndPostalCode(string country, string state, string postalCode)
+    {
+        var request = ValidRequest();
+        request.PropertyCountry = country;
+        request.PropertyState = state;
+        request.PropertyZipCode = postalCode;
+        Validator.Validate(request).IsValid.Should().BeFalse();
+    }
+
+    [Theory]
     [InlineData("TX")]
     [InlineData("DC")]
     [InlineData("WY")]

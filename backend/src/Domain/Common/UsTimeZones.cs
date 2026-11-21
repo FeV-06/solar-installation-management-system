@@ -32,13 +32,7 @@ public static class UsTimeZones
 
     private static readonly IReadOnlyDictionary<string, string> ByState = new Dictionary<string, string>(StringComparer.Ordinal)
     {
-        // India (Asia/Kolkata)
-        ["AN"] = India, ["AP"] = India, ["AR"] = India, ["AS"] = India, ["BR"] = India, ["CH"] = India,
-        ["CG"] = India, ["DN"] = India, ["DL"] = India, ["GA"] = India, ["GJ"] = India, ["HR"] = India,
-        ["HP"] = India, ["JK"] = India, ["JH"] = India, ["KA"] = India, ["KL"] = India, ["LA"] = India,
-        ["LD"] = India, ["MP"] = India, ["MH"] = India, ["MN"] = India, ["ML"] = India, ["MZ"] = India,
-        ["NL"] = India, ["OD"] = India, ["PY"] = India, ["PB"] = India, ["RJ"] = India, ["SK"] = India,
-        ["TN"] = India, ["TS"] = India, ["TR"] = India, ["UP"] = India, ["UK"] = India, ["WB"] = India,
+
         ["CT"] = Eastern, ["DE"] = Eastern, ["DC"] = Eastern, ["FL"] = Eastern, ["GA"] = Eastern, ["IN"] = Eastern,
         ["KY"] = Eastern, ["ME"] = Eastern, ["MD"] = Eastern, ["MA"] = Eastern, ["MI"] = Eastern, ["NH"] = Eastern,
         ["NJ"] = Eastern, ["NY"] = Eastern, ["NC"] = Eastern, ["OH"] = Eastern, ["PA"] = Eastern, ["RI"] = Eastern,
@@ -63,4 +57,13 @@ public static class UsTimeZones
     /// <summary>The zone proposed for this state, with its name; null if it isn't a state's code.</summary>
     public static (string Id, string Name)? ProposalFor(string stateCode) =>
         ByState.TryGetValue(stateCode, out var zone) ? All.Single(z => z.Id == zone) : null;
+
+    public static (string Id, string Name)? ProposalFor(string country, string stateCode) =>
+        country.Equals("IN", StringComparison.OrdinalIgnoreCase) && IndiaStates.IsCode(stateCode)
+            ? (India, "India (IST)")
+            : country.Equals("US", StringComparison.OrdinalIgnoreCase) ? ProposalFor(stateCode) : null;
+
+    public static string ProposedFor(string country, string stateCode) =>
+        ProposalFor(country, stateCode)?.Id
+        ?? throw new ArgumentException($"No supported time zone for country '{country}' and state '{stateCode}'.");
 }

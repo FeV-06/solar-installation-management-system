@@ -41,6 +41,14 @@ public class CustomerJourneyTests(PostgresFixture database) : ApiTestBase(databa
         replay.StatusCode.Should().Be(HttpStatusCode.BadRequest);
 
         var quote = ErrorResponseTests.ValidLead(email: "different@example.test");
+        quote.PropertyStreet = "12 MG Road";
+        quote.PropertyCity = "New Delhi";
+        quote.PropertyState = "DL";
+        quote.PropertyZipCode = "110001";
+        quote.PropertyCountry = "IN";
+        quote.PropertyLatitude = null;
+        quote.PropertyLongitude = null;
+        quote.MonthlyBillRange = "in-1500-3000";
         var created = await customer.PostAsJsonAsync("/api/customer-portal/quote-requests", quote, Ct);
         created.StatusCode.Should().Be(HttpStatusCode.Created);
         var leadId = (await Json(created)).GetProperty("id").GetInt32();
@@ -76,6 +84,35 @@ public class CustomerJourneyTests(PostgresFixture database) : ApiTestBase(databa
         (await admin.PostAsJsonAsync($"/api/surveys/{surveyId}/review", new { approved = true }, Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
         var installed = await Context.Installations.AsNoTracking().SingleAsync(i => i.Id == installationId, Ct);
         installed.Status.Should().Be(InstallationStatus.Design);
+        installed.TimeZone.Should().Be("Asia/Kolkata");
+    }
+
+    [Fact]
+    public async Task ConcurrentOtpVerification_OnlyOneSessionIsIssued()
+    {
+        var sent = new ConcurrentQueue<EmailMessage>();
+        var client = CreateClient(services => services.AddScoped<IEmailSender>(_ => new CaptureSender(sent)));
+        (await client.PostAsJsonAsync("/api/customer-auth/request-otp", new { email = "parallel@example.test" }, Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
+        var code = Regex.Match(sent.Single().TextBody, @"Your code: ([0-9]{6})").Groups[1].Value;
+        var attempts = Enumerable.Range(0, 5).Select(_ => client.PostAsJsonAsync("/api/customer-auth/verify-otp",
+            new { email = "parallel@example.test", code }, Ct));
+        var responses = await Task.WhenAll(attempts);
+        responses.Count(response => response.StatusCode == HttpStatusCode.OK).Should().Be(1);
+        (await Context.Customers.AsNoTracking().CountAsync(Ct)).Should().Be(1);
+        (await Context.CustomerOtps.AsNoTracking().CountAsync(o => o.ConsumedAtUtc != null, Ct)).Should().Be(1);
+    }
+
+    [Fact]
+    public async Task ConcurrentOtpRequests_OnlyOneCodeIsIssued()
+    {
+        var sent = new ConcurrentQueue<EmailMessage>();
+        var client = CreateClient(services => services.AddScoped<IEmailSender>(_ => new CaptureSender(sent)));
+        var attempts = Enumerable.Range(0, 5).Select(_ => client.PostAsJsonAsync("/api/customer-auth/request-otp",
+            new { email = "parallel@example.test" }, Ct));
+        var responses = await Task.WhenAll(attempts);
+        responses.Count(response => response.StatusCode == HttpStatusCode.OK).Should().Be(1);
+        sent.Should().ContainSingle();
+        (await Context.CustomerOtps.AsNoTracking().CountAsync(o => o.ConsumedAtUtc == null, Ct)).Should().Be(1);
     }
 
     [Fact]

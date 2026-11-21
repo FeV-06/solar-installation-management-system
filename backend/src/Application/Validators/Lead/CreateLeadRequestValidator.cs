@@ -32,11 +32,20 @@ public class CreateLeadRequestValidator : AbstractValidator<CreateLeadRequest>
         RuleFor(x => x.PropertyState)
             .Cascade(CascadeMode.Stop)
             .NotEmpty().WithMessage("State is required")
-            .Must(UsStates.IsCode).WithMessage("State must be the two-letter code of a US state or DC, such as TX");
+            .Must((request, state) => string.Equals(request.PropertyCountry, "IN", StringComparison.OrdinalIgnoreCase)
+                ? IndiaStates.IsCode(state) : UsStates.IsCode(state))
+            .WithMessage("Choose a state or union territory valid for the property country");
+
+        RuleFor(x => x.PropertyCountry)
+            .Must(country => country is not null && (country.Equals("IN", StringComparison.OrdinalIgnoreCase) || country.Equals("US", StringComparison.OrdinalIgnoreCase)))
+            .WithMessage("Country must be IN or US");
 
         RuleFor(x => x.PropertyZipCode)
-            .NotEmpty().WithMessage("Zip code is required")
-            .Matches(@"^\d{5}(-\d{4})?$").WithMessage("Zip code must be in format 12345 or 12345-6789");
+            .NotEmpty().WithMessage("Postal code is required")
+            .Must((request, code) => code is not null && (string.Equals(request.PropertyCountry, "IN", StringComparison.OrdinalIgnoreCase)
+                ? System.Text.RegularExpressions.Regex.IsMatch(code, @"^[1-9]\d{5}$")
+                : System.Text.RegularExpressions.Regex.IsMatch(code, @"^\d{5}(-\d{4})?$")))
+            .WithMessage("Enter a valid postal code for the country");
 
         // Coordinates are optional, but come as a pair
         RuleFor(x => x.PropertyLatitude)

@@ -1,6 +1,6 @@
 // Address suggestions from Geoapify's address autocomplete (free plan: 3,000 requests a day, its attribution shown
-// with the suggestions). Only complete US addresses are offered: a house number, a street, a city, one of the states
-// and a ZIP code. Any failure is the caller's cue to leave the field as a plain one. An answer can take a second or
+// with the suggestions). Only complete Indian addresses are offered: a house number, street, city, state and PIN.
+// Any failure is the caller's cue to leave the field as a plain one. An answer can take a second or
 // more (0.5 to 4.4 s in a test of eight lookups), so the field never waits on one: see AddressField.tsx.
 import { STATE_CODES } from '../content/states';
 import type { PickedAddress } from './types';
@@ -17,14 +17,14 @@ type GeoapifyResult = {
   lon?: number;
 };
 
-/** Complete US addresses from Geoapify's JSON answer (format=json), without duplicates, at most `limit`. */
+/** Complete Indian addresses from Geoapify's JSON answer, without duplicates, at most `limit`. */
 export function parseSuggestions(json: unknown, limit = 5): PickedAddress[] {
   const results = (json as { results?: GeoapifyResult[] } | null)?.results ?? [];
   const seen = new Set<string>();
   const out: PickedAddress[] = [];
   for (const r of results) {
     const state = r.state_code?.toUpperCase() ?? '';
-    const zip = r.postcode?.match(/^\d{5}(-\d{4})?/)?.[0];
+    const zip = r.postcode?.match(/^[1-9]\d{5}$/)?.[0];
     if (!r.housenumber || !r.street || !r.city || !STATE_CODES.has(state) || !zip
       || typeof r.lat !== 'number' || typeof r.lon !== 'number') continue;
     const address = { street: `${r.housenumber} ${r.street}`, city: r.city, state, zip, latitude: r.lat, longitude: r.lon };
@@ -68,7 +68,7 @@ export function narrowAnswer(addresses: PickedAddress[], answeredText: string, t
 
 export async function searchAddresses(text: string, signal: AbortSignal): Promise<PickedAddress[]> {
   const url = new URL('https://api.geoapify.com/v1/geocode/autocomplete');
-  url.search = new URLSearchParams({ text, filter: 'countrycode:us', format: 'json', lang: 'en', limit: '10', apiKey: GEOAPIFY_KEY }).toString();
+  url.search = new URLSearchParams({ text, filter: 'countrycode:in', format: 'json', lang: 'en', limit: '10', apiKey: GEOAPIFY_KEY }).toString();
   const response = await fetch(url, { signal });
   if (!response.ok) throw new Error(`The address service answered ${response.status}`);
   return parseSuggestions(await response.json());

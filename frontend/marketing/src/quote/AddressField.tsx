@@ -16,7 +16,7 @@ type Note = 'none' | 'hint' | 'searching' | 'nothing';
 
 const MIN_LENGTH = 3;
 const DEBOUNCE_MS = 300;   // a pause between words, not between letters: each lookup counts against the daily limit
-const EXAMPLE = '2104 Oak Hollow Dr';
+const EXAMPLE = '12 MG Road';
 
 /** The part of a suggestion that matches what was typed, in bold */
 function Marked({ text, query }: { text: string; query: string }) {

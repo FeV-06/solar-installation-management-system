@@ -6,7 +6,7 @@ const values: QuoteValues = {
   ...EMPTY_VALUES,
   firstName: ' Jane ', lastName: 'Doe', email: ' jane.doe@example.com', phone: '(512) 555-0134',
   street: '2104 Oak Hollow Dr', city: 'Austin', zip: '78704', state: 'TX',
-  type: 'House', own: 'yes', bill: '100-200', time: 'Morning', notes: '',
+  type: 'House', own: 'yes', bill: 'in-1500-3000', time: 'Morning', notes: '',
 };
 
 const picked: PickedAddress = {
@@ -24,12 +24,12 @@ describe('buildLeadRequest', () => {
       propertyCity: 'Austin',
       propertyState: 'TX',
       propertyZipCode: '78704',
-      propertyCountry: 'US',
+      propertyCountry: 'IN',
       propertyLatitude: null,
       propertyLongitude: null,
       propertyType: 'House',
       isPropertyOwner: true,
-      monthlyBillRange: '100-200',
+      monthlyBillRange: 'in-1500-3000',
       bestTimeToContact: 'Morning',
       notes: null,
     });

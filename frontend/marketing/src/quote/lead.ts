@@ -10,7 +10,7 @@ export type CreateLeadRequest = {
   propertyCity: string;
   propertyState: string;
   propertyZipCode: string;
-  propertyCountry: 'US';
+  propertyCountry: 'IN';
   /** Only when the address was picked from the suggestions and not changed since; never guessed */
   propertyLatitude: number | null;
   propertyLongitude: number | null;
@@ -44,7 +44,7 @@ export function buildLeadRequest(values: QuoteValues, picked: PickedAddress | nu
     propertyCity: values.city.trim(),
     propertyState: values.state,
     propertyZipCode: values.zip.trim(),
-    propertyCountry: 'US',
+    propertyCountry: 'IN',
     propertyLatitude: located ? coordinate(picked.latitude) : null,
     propertyLongitude: located ? coordinate(picked.longitude) : null,
     propertyType: values.type,

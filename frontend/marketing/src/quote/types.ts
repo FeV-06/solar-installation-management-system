@@ -1,7 +1,7 @@
 // The quote form's values, as the visitor enters them.
 
 export type PropertyType = 'House' | 'Apartment' | 'Commercial';
-export type BillRange = 'under100' | '100-200' | '200-300' | '300plus';
+export type BillRange = 'in-under1500' | 'in-1500-3000' | 'in-3000-5000' | 'in-5000plus';
 export type ContactTime = 'Morning' | 'Afternoon' | 'Evening';
 
 export type QuoteValues = {

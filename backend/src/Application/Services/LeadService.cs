@@ -111,7 +111,7 @@ public class LeadService(
             customer.ContactAddressId = lead.AddressId;
         }
         var installation = Installation.ForConvertedLead(lead, customer.Id,
-            UsTimeZones.ProposedFor(lead.Address.State), now);
+            UsTimeZones.ProposedFor(lead.Address.Country, lead.Address.State), now);
         installations.Add(installation);
 
         var outcome = await unitOfWork.SaveAsync();

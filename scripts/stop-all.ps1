@@ -1,2 +1,1 @@
-Stop-Process -Name WebAPI, node, postgres -Force -ErrorAction SilentlyContinue
-Write-Host "All frontend, backend, and PostgreSQL services have been stopped." -ForegroundColor Yellow
+throw 'This script is disabled because it stopped unrelated Node and PostgreSQL processes. Stop only the Sol processes you started.'

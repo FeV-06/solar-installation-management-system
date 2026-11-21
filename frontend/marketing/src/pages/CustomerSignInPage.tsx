@@ -5,7 +5,7 @@ import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
 
 export function CustomerSignInPage() {
-  const { customer, loading: checkingSession, requestOtp, verifyOtp } = useCustomerAuth();
+  const { customer, loading: checkingSession, error: sessionError, refresh, requestOtp, verifyOtp } = useCustomerAuth();
   const navigate = useNavigate();
   const returnTo = new URLSearchParams(useLocation().search).get('returnTo') === '/quote' ? '/quote' : '/portal';
 
@@ -18,6 +18,7 @@ export function CustomerSignInPage() {
 
   if (customer) return <Navigate to={returnTo} replace />;
   if (checkingSession) return <section className="band" data-theme="night"><div className="wrap" role="status">Checking your session…</div></section>;
+  if (sessionError) return <section className="band" data-theme="night"><div className="wrap"><p role="alert">{sessionError}</p><button className="btn btn-secondary" type="button" onClick={() => void refresh()}>Try again</button></div></section>;
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();

@@ -26,6 +26,10 @@ export const EMPTY: Record<Filter['key'], { title: string; text: string }> = {
 
 /** The quote form's bill ranges, as the office reads them; a value from before the form had them shows as it is. */
 const BILLS: Record<string, string> = {
+  'in-under1500': 'Under ₹1,500 a month',
+  'in-1500-3000': '₹1,500–3,000 a month',
+  'in-3000-5000': '₹3,000–5,000 a month',
+  'in-5000plus': '₹5,000 or more a month',
   under100: 'Under $100 a month',
   '100-200': '$100–200 a month',
   '200-300': '$200–300 a month',

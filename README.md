@@ -15,6 +15,8 @@ The current code includes enquiry intake, staff sessions, staff-account manageme
 
 ## Local development
 
+- The imported setup and stop scripts are disabled: one contained a database password and another stopped every Node/PostgreSQL process. Rotate the exposed password if it was used; it remains in Git history. Use the steps below instead.
+
 Requirements: Git, .NET 10 SDK, Node.js 22.13+ (or a supported newer release), pnpm 11.15.1 and Docker with Compose. The database image is PostgreSQL 18. Do not commit credentials or genuine customer information.
 
 ### Quick Start / Running the Apps

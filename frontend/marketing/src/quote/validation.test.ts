@@ -4,8 +4,8 @@ import { firstError, OWNER_RULE, validateStep } from './validation';
 
 const complete: QuoteValues = {
   firstName: 'Jane', lastName: 'Doe', email: 'jane.doe@example.com', phone: '(512) 555-0134',
-  street: '2104 Oak Hollow Dr', city: 'Austin', zip: '78704', state: 'TX',
-  type: 'House', own: 'yes', bill: '100-200', time: 'Morning', notes: '',
+  street: '2104 Oak Hollow Dr', city: 'Austin', zip: '110001', state: 'DL',
+  type: 'House', own: 'yes', bill: 'in-1500-3000', time: 'Morning', notes: '',
 };
 
 describe('validateStep', () => {
@@ -18,15 +18,15 @@ describe('validateStep', () => {
       firstName: 'Enter your first name.',
       lastName: 'Enter your last name.',
       email: 'Enter an email address, like name@example.com.',
-      phone: 'Enter a phone number, like (512) 555-0134.',
+      phone: 'Enter a phone number, like +91 98765 43210.',
     });
   });
 
-  it.each(['7870', '787040', 'ABCDE', '78704-12'])('refuses the ZIP code %s', zip => {
-    expect(validateStep(1, { ...complete, zip }).zip).toBe('Enter a 5-digit ZIP code, like 78704.');
+  it.each(['11000', '011000', 'ABCDE', '110001-12'])('refuses the PIN code %s', zip => {
+    expect(validateStep(1, { ...complete, zip }).zip).toBe('Enter a 6-digit PIN code, like 110001.');
   });
 
-  it.each(['78704', '78704-1234'])('accepts the ZIP code %s', zip => {
+  it.each(['110001', '160001'])('accepts the PIN code %s', zip => {
     expect(validateStep(1, { ...complete, zip }).zip).toBeUndefined();
   });
 

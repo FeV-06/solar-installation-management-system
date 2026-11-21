@@ -38,22 +38,6 @@ public class CustomerAuthService(
         var normalizedEmail = Emails.Normalize(request.Email);
         var now = DateTime.UtcNow;
 
-        // Rate limiting check: check if an active OTP was created in the last 60 seconds
-        var recentOtp = await db.CustomerOtps
-            .Where(o => o.NormalizedEmail == normalizedEmail && o.ConsumedAtUtc == null && o.CreatedAtUtc > now.AddSeconds(-60))
-            .FirstOrDefaultAsync(cancellationToken);
-
-        if (recentOtp != null)
-            return Result.Failure<bool>(CustomerAuthErrors.RateLimited);
-
-        // Invalidate any previous unconsumed OTPs for this email
-        var previousOtps = await db.CustomerOtps
-            .Where(o => o.NormalizedEmail == normalizedEmail && o.ConsumedAtUtc == null && o.ExpiresAtUtc > now)
-            .ToListAsync(cancellationToken);
-
-        foreach (var p in previousOtps)
-            p.ConsumedAtUtc = now;
-
         // Generate cryptographically secure 6-digit OTP
         var otpNumber = RandomNumberGenerator.GetInt32(100000, 1000000);
         var otpString = otpNumber.ToString(CultureInfo.InvariantCulture);
@@ -74,8 +58,20 @@ public class CustomerAuthService(
             CreatedByIp = clientIp
         };
 
-        db.CustomerOtps.Add(otpRecord);
-        await db.SaveChangesAsync(cancellationToken);
+        // A per-email transaction lock makes the cooldown and replacement atomic across concurrent requests.
+        await using (var transaction = await db.Database.BeginTransactionAsync(cancellationToken))
+        {
+            await db.Database.ExecuteSqlAsync($"SELECT pg_advisory_xact_lock(hashtextextended({normalizedEmail}, 0))", cancellationToken);
+            var recentOtp = await db.CustomerOtps.AnyAsync(o => o.NormalizedEmail == normalizedEmail &&
+                o.ConsumedAtUtc == null && o.CreatedAtUtc > now.AddSeconds(-60), cancellationToken);
+            if (recentOtp) return Result.Failure<bool>(CustomerAuthErrors.RateLimited);
+
+            await db.CustomerOtps.Where(o => o.NormalizedEmail == normalizedEmail && o.ConsumedAtUtc == null)
+                .ExecuteUpdateAsync(update => update.SetProperty(o => o.ConsumedAtUtc, now), cancellationToken);
+            db.CustomerOtps.Add(otpRecord);
+            await db.SaveChangesAsync(cancellationToken);
+            await transaction.CommitAsync(cancellationToken);
+        }
 
         // Send Email via configured EmailSender
         var rendered = CustomerEmails.OtpVerification(otpString, request.Email.Trim(), 5);

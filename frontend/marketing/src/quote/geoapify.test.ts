@@ -2,14 +2,14 @@ import { describe, expect, it } from 'vitest';
 import { matchesTyped, narrowAnswer, normalizeQuery, parseSuggestions, startsWithNumber } from './geoapify';
 
 const result = (overrides: object = {}) => ({
-  housenumber: '2104', street: 'Oak Hollow Drive', city: 'Austin', state_code: 'TX', postcode: '78704',
+  housenumber: '2104', street: 'Oak Hollow Drive', city: 'New Delhi', state_code: 'DL', postcode: '110001',
   lat: 30.245, lon: -97.771, ...overrides,
 });
 
 describe('parseSuggestions', () => {
-  it('turns a complete US address into the form fields and its coordinates', () => {
+  it('turns a complete Indian address into the form fields and its coordinates', () => {
     expect(parseSuggestions({ results: [result()] })).toEqual([
-      { street: '2104 Oak Hollow Drive', city: 'Austin', state: 'TX', zip: '78704', latitude: 30.245, longitude: -97.771 },
+      { street: '2104 Oak Hollow Drive', city: 'New Delhi', state: 'DL', zip: '110001', latitude: 30.245, longitude: -97.771 },
     ]);
   });
 
@@ -17,17 +17,17 @@ describe('parseSuggestions', () => {
     ['without a house number', { housenumber: undefined }],
     ['without a street', { street: undefined }],
     ['without a city', { city: undefined }],
-    ['without a ZIP code', { postcode: undefined }],
-    ['outside the states (Puerto Rico)', { state_code: 'PR' }],
+    ['without a PIN code', { postcode: undefined }],
+    ['outside supported states', { state_code: 'PR' }],
     ['without coordinates', { lat: undefined }],
   ])('leaves out an address %s', (_, overrides) => {
     expect(parseSuggestions({ results: [result(overrides)] })).toEqual([]);
   });
 
-  it('keeps a ZIP+4 as given, and capitalises the state', () => {
-    const [address] = parseSuggestions({ results: [result({ postcode: '78704-1234', state_code: 'tx' })] });
-    expect(address.zip).toBe('78704-1234');
-    expect(address.state).toBe('TX');
+  it('keeps the PIN and capitalises the state', () => {
+    const [address] = parseSuggestions({ results: [result({ postcode: '110001', state_code: 'dl' })] });
+    expect(address.zip).toBe('110001');
+    expect(address.state).toBe('DL');
   });
 
   it('drops duplicates and keeps at most five', () => {
@@ -44,7 +44,7 @@ describe('parseSuggestions', () => {
 });
 
 describe('the street field helpers', () => {
-  const address = { street: '100 Congress Avenue', city: 'Austin', state: 'TX', zip: '78701', latitude: 30.26, longitude: -97.74 };
+  const address = { street: '100 Congress Ave', city: 'New Delhi', state: 'DL', zip: '110001', latitude: 28.6139, longitude: 77.2090 };
 
   it.each([['100 co', true], [' 2104 Oak', true], ['new york', false], ['Congress Ave', false], ['', false]])(
     'looks up %j: %s', (text, expected) => {
@@ -55,7 +55,7 @@ describe('the street field helpers', () => {
     expect(normalizeQuery('  100   Congress AVE ')).toBe('100 congress ave');
   });
 
-  it.each(['100', '100 cong', '100 Congress Ave', '100 congress av. aus', '100 congress tx 787'])(
+  it.each(['100', '100 cong', '100 Congress Ave', '100 congress av. new', '100 congress dl 110'])(
     'keeps an address shown while %j is typed', text => {
       expect(matchesTyped(address, text)).toBe(true);
     });

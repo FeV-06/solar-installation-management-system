@@ -37,7 +37,7 @@ public sealed record LeadResponse(
             lead.Notes, lead.Status.ToString(), lead.CreatedAt, lead.ContactedAt, lead.ClosedAt,
             lead.NextStatuses.Select(s => s.ToString()).ToList(),
             customer is null ? null : CustomerLinkResponse.From(customer), installationId,
-            lead.IsOpen && UsTimeZones.ProposalFor(lead.Address.State) is { } zone
+            lead.IsOpen && UsTimeZones.ProposalFor(lead.Address.Country, lead.Address.State) is { } zone
                 ? new TimeZoneResponse(zone.Id, zone.Name)
                 : null);
 }

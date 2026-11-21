@@ -10,7 +10,7 @@ export function QuoteSentPage() {
         <p className="label eyebrow">Request sent</p>
         <h1 className="display">We have your request<i className="dot" /></h1>
         <ol className="next-list">
-          <li><span className="n">01</span><span>{sent?.email ? `A copy is on its way to ${sent.email}.` : 'A copy is on its way to your inbox.'}</span></li>
+          <li><span className="n">01</span><span>{sent?.email ? `Your request is linked to ${sent.email}.` : 'Your request is linked to your account.'}</span></li>
           <li><span className="n">02</span><span>{sent?.time ? `We'll contact you in the ${sent.time.toLowerCase()}.` : "We'll contact you at the time of day you chose."}</span></li>
           <li><span className="n">03</span><span>If you want to go ahead, we book a site survey: the first of six steps.</span></li>
         </ol>
