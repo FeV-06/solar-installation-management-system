@@ -34,15 +34,7 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     public async Task<ActionResult<LeadResponse>> GetById(int id)
     {
         var result = await service.GetByIdAsync(id);
-        if (!result.IsSuccess)
-            return Problem(result.Error);
-
-        // Sales owns first contact. Keep a new lead's full account details out of the Admin dashboard until Sales
-        // records that contact; returning 404 also avoids revealing that the hidden account exists by ID.
-        if (User.IsInRole(nameof(UserRole.Admin)) && result.Value.Status == nameof(LeadStatus.New))
-            return NotFound();
-
-        return Ok(result.Value);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
 
     /// <summary>
@@ -79,14 +71,8 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<LeadResponse>> UpdateStatus(int id, [FromBody] UpdateLeadStatusRequest request)
     {
-        if (request.Status == nameof(LeadStatus.Contacted) && !User.IsInRole(nameof(UserRole.Sales)))
-            return Forbid();
-
         if (User.IsInRole(nameof(UserRole.Sales)) && request.Status != nameof(LeadStatus.Contacted))
             return Forbid();
-
-        if (User.IsInRole(nameof(UserRole.Admin)) && await IsNewLeadAsync(id))
-            return NotFound();
 
         var result = await service.UpdateStatusAsync(id, request);
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
@@ -111,16 +97,7 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<LeadResponse>> Update(int id, [FromBody] UpdateLeadRequest request)
     {
-        if (await IsNewLeadAsync(id))
-            return NotFound();
-
         var result = await service.UpdateAsync(id, request);
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
-    }
-
-    private async Task<bool> IsNewLeadAsync(int id)
-    {
-        var result = await service.GetByIdAsync(id);
-        return result.IsSuccess && result.Value.Status == nameof(LeadStatus.New);
     }
 }
