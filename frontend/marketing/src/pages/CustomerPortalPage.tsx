@@ -812,89 +812,67 @@ export function CustomerPortalPage() {
 
         {/* Rooftop Handover & Commissioning Certificate Card (Scene 4) */}
         {data?.handoverProof && (
-          <div style={{
-            marginTop: '2rem',
-            padding: '1.75rem',
-            background: 'var(--bg-raised)',
-            borderRadius: 'var(--radius-xl)',
-            boxShadow: 'inset 0 0 0 1px var(--line)',
-            borderLeft: '4px solid #16a34a',
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Icon icon={CheckCircle2} size={22} color="#16a34a" />
-                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
-                  Commissioning &amp; Handover Certificate
-                </h3>
-              </div>
-              <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '9999px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>
-                ✓ Official Customer Sign-Off
+          <section className="handover-certificate" aria-labelledby="handover-certificate-title">
+            <div className="handover-certificate__head">
+              <h3 className="handover-certificate__title" id="handover-certificate-title">
+                Commissioning and handover certificate
+              </h3>
+              <span className="handover-certificate__status">
+                <Icon icon={CheckCircle2} size={15} />
+                Official customer sign-off
               </span>
             </div>
 
-            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Your rooftop solar system has been installed, commissioned, and synchronized with the electricity grid. Tested live generation: <b style={{ color: '#16a34a' }}>{data.handoverProof.testedGenerationKw} kW</b> on your {data.handoverProof.systemCapacityKw} kW array.
+            <p className="handover-certificate__summary">
+              Your rooftop solar system has been installed, commissioned, and synchronized with the electricity grid. Tested live generation: <b className="handover-certificate__output">{data.handoverProof.testedGenerationKw} kW</b> on your {data.handoverProof.systemCapacityKw} kW array.
             </p>
 
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+            <div className="handover-certificate__evidence">
               <div>
-                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Rooftop Solar Array</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <span className="handover-certificate__label">Rooftop solar array</span>
+                <div className="handover-certificate__photo">
                   <img
                     src={data.handoverProof.panelArrayPhotoUrl}
-                    alt="Panels"
+                    alt="Solar panel array on the roof"
                     onError={(e) => { e.currentTarget.src = '/images/panel_array.svg'; }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
               </div>
               <div>
-                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Inverter &amp; DCDB</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <span className="handover-certificate__label">Inverter and DCDB</span>
+                <div className="handover-certificate__photo">
                   <img
                     src={data.handoverProof.inverterPhotoUrl}
-                    alt="Inverter"
+                    alt="Inverter and DC distribution board"
                     onError={(e) => { e.currentTarget.src = '/images/inverter_wiring.svg'; }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
               </div>
               <div>
-                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Net Meter &amp; Earthing</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                <span className="handover-certificate__label">Net meter and earthing</span>
+                <div className="handover-certificate__photo">
                   <img
                     src={data.handoverProof.meterPhotoUrl}
-                    alt="Meter"
+                    alt="Net meter and earthing"
                     onError={(e) => { e.currentTarget.src = '/images/net_meter.svg'; }}
-                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
                   />
                 </div>
               </div>
             </div>
 
             {data.handoverProof.customerSignatureData && (
-              <div style={{
-                padding: '0.85rem 1rem',
-                background: 'var(--bg)',
-                borderRadius: 'var(--radius-lg)',
-                boxShadow: 'inset 0 0 0 1px var(--line)',
-                display: 'flex',
-                justifyContent: 'space-between',
-                alignItems: 'center',
-                flexWrap: 'wrap',
-                gap: '0.75rem',
-              }}>
+              <div className="handover-certificate__signature">
                 <div>
-                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Digitally Accepted by Homeowner</span>
-                  <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.9rem' }}>{data.handoverProof.signedByName}</div>
-                  <div style={{ fontSize: '0.75rem', color: 'var(--faint)' }}>{new Date(data.handoverProof.signedAt).toLocaleString()}</div>
+                  <span className="handover-certificate__label">Digitally accepted by homeowner</span>
+                  <div className="handover-certificate__signer">{data.handoverProof.signedByName}</div>
+                  <div className="handover-certificate__signed-at">{new Date(data.handoverProof.signedAt).toLocaleString()}</div>
                 </div>
-                <div style={{ background: '#000', padding: '0.25rem 0.6rem', borderRadius: '6px' }}>
-                  <img src={data.handoverProof.customerSignatureData} alt="Signature" style={{ maxHeight: '45px', maxWidth: '160px', objectFit: 'contain', filter: 'brightness(1.2)' }} />
+                <div className="handover-certificate__signature-mark">
+                  <img src={data.handoverProof.customerSignatureData} alt="Customer signature" />
                 </div>
               </div>
             )}
-          </div>
+          </section>
         )}
           </div>
         )}
@@ -1058,7 +1036,7 @@ export function CustomerPortalPage() {
           }}>
             <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Icon icon={ShieldCheck} size={22} color="#16a34a" />
+                <Icon icon={ShieldCheck} size={22} color="var(--accent)" />
                 <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
                   Equipment &amp; Warranty Protection
                 </h3>
@@ -1081,22 +1059,19 @@ export function CustomerPortalPage() {
                     background: 'var(--bg)',
                     borderRadius: 'var(--radius-lg)',
                     boxShadow: 'inset 0 0 0 1px var(--line)',
-                    borderLeft: w.isCovered ? '4px solid #16a34a' : '4px solid #dc2626',
                     display: 'flex',
                     flexDirection: 'column',
                     gap: '0.5rem',
                   }}
                 >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
+                  <div style={{ display: 'grid', gridTemplateColumns: 'minmax(0, 1fr) auto', alignItems: 'start', gap: '0.5rem 0.75rem' }}>
+                    <span style={{ minWidth: 0, overflowWrap: 'anywhere', fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
                     <span
                       style={{
                         fontSize: '0.75rem',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '9999px',
-                        background: w.isCovered ? '#dcfce7' : '#fee2e2',
-                        color: w.isCovered ? '#166534' : '#991b1b',
-                        fontWeight: 700,
+                        color: 'var(--muted)',
+                        fontWeight: 600,
+                        whiteSpace: 'nowrap',
                       }}
                     >
                       {w.isCovered ? `${w.remainingDays} days left` : 'Expired'}
