@@ -38,6 +38,16 @@ export const PAGES: PageMeta[] = [
     description: 'Tell us about your property in three short steps, and we contact you at the time you choose.',
   },
   {
+    path: '/signin',
+    title: 'Sign In — Sol Energy',
+    description: 'Sign in with your email verification code to access your Sol customer portal.',
+  },
+  {
+    path: '/portal',
+    title: 'Customer Portal — Sol Energy',
+    description: 'Track your solar installation quote, site survey, and project progress.',
+  },
+  {
     path: '/quote/sent',
     title: 'Request sent — Sol Energy',
     description: 'What happens after a quote request.',

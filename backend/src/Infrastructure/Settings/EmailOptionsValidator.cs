@@ -16,11 +16,15 @@ public sealed class EmailOptionsValidator(IHostEnvironment environment) : IValid
 
         if (options.Provider == EmailProvider.Gmail)
         {
-            var results = new List<ValidationResult>();
-            Validator.TryValidateObject(options.Gmail, new ValidationContext(options.Gmail), results,
-                validateAllProperties: true);
-            failures.AddRange(results.SelectMany(result => result.MemberNames)
-                .Select(member => $"Email:Gmail:{member} is required when Email:Provider is Gmail."));
+            // If direct SMTP password is provided, OAuth client isn't mandatory
+            if (string.IsNullOrWhiteSpace(options.Smtp.Password))
+            {
+                var results = new List<ValidationResult>();
+                Validator.TryValidateObject(options.Gmail, new ValidationContext(options.Gmail), results,
+                    validateAllProperties: true);
+                failures.AddRange(results.SelectMany(result => result.MemberNames)
+                    .Select(member => $"Email:Gmail:{member} is required when Email:Provider is Gmail and no Smtp:Password is set."));
+            }
         }
 
         if (options.Provider == EmailProvider.Recording && environment.IsProduction())

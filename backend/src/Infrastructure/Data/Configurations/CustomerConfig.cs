@@ -56,6 +56,17 @@ public class CustomerConfig : IEntityTypeConfiguration<Customer>
             .HasColumnName("registration_date")
             .IsRequired();
 
+        builder.Property(c => c.IsActive)
+            .HasColumnName("is_active")
+            .HasDefaultValue(true)
+            .IsRequired();
+
+        builder.Property(c => c.LastLoginAt)
+            .HasColumnName("last_login_at");
+
+        builder.Property(c => c.SessionsValidFrom)
+            .HasColumnName("sessions_valid_from");
+
         builder.Property(c => c.ContactAddressId)
             .HasColumnName("contact_address_id");
 

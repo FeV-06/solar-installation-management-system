@@ -7,6 +7,7 @@ namespace Infrastructure.Data;
 public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(options)
 {
     public DbSet<Customer> Customers { get; set; }
+    public DbSet<CustomerOtp> CustomerOtps { get; set; }
     public DbSet<Address> Addresses { get; set; }
     public DbSet<Lead> Leads { get; set; }
     public DbSet<Installation> Installations { get; set; }

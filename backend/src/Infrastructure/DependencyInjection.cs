@@ -72,11 +72,13 @@ public static class DependencyInjection
             // unique index rejecting a duplicate, which the unit of work turns into SaveOutcome.Duplicate). Whoever
             // catches the exception decides: an expected failure isn't an error, and an unexpected one reaches the
             // API's exception handler, which logs it once. Raise the EF Core categories to Debug to see these events.
-            .ConfigureWarnings(warnings => warnings.Log(
-                (RelationalEventId.CommandError, LogLevel.Debug),
-                (RelationalEventId.ConnectionError, LogLevel.Debug),
-                (CoreEventId.SaveChangesFailed, LogLevel.Debug),
-                (CoreEventId.QueryIterationFailed, LogLevel.Debug))));
+            .ConfigureWarnings(warnings => warnings
+                .Ignore(RelationalEventId.PendingModelChangesWarning)
+                .Log(
+                    (RelationalEventId.CommandError, LogLevel.Debug),
+                    (RelationalEventId.ConnectionError, LogLevel.Debug),
+                    (CoreEventId.SaveChangesFailed, LogLevel.Debug),
+                    (CoreEventId.QueryIterationFailed, LogLevel.Debug))));
 
         // Hangfire, for scheduled jobs. Its storage belongs to this host, in the container, rather than to the process:
         // Hangfire's global JobStorage.Current is shared by every host in a process, and the integration tests run many
@@ -126,7 +128,7 @@ public static class DependencyInjection
                     ValidateAudience = true,
                     ValidateLifetime = true,
                     ValidateIssuerSigningKey = true,
-                    ValidAudience = jwt.Audience,
+                    ValidAudiences = [jwt.Audience, "sol-customer"],
                     ValidIssuer = jwt.Issuer,
                     IssuerSigningKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(jwt.Secret)),
                     ValidAlgorithms = [SecurityAlgorithms.HmacSha256],
@@ -134,26 +136,46 @@ public static class DependencyInjection
                     RoleClaimType = Session.RoleClaim,
                     ClockSkew = TimeSpan.Zero
                 };
-                // The staff app's session travels in a cookie (ADR 7); the API reference, tests and scripts send the
-                // Authorization header, which wins when both are there.
+                // The staff app's session travels in a cookie (ADR 7); the customer portal travels in sol_customer_session
                 options.Events = new JwtBearerEvents
                 {
                     OnMessageReceived = context =>
                     {
-                        if (string.IsNullOrEmpty(context.Request.Headers.Authorization) &&
-                            context.Request.Cookies.TryGetValue(Session.CookieName, out var token))
-                            context.Token = token;
+                        if (string.IsNullOrEmpty(context.Request.Headers.Authorization))
+                        {
+                            if (context.Request.Cookies.TryGetValue(Session.CustomerCookieName, out var customerToken))
+                                context.Token = customerToken;
+                            else if (context.Request.Cookies.TryGetValue(Session.CookieName, out var staffToken))
+                                context.Token = staffToken;
+                        }
                         return Task.CompletedTask;
                     },
-                    // A valid token isn't enough: the account must still exist and be active, and its password must not
-                    // have been replaced since the session started, so deactivating an account or setting a new
-                    // password ends its sessions at their next request (ADR 7).
                     OnTokenValidated = async context =>
                     {
+                        var role = context.Principal?.FindFirst(Session.RoleClaim)?.Value;
+                        if (role == Session.CustomerRole)
+                        {
+                            var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();
+                            var sub = context.Principal?.FindFirst(Session.UserIdClaim)?.Value;
+                            if (int.TryParse(sub, out var customerId))
+                            {
+                                var customer = await db.Customers.AsNoTracking().FirstOrDefaultAsync(c => c.Id == customerId);
+                                if (customer != null && customer.IsActive)
+                                {
+                                    if (!customer.SessionsValidFrom.HasValue ||
+                                        (context.SecurityToken is JsonWebToken token && token.IssuedAt >= customer.SessionsValidFrom.Value))
+                                        return;
+                                }
+                            }
+                            context.HttpContext.Items[SignedOutKey] = true;
+                            context.Fail("Customer account is inactive, removed, or session expired.");
+                            return;
+                        }
+
                         var users = context.HttpContext.RequestServices.GetRequiredService<IUserRepo>();
                         var id = context.Principal?.FindFirst(Session.UserIdClaim)?.Value;
-                        if (int.TryParse(id, out var userId) && context.SecurityToken is JsonWebToken token &&
-                            await users.AcceptsSessionAsync(userId, token.IssuedAt))
+                        if (int.TryParse(id, out var userId) && context.SecurityToken is JsonWebToken staffToken &&
+                            await users.AcceptsSessionAsync(userId, staffToken.IssuedAt))
                             return;
                         context.HttpContext.Items[SignedOutKey] = true;
                         context.Fail("The account was deactivated, no longer exists, or has a new password.");
@@ -189,6 +211,8 @@ public static class DependencyInjection
         services.AddScoped<IUserRepo, UserRepo>();
         services.AddScoped<IOutboxRepo, OutboxRepo>();
         services.AddScoped<IUnitOfWork, UnitOfWork>();
+        services.AddScoped<ICustomerAuthService, CustomerAuthService>();
+        services.AddScoped<ICustomerPortalService, CustomerPortalService>();
 
         // Email: the provider's sender (Email:Provider), which the measurement harness wraps in Development
         services.AddSingleton<IGmailAuthService, GmailAuthService>();

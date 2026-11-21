@@ -13,6 +13,9 @@ import { PrivacyPage } from './pages/PrivacyPage';
 import { QuestionsPage } from './pages/QuestionsPage';
 import { QuotePage } from './quote/QuotePage';
 import { QuoteSentPage } from './quote/QuoteSentPage';
+import { CustomerSignInPage } from './pages/CustomerSignInPage';
+import { CustomerPortalPage } from './pages/CustomerPortalPage';
+import { CustomerAuthProvider } from './lib/customerAuth';
 
 export default function App() {
   const logoRef = useRef<SVGSVGElement>(null);
@@ -40,7 +43,7 @@ export default function App() {
   }, [pathname]);
 
   return (
-    <>
+    <CustomerAuthProvider>
       <Header logoRef={logoRef} mainRef={mainRef} />
       <main id="main" tabIndex={-1} ref={mainRef}>
         <Routes>
@@ -50,11 +53,13 @@ export default function App() {
           <Route path="/about" element={<AboutPage />} />
           <Route path="/quote" element={<QuotePage />} />
           <Route path="/quote/sent" element={<QuoteSentPage />} />
+          <Route path="/signin" element={<CustomerSignInPage />} />
+          <Route path="/portal" element={<CustomerPortalPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="*" element={<NotFoundPage />} />
         </Routes>
       </main>
       <Footer />
-    </>
+    </CustomerAuthProvider>
   );
 }

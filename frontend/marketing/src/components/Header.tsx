@@ -1,9 +1,10 @@
 import { useEffect, useRef, type Ref, type RefObject } from 'react';
 import { Link, NavLink, useLocation } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, User, X } from 'lucide-react';
 import { addScroller } from '../lib/motion';
 import { Icon } from './Icon';
 import { Wordmark } from './Wordmark';
+import { useCustomerAuth } from '../lib/customerAuth';
 
 const NAV = [
   ['/how-it-works', 'How it works'],
@@ -13,14 +14,11 @@ const NAV = [
 
 type Props = { logoRef: Ref<SVGSVGElement>; mainRef: RefObject<HTMLElement | null> };
 
-/**
- * The header: the logo, the pages and the quote button. After the first 40 px of scroll it becomes a pill, and its
- * colours follow the section under it. On phones the pages open in a full-screen menu.
- */
 export function Header({ logoRef, mainRef }: Props) {
   const headerRef = useRef<HTMLElement>(null);
   const sheetRef = useRef<HTMLDialogElement>(null);
   const { pathname } = useLocation();
+  const { customer, logout } = useCustomerAuth();
 
   useEffect(() => addScroller(() => {
     const header = headerRef.current;
@@ -45,7 +43,21 @@ export function Header({ logoRef, mainRef }: Props) {
           <nav className="label" aria-label="Main">
             {NAV.map(([to, name]) => <NavLink key={to} to={to} end>{name}</NavLink>)}
           </nav>
-          <Link className="btn btn-primary btn-sm" to="/quote">Get a quote</Link>
+
+          <div style={{ display: 'flex', alignItems: 'center', gap: '8px' }}>
+            {customer ? (
+              <>
+                <Link className="btn btn-primary btn-sm" to="/quote">Get a quote</Link>
+                <Link className="btn btn-quiet btn-sm" to="/portal" style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}>
+                  <Icon icon={User} />
+                  <span>Dashboard</span>
+                </Link>
+              </>
+            ) : (
+              <Link className="btn btn-primary btn-sm" to="/signin">Sign In</Link>
+            )}
+          </div>
+
           <button className="btn btn-quiet btn-icon menu-btn" type="button" aria-label="Open the menu" aria-haspopup="dialog" onClick={() => sheetRef.current?.showModal()}>
             <Icon icon={Menu} />
           </button>
@@ -59,8 +71,18 @@ export function Header({ logoRef, mainRef }: Props) {
         <nav aria-label="Main">
           <NavLink to="/" end>Home</NavLink>
           {NAV.map(([to, name]) => <NavLink key={to} to={to} end>{name}</NavLink>)}
+          {customer ? (
+            <>
+              <NavLink to="/quote" end>Get a quote</NavLink>
+              <NavLink to="/portal" end>Dashboard</NavLink>
+              <button type="button" className="btn btn-quiet" style={{ textAlign: 'left', padding: '12px 0' }} onClick={() => logout()}>
+                Sign Out
+              </button>
+            </>
+          ) : (
+            <NavLink to="/signin" end>Sign In</NavLink>
+          )}
         </nav>
-        <Link className="btn btn-primary btn-lg" to="/quote">Get a free quote</Link>
       </dialog>
     </>
   );
