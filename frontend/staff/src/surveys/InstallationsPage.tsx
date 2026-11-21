@@ -39,7 +39,20 @@ export function InstallationsPage() {
         ))}
       </div>
 
-      <QueryView query={query} what="installations">
+      <QueryView
+        query={query}
+        what="installations"
+        isEmpty={data => data.length === 0}
+        empty={
+          <div className="state-box">
+            <div className="state">
+              <span className="ring"><Icon icon={SolarPanel} /></span>
+              <p className="a-heading">No installations found</p>
+              <p>There are no solar installation projects yet.</p>
+            </div>
+          </div>
+        }
+      >
         {installations => {
           const filtered = filter === 'All'
             ? installations
