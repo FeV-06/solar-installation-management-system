@@ -1,8 +1,10 @@
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { useState, type FormEvent } from 'react';
+import { ChevronDown } from 'lucide-react';
 import { ApiError } from '../api/errors';
 import { submitReport, SURVEYS_KEY, type Report, type Survey } from '../api/surveys';
 import { FormNotice, SubmitButton } from '../components/SubmitButton';
+import { Icon } from '../components/Icon';
 
 type Field = { key: keyof Omit<Report, 'gridSuitable' | 'notes'>; label: string; unit: string; min: string; max: string };
 const FIELDS: Field[] = [
@@ -48,6 +50,7 @@ export function ReportForm({ survey }: { survey: Survey }) {
       </div>)}
         <div className="field"><label className="field-label" htmlFor="gridSuitable">Is the grid connection suitable?</label><div className="control">
           <select id="gridSuitable" name="gridSuitable" required defaultValue=""><option value="">Choose an answer</option><option value="true">Yes</option><option value="false">No</option></select>
+          <Icon icon={ChevronDown} className="chev" />
         </div></div>
       </div>
       <div className="field"><label className="field-label" htmlFor="survey-notes">Notes <span className="opt">Optional</span></label>

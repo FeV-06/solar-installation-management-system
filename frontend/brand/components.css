@@ -73,7 +73,10 @@ code, pre { font-family: var(--font-mono); }
 .field-error .ic { width: 1rem; height: 1rem; margin-top: .1rem; }
 .control { position: relative; display: flex; align-items: center; gap: .55rem; min-width: 0; height: 2.5rem; padding: 0 .85rem; border-radius: var(--radius-md); background: var(--bg-field); box-shadow: inset 0 0 0 1px var(--line-strong); transition: box-shadow var(--duration-fast) var(--ease-out); }
 .control-lg { height: 3rem; padding: 0 1rem; border-radius: var(--radius-lg); }
-.control input, .control select, .control textarea { all: unset; flex: 1; min-width: 0; font: 400 1rem/1.4 var(--font-sans); color: var(--fg); }
+.control input, .control textarea { all: unset; flex: 1; min-width: 0; font: 400 1rem/1.4 var(--font-sans); color: var(--fg); }
+.control select { appearance: none; -webkit-appearance: none; -moz-appearance: none; background: transparent; border: 0; outline: 0; box-shadow: none; flex: 1; min-width: 0; height: 100%; font: 400 1rem/1.4 var(--font-sans); color: var(--fg); cursor: pointer; padding-right: 2rem; color-scheme: inherit; }
+.control select:not(:has(~ .chev)) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23f59e0b' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); background-repeat: no-repeat; background-position: right .75rem center; background-size: 1rem; }
+[data-theme="limestone"] .control select:not(:has(~ .chev)) { background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%23d97706' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpath d='m6 9 6 6 6-6'/%3E%3C/svg%3E"); }
 .control input::placeholder, .control textarea::placeholder { color: var(--faint); }
 .control:hover { box-shadow: inset 0 0 0 1px var(--fg); }
 .control:focus-within { box-shadow: inset 0 0 0 2px var(--focus); }
@@ -81,9 +84,10 @@ code, pre { font-family: var(--font-mono); }
 .control .ic { width: 1.1rem; height: 1.1rem; color: var(--faint); }
 .control-area { height: auto; align-items: stretch; padding: .65rem .85rem; }
 .control-area textarea { display: block; min-height: 5.5rem; resize: vertical; overflow: auto; white-space: pre-wrap; overflow-wrap: break-word; }
-.control select { cursor: pointer; padding-right: 1.5rem; }
-.control .chev { position: absolute; right: .8rem; pointer-events: none; }
-.control option { color: initial; }
+.control .chev { position: absolute; right: .8rem; pointer-events: none; color: var(--accent); }
+select option, .control option, option { font-size: .95rem; padding: .6rem .85rem; background-color: #1a1a1e !important; color: #f4f4f5 !important; }
+[data-theme="night"] select, [data-theme="night"] option, [data-theme="night"] select option, [data-theme="night"] .control select, [data-theme="night"] .control option { color-scheme: dark !important; background-color: #1a1a1e !important; color: #f4f4f5 !important; }
+[data-theme="limestone"] select, [data-theme="limestone"] option, [data-theme="limestone"] select option, [data-theme="limestone"] .control select, [data-theme="limestone"] .control option { color-scheme: light !important; background-color: #ffffff !important; color: #1c1917 !important; }
 
 /* ===================== Notices ===================== */
 .tone-info { --tone: var(--info); }

@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
+import { CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
 
@@ -963,35 +963,39 @@ export function CustomerPortalPage() {
               <form onSubmit={handleCreateTicket}>
                 <div style={{ marginBottom: '1rem' }}>
                   <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Select Hardware Unit</label>
-                  <select
-                    value={ticketSerial}
-                    onChange={(e) => setTicketSerial(e.target.value)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
-                  >
-                    {data?.warranties?.map((w) => (
-                      <option key={w.id} value={w.serialNumber}>
-                        {w.itemName} (S/N: {w.serialNumber}) - {w.isCovered ? 'Under Warranty' : 'Expired'}
-                      </option>
-                    ))}
-                    {(!data?.warranties || data.warranties.length === 0) && (
-                      <option value="INVERTER-MAIN">Solar String Inverter</option>
-                    )}
-                  </select>
+                  <div className="control">
+                    <select
+                      value={ticketSerial}
+                      onChange={(e) => setTicketSerial(e.target.value)}
+                    >
+                      {data?.warranties?.map((w) => (
+                        <option key={w.id} value={w.serialNumber}>
+                          {w.itemName} (S/N: {w.serialNumber}) - {w.isCovered ? 'Under Warranty' : 'Expired'}
+                        </option>
+                      ))}
+                      {(!data?.warranties || data.warranties.length === 0) && (
+                        <option value="INVERTER-MAIN">Solar String Inverter</option>
+                      )}
+                    </select>
+                    <Icon icon={ChevronDown} className="chev" />
+                  </div>
                 </div>
 
                 <div style={{ marginBottom: '1rem' }}>
                   <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Fault Code / Problem Type</label>
-                  <select
-                    value={ticketFault}
-                    onChange={(e) => setTicketFault(e.target.value)}
-                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
-                  >
-                    <option value="E04 - Inverter Fault / Zero Generation">E04 - Inverter Overheat / Zero Generation</option>
-                    <option value="E01 - Grid Synchronization Fault">E01 - Grid Synchronization Fault</option>
-                    <option value="E08 - Earth Leakage / Ground Fault">E08 - Earth Leakage / Ground Fault</option>
-                    <option value="E12 - Accidental Physical Damage">E12 - Accidental / Physical Damage</option>
-                    <option value="OTHER - Generation Drop">OTHER - Severe Generation Drop</option>
-                  </select>
+                  <div className="control">
+                    <select
+                      value={ticketFault}
+                      onChange={(e) => setTicketFault(e.target.value)}
+                    >
+                      <option value="E04 - Inverter Fault / Zero Generation">E04 - Inverter Overheat / Zero Generation</option>
+                      <option value="E01 - Grid Synchronization Fault">E01 - Grid Synchronization Fault</option>
+                      <option value="E08 - Earth Leakage / Ground Fault">E08 - Earth Leakage / Ground Fault</option>
+                      <option value="E12 - Accidental Physical Damage">E12 - Accidental / Physical Damage</option>
+                      <option value="OTHER - Generation Drop">OTHER - Severe Generation Drop</option>
+                    </select>
+                    <Icon icon={ChevronDown} className="chev" />
+                  </div>
                 </div>
 
                 <div style={{ marginBottom: '1rem' }}>

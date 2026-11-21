@@ -6,6 +6,7 @@ import {
   ShieldCheck,
   Clock,
   LoaderCircle,
+  ChevronDown,
 } from 'lucide-react';
 import {
   fetchServiceTickets,
@@ -362,27 +363,29 @@ export function TicketsPage() {
 
             <div style={{ marginBottom: '1rem' }}>
               <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Cause Classification</label>
-              <select
-                value={damageType}
-                onChange={(e) => {
-                  const val = e.target.value;
-                  setDamageType(val);
-                  if (val === 'AccidentalDamage') {
-                    setIsCovered(false);
-                    setPartsCost(32000);
-                    setLaborCost(1500);
-                  } else {
-                    setIsCovered(true);
-                    setPartsCost(0);
-                    setLaborCost(0);
-                  }
-                }}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)' }}
-              >
-                <option value="EquipmentFailure">Equipment Failure / Rain Damage (Warranty Defect)</option>
-                <option value="AccidentalDamage">Accidental Damage / Physical Tampering (Billable)</option>
-                <option value="WearAndTear">Out-of-Warranty Wear &amp; Tear (Billable)</option>
-              </select>
+              <div className="control">
+                <select
+                  value={damageType}
+                  onChange={(e) => {
+                    const val = e.target.value;
+                    setDamageType(val);
+                    if (val === 'AccidentalDamage') {
+                      setIsCovered(false);
+                      setPartsCost(32000);
+                      setLaborCost(1500);
+                    } else {
+                      setIsCovered(true);
+                      setPartsCost(0);
+                      setLaborCost(0);
+                    }
+                  }}
+                >
+                  <option value="EquipmentFailure">Equipment Failure / Rain Damage (Warranty Defect)</option>
+                  <option value="AccidentalDamage">Accidental Damage / Physical Tampering (Billable)</option>
+                  <option value="WearAndTear">Out-of-Warranty Wear &amp; Tear (Billable)</option>
+                </select>
+                <Icon icon={ChevronDown} className="chev" />
+              </div>
             </div>
 
             <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>

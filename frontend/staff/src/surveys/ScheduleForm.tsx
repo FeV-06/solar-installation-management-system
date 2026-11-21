@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useNavigate } from 'react-router-dom';
-import { CalendarClock } from 'lucide-react';
+import { CalendarClock, ChevronDown } from 'lucide-react';
 import { fetchTechnicians, rescheduleSurvey, scheduleSurvey, SURVEYS_KEY, type Survey } from '../api/surveys';
 import { ApiError } from '../api/errors';
 import { Icon } from '../components/Icon';
@@ -55,6 +55,7 @@ export function ScheduleForm({ installationId, existing, onCancel }: { installat
               <select id="survey-technician" name="technicianId" required value={technicianId} onChange={event => setTechnicianId(event.target.value)}>
                 <option value="">Choose technician</option>{people.map(person => <option key={person.id} value={person.id}>{person.name} · {person.email}</option>)}
               </select>
+              <Icon icon={ChevronDown} className="chev" />
             </div></div>
             <div className="field"><label className="field-label" htmlFor="survey-when">Appointment</label><div className="control">
               <input id="survey-when" name="scheduledAt" type="datetime-local" required value={scheduledAt} onChange={event => setScheduledAt(event.target.value)} />
