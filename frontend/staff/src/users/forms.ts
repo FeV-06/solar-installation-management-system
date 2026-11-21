@@ -13,10 +13,10 @@ const email = z.string().trim().min(1, { message: 'Enter an email, such as name@
   .regex(EMAIL, 'Enter an email, such as name@example.com.');
 const password = (message: string) => z.string().min(1, message);
 
-export const technicianSchema = z.object({ name, email, password: password('Enter a password.') });
+export const technicianSchema = z.object({ name, email, password: password('Enter a password.'), role: z.enum(['Technician', 'Sales']).default('Technician') });
 export type TechnicianValues = z.infer<typeof technicianSchema>;
 
-export const editSchema = z.object({ name, email });
+export const editSchema = z.object({ name, email, role: z.enum(['Admin', 'Technician', 'Sales']).optional() });
 export type EditValues = z.infer<typeof editSchema>;
 
 export const newPasswordSchema = z.object({ password: password('Enter a password.') });

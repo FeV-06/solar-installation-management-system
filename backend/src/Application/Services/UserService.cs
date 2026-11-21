@@ -59,7 +59,7 @@ public class UserService(IUserRepo users, IPasswordHasher hasher, IUnitOfWork un
             Email = request.Email.Trim(),
             NormalizedEmail = User.NormalizeEmail(request.Email),
             PasswordHash = hasher.Hash(request.Password),
-            Role = UserRole.Technician,
+            Role = Enum.Parse<UserRole>(request.Role, ignoreCase: false),
             IsActive = true,
             CreatedAt = DateTime.UtcNow
         };
@@ -83,6 +83,12 @@ public class UserService(IUserRepo users, IPasswordHasher hasher, IUnitOfWork un
         user.Name = request.Name.Trim();
         user.Email = request.Email.Trim();
         user.NormalizedEmail = User.NormalizeEmail(request.Email);
+        if (request.Role is { } role && Enum.TryParse<UserRole>(role, ignoreCase: false, out var newRole) && user.Role != newRole)
+        {
+            user.Role = newRole;
+            var now = DateTime.UtcNow;
+            user.SessionsValidFrom = new DateTime(now.Ticks - now.Ticks % TimeSpan.TicksPerSecond, DateTimeKind.Utc);
+        }
         return await SaveAsync(id);
     }
 

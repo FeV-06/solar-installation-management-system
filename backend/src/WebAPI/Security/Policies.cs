@@ -15,6 +15,12 @@ public static class Policies
     /// <summary>A technician.</summary>
     public const string Technician = nameof(Technician);
 
+    /// <summary>Sales staff.</summary>
+    public const string Sales = nameof(Sales);
+
+    /// <summary>Admins and sales staff may read leads.</summary>
+    public const string LeadReaders = nameof(LeadReaders);
+
     /// <summary>Any staff account: an Admin or a technician.</summary>
     public const string Staff = nameof(Staff);
 
@@ -27,6 +33,8 @@ public static class Policies
             .SetFallbackPolicy(new AuthorizationPolicyBuilder().RequireAuthenticatedUser().Build())
             .AddPolicy(Admin, policy => policy.RequireRole(nameof(UserRole.Admin)))
             .AddPolicy(Technician, policy => policy.RequireRole(nameof(UserRole.Technician)))
+            .AddPolicy(Sales, policy => policy.RequireRole(nameof(UserRole.Sales)))
+            .AddPolicy(LeadReaders, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Sales)))
             .AddPolicy(Staff, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Technician)))
             .AddPolicy(Customer, policy => policy.RequireRole(Infrastructure.Auth.Session.CustomerRole));
         return services;

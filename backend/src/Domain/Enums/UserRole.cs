@@ -7,5 +7,8 @@ public enum UserRole
     Admin,
 
     /// <summary>Surveyors, installers and inspectors: the installations they are assigned to.</summary>
-    Technician
+    Technician,
+
+    /// <summary>Sales staff: view leads and their progress.</summary>
+    Sales
 }

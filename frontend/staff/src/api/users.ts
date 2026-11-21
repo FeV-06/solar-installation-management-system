@@ -38,14 +38,14 @@ export const fetchUsers = (page: number, signal?: AbortSignal) =>
 export const fetchUser = (id: number, signal?: AbortSignal) =>
   request(`/users/${id}`, { schema: userSchema, signal });
 
-export type NewTechnician = { name: string; email: string; password: string };
+export type NewTechnician = { name: string; email: string; password: string; role?: 'Technician' | 'Sales' };
 
 /** A new technician's account; the API answers with it, without the password. */
 export const createTechnician = (values: NewTechnician) =>
   request('/users', { method: 'POST', body: values, schema: userSchema });
 
 /** A corrected name or a new email; the password and the sessions stay. */
-export const updateUser = (id: number, values: { name: string; email: string }) =>
+export const updateUser = (id: number, values: { name: string; email: string; role?: 'Admin' | 'Technician' | 'Sales' }) =>
   request(`/users/${id}`, { method: 'PUT', body: values });
 
 /** A new password for someone else's account; the API ends that account's sessions. */

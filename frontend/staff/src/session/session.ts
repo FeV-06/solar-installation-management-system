@@ -28,7 +28,7 @@ export function useCurrentUser(): CurrentUser {
 }
 
 /** Where an account lands after signing in: the office on its new leads, a technician on their own work. */
-export const landingFor = (role: Role) => (role === 'Admin' ? '/leads' : '/my-work');
+export const landingFor = (role: Role) => (role === 'Technician' ? '/my-work' : '/leads');
 
 /**
  * The page to go back to after signing in, if it is safe: an address inside the app (one leading slash, so never

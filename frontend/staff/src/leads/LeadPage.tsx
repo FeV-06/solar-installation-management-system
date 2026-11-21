@@ -47,6 +47,8 @@ export function LeadPage() {
 }
 
 function LeadView({ lead }: { lead: Lead }) {
+  const role = useCurrentUser().role;
+  const isAdmin = role === 'Admin';
   const queryClient = useQueryClient();
   const navigate = useNavigate();
   const [open, setOpen] = useState<Open>(null);
@@ -120,12 +122,12 @@ function LeadView({ lead }: { lead: Lead }) {
         <Link className="btn btn-quiet btn-sm back" to="/leads"><Icon icon={ArrowLeft} />Leads</Link>
         <div className="row">
           <h1 className="a-title" id="page-title" tabIndex={-1}>{lead.name} <LeadChip status={lead.status} /></h1>
-          {can.edit && (
+          {(isAdmin && can.edit || role === 'Sales' && can.contact) && (
             <div className="page-actions">
-              {saved && <span className="saved" role="status"><Icon icon={CircleCheck} />{saved}</span>}
-              <button className="btn btn-secondary" type="button" onClick={() => show('edit')}><Icon icon={Pencil} />Edit</button>
-              {can.disqualify && <button className="btn btn-secondary" type="button" onClick={() => show('disqualify')}><Icon icon={Ban} />Disqualify…</button>}
-              {can.lose && <button className="btn btn-secondary" type="button" onClick={() => show('lose')}><Icon icon={CircleDashed} />Mark as lost…</button>}
+              {isAdmin && saved && <span className="saved" role="status"><Icon icon={CircleCheck} />{saved}</span>}
+              {isAdmin && <button className="btn btn-secondary" type="button" onClick={() => show('edit')}><Icon icon={Pencil} />Edit</button>}
+              {isAdmin && can.disqualify && <button className="btn btn-secondary" type="button" onClick={() => show('disqualify')}><Icon icon={Ban} />Disqualify…</button>}
+              {isAdmin && can.lose && <button className="btn btn-secondary" type="button" onClick={() => show('lose')}><Icon icon={CircleDashed} />Mark as lost…</button>}
               {can.contact && (
                 <button className={`btn btn-primary${contact.isPending ? ' is-loading' : ''}`} type="button" aria-busy={contact.isPending || undefined} onClick={() => void doContact()}>
                   <Icon icon={LoaderCircle} className="spin" />
@@ -133,7 +135,7 @@ function LeadView({ lead }: { lead: Lead }) {
                   <span className="btn-text">Mark as contacted</span>
                 </button>
               )}
-              {can.convert && (
+              {isAdmin && can.convert && (
                 <button ref={convertButton} className="btn btn-primary" type="button" onClick={() => show('convert')}><Icon icon={CircleCheck} />Convert…</button>
               )}
             </div>

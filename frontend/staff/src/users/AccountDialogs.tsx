@@ -47,7 +47,7 @@ export function NewTechnicianDialog({ onClose }: { onClose: () => void }) {
   const mutation = useMutation({ mutationFn: createTechnician });
   const { form, notice, onSubmit } = useDialogForm({
     schema: technicianSchema,
-    defaultValues: { name: '', email: '', password: '' },
+    defaultValues: { name: '', email: '', password: '', role: 'Technician' as const },
     emailTaken: 'An account already uses this email.',
     send: async values => {
       const user = await mutation.mutateAsync(values);
@@ -82,11 +82,14 @@ export function NewTechnicianDialog({ onClose }: { onClose: () => void }) {
   return (
     <Dialog labelledBy={TITLE} onClose={onClose}>
       <form noValidate onSubmit={onSubmit}>
-        <p className="a-heading" id={TITLE}>New technician</p>
+        <p className="a-heading" id={TITLE}>New staff account</p>
         <p>They sign in with this email and password. You'll see the password once, to give it to them.</p>
         {notice && <FormNotice>{notice}</FormNotice>}
         <TextField id="nt-name" label="Name" registration={form.register('name')} error={errors.name?.message} />
         <TextField id="nt-email" label="Email" type="email" registration={form.register('email')} error={errors.email?.message} />
+        <div className="field"><label className="field-label" htmlFor="nt-role">Role</label><div className="control">
+          <select id="nt-role" {...form.register('role')}><option value="Technician">Technician</option><option value="Sales">Sales</option></select>
+        </div></div>
         <NewPasswordField
           id="nt-pass" label="Password" help={RULE_HELP} registration={form.register('password')} error={errors.password?.message}
           onGenerate={p => form.setValue('password', p, { shouldValidate: form.formState.isSubmitted })}
@@ -103,10 +106,10 @@ export function NewTechnicianDialog({ onClose }: { onClose: () => void }) {
 /** Edit, from their page: a typo, or a new email. */
 export function EditDialog({ user, onClose, onSaved }: { user: User; onClose: () => void; onSaved: () => void }) {
   const refresh = useRefreshUsers();
-  const mutation = useMutation({ mutationFn: (values: { name: string; email: string }) => updateUser(user.id, values) });
+  const mutation = useMutation({ mutationFn: (values: { name: string; email: string; role?: 'Admin' | 'Technician' | 'Sales' }) => updateUser(user.id, values) });
   const { form, notice, onSubmit } = useDialogForm({
     schema: editSchema,
-    defaultValues: { name: user.name, email: user.email },
+    defaultValues: { name: user.name, email: user.email, role: user.role },
     emailTaken: 'Another account uses this email.',
     send: async values => {
       await mutation.mutateAsync(values);
@@ -124,6 +127,9 @@ export function EditDialog({ user, onClose, onSaved }: { user: User; onClose: ()
         {notice && <FormNotice>{notice}</FormNotice>}
         <TextField id="ed-name" label="Name" registration={form.register('name')} error={errors.name?.message} />
         <TextField id="ed-email" label="Email" type="email" registration={form.register('email')} error={errors.email?.message} />
+        {user.role !== 'Admin' && <div className="field"><label className="field-label" htmlFor="ed-role">Role</label><div className="control">
+          <select id="ed-role" {...form.register('role')}><option value="Technician">Technician</option><option value="Sales">Sales</option></select>
+        </div></div>}
         <div className="actions">
           <Cancel onClose={onClose} />
           <SubmitButton busy={isSubmitting}>Save</SubmitButton>

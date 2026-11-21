@@ -9,5 +9,7 @@ public class UpdateUserRequestValidator : AbstractValidator<UpdateUserRequest>
     {
         RuleFor(x => x.Name).IsAccountName();
         RuleFor(x => x.Email).IsAccountEmail();
+        RuleFor(x => x.Role).Must(role => role is null or "Admin" or "Technician" or "Sales")
+            .WithMessage("Choose Admin, Technician or Sales.");
     }
 }

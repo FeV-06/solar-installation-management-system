@@ -1,6 +1,7 @@
 using Application.DTOs.Common;
 using Application.DTOs.Lead;
 using Application.Interfaces.Services;
+using Domain.Enums;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
@@ -14,10 +15,11 @@ namespace WebAPI.Controllers;
 /// moves (BR-L2), its conversion (BR-L3) and its corrections (FR-L7) each answer the lead as its page shows it.
 /// </summary>
 [Route("api/leads")]
-[Authorize(Policy = Policies.Admin)]
+[Authorize]
 public class LeadsController(ILeadService service) : ApiControllerBase
 {
     [HttpGet]
+    [Authorize(Policy = Policies.LeadReaders)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<PagedResponse<LeadSummaryResponse>>> GetPage([FromQuery] LeadPageRequest request)
@@ -26,6 +28,7 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     }
 
     [HttpGet("{id:int}")]
+    [Authorize(Policy = Policies.LeadReaders)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     public async Task<ActionResult<LeadResponse>> GetById(int id)
@@ -61,17 +64,22 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     }
 
     [HttpPut("{id:int}/status")]
+    [Authorize(Policy = Policies.LeadReaders)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
     public async Task<ActionResult<LeadResponse>> UpdateStatus(int id, [FromBody] UpdateLeadStatusRequest request)
     {
+        if (User.IsInRole(nameof(UserRole.Sales)) && request.Status != nameof(LeadStatus.Contacted))
+            return Forbid();
+
         var result = await service.UpdateStatusAsync(id, request);
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
 
     [HttpPost("{id:int}/convert")]
+    [Authorize(Policy = Policies.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]
     [ProducesResponseType(StatusCodes.Status409Conflict)]
@@ -82,6 +90,7 @@ public class LeadsController(ILeadService service) : ApiControllerBase
     }
 
     [HttpPut("{id:int}")]
+    [Authorize(Policy = Policies.Admin)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     [ProducesResponseType(StatusCodes.Status404NotFound)]

@@ -31,7 +31,7 @@ export const MY_WORK: Section = {
 };
 
 /** The sections an account sees in the navigation. The API checks the role on every request; this only hides links. */
-export const sectionsFor = (role: Role): readonly Section[] => (role === 'Admin' ? OFFICE : [MY_WORK]);
+export const sectionsFor = (role: Role): readonly Section[] => role === 'Admin' ? OFFICE : role === 'Sales' ? OFFICE.slice(0, 1) : [MY_WORK];
 
 /**
  * Whether an address belongs to a section this role sees: after a session ends on a shared computer, the next person

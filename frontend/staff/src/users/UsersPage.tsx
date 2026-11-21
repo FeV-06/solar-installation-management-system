@@ -17,9 +17,11 @@ import { StatusChip } from './StatusChip';
 
 const lastSignIn = (user: User) => (user.lastLoginAt ? formatMoment(user.lastLoginAt) : null);
 
+const initials = (name: string) => name.trim().split(/\s+/).slice(0, 2).map(part => part[0] ?? '').join('').toUpperCase();
+
 /**
  * The Users list (FR-U2): every staff account, active ones first, by name, with its role, its status and when it last
- * signed in. The Admin creates technicians here; a name opens the account. Below 768 px the rows become cards.
+ * signed in. The Admin creates staff accounts here; a name opens the account. Below 768 px the rows become cards.
  */
 export function UsersPage() {
   const me = useCurrentUser();
@@ -31,7 +33,7 @@ export function UsersPage() {
   if (!opensFor(me.role, '/users')) return <NotAllowed />;
 
   const newTechnician = (
-    <button className="btn btn-primary" type="button" onClick={() => setCreating(true)}><Icon icon={UserPlus} />New technician</button>
+    <button className="btn btn-primary" type="button" onClick={() => setCreating(true)}><Icon icon={UserPlus} />New staff account</button>
   );
   // Only the signed-in Admin: nobody else to list yet
   const onlyYou = (data: Page) => data.totalCount === 1 && data.items[0]?.id === me.id;
@@ -42,8 +44,8 @@ export function UsersPage() {
       <QueryView
         query={query} what="the users" isEmpty={onlyYou}
         empty={
-          <Empty icon={Users} title="No technicians yet">
-            You're the only account. Create one for each technician; they sign in with the email and password you give them.
+          <Empty icon={Users} title="No other staff yet">
+            You're the only account. Create an account for each staff member; they sign in with the email and password you give them.
           </Empty>
         }
       >
@@ -59,9 +61,12 @@ export function UsersPage() {
                   {data.items.map(u => (
                     <tr key={u.id}>
                       <td>
-                        <span className="who">
-                          <Link to={`/users/${u.id}`}>{u.name}</Link>
-                          <small>{u.email}</small>
+                        <span className="user-identity">
+                          <span className="avatar users-avatar" aria-hidden="true">{initials(u.name)}</span>
+                          <span className="who">
+                            <Link to={`/users/${u.id}`}>{u.name}</Link>
+                            <small>{u.email}</small>
+                          </span>
                         </span>
                       </td>
                       <td>{u.role}{u.id === me.id && <span className="you">You</span>}</td>
@@ -76,7 +81,10 @@ export function UsersPage() {
               {data.items.map(u => (
                 <li key={u.id}>
                   <Link className="user-card" to={`/users/${u.id}`}>
-                    <b>{u.name}{u.id === me.id && <span className="you">You</span>}</b>
+                    <span className="user-card-head">
+                      <span className="avatar users-avatar" aria-hidden="true">{initials(u.name)}</span>
+                      <b>{u.name}{u.id === me.id && <span className="you">You</span>}</b>
+                    </span>
                     <small>{u.email}<br />Last signed in: {lastSignIn(u) ?? 'never'}</small>
                     <span className="row">
                       <span className="chip tone-neutral"><Icon icon={u.role === 'Admin' ? Lock : HardHat} strokeWidth={2} />{u.role}</span>

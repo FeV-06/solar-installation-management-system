@@ -2,7 +2,7 @@ import { z } from 'zod';
 import { request } from './client';
 import { ApiError } from './errors';
 
-export const ROLES = ['Admin', 'Technician'] as const;
+export const ROLES = ['Admin', 'Technician', 'Sales'] as const;
 export type Role = (typeof ROLES)[number];
 
 /** Who is signed in, as the API describes the account (GET /api/auth/me, and the answer to signing in) */

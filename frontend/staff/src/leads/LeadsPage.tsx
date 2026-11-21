@@ -39,7 +39,7 @@ export function LeadsPage() {
   const query = useQuery({
     queryKey: leadsPageKey(filter.statuses, page, q),
     queryFn: ({ signal }) => fetchLeads(filter.statuses, page, q, signal),
-    enabled: me.role === 'Admin',
+    enabled: me.role === 'Admin' || me.role === 'Sales',
     placeholderData: keepPreviousData,
   });
 
