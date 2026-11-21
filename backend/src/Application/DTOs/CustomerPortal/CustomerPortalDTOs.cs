@@ -19,9 +19,22 @@ public record CustomerInstallationSummary(
     string TimeZone,
     DateTime CreatedAt);
 
+public record CustomerHandoverProof(
+    int InstallationId,
+    decimal SystemCapacityKw,
+    decimal TestedGenerationKw,
+    bool GridConnected,
+    string PanelArrayPhotoUrl,
+    string InverterPhotoUrl,
+    string MeterPhotoUrl,
+    string CustomerSignatureData,
+    string SignedByName,
+    DateTime SignedAt);
+
 public record CustomerPortalData(
     CustomerQuoteSummary? ActiveQuote,
     IReadOnlyList<CustomerQuoteSummary> Quotes,
     IReadOnlyList<CustomerInstallationSummary> Installations,
     QuoteDto? Proposal = null,
-    IReadOnlyList<WarrantyDto>? Warranties = null);
+    IReadOnlyList<WarrantyDto>? Warranties = null,
+    CustomerHandoverProof? HandoverProof = null);

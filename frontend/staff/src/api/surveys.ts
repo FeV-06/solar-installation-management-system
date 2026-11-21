@@ -67,3 +67,41 @@ export type Report = { shadowFreeRoofAreaSquareMetres: number; monthlyBillRupees
 export const submitReport = (id: number, body: Report) => request(`/surveys/${id}/report`, { method: 'PUT', body, schema: surveySchema });
 export const reviewSurvey = (id: number, approved: boolean, notes: string | null) =>
   request(`/surveys/${id}/review`, { method: 'POST', body: { approved, notes }, schema: surveySchema });
+
+export const installationProofSchema = z.object({
+  id: z.number().int(),
+  installationId: z.number().int(),
+  technicianId: z.number().int(),
+  technicianName: z.string(),
+  workStartedAt: z.iso.datetime(),
+  workCompletedAt: z.iso.datetime(),
+  laborHours: z.number(),
+  systemCapacityKw: z.number(),
+  testedGenerationKw: z.number(),
+  gridConnected: z.boolean(),
+  panelArrayPhotoUrl: z.string(),
+  inverterPhotoUrl: z.string(),
+  meterPhotoUrl: z.string(),
+  customerSignatureData: z.string(),
+  signedByName: z.string(),
+  signedAt: z.iso.datetime(),
+  createdAt: z.iso.datetime(),
+});
+export type InstallationProof = z.infer<typeof installationProofSchema>;
+
+export const fetchInstallationProof = (installationId: number, signal?: AbortSignal) =>
+  request(`/installations/${installationId}/proof`, { schema: installationProofSchema, signal });
+
+export const submitInstallationProof = (installationId: number, body: {
+  workStartedAt: string;
+  workCompletedAt: string;
+  systemCapacityKw: number;
+  testedGenerationKw: number;
+  gridConnected: boolean;
+  panelArrayPhotoUrl: string;
+  inverterPhotoUrl: string;
+  meterPhotoUrl: string;
+  customerSignatureData: string;
+  signedByName: string;
+  signedAt: string;
+}) => request(`/installations/${installationId}/proof`, { method: 'POST', body, schema: installationProofSchema });

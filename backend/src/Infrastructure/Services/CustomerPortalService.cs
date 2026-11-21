@@ -112,6 +112,25 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
                 w.RemainingDays(now)))
             .ToListAsync(cancellationToken);
 
-        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto, warranties));
+        var instIds = customer.Installations.Select(i => i.Id).ToList();
+        var proof = await db.InstallationProofs
+            .Where(p => instIds.Contains(p.InstallationId))
+            .OrderByDescending(p => p.CreatedAt)
+            .FirstOrDefaultAsync(cancellationToken);
+
+        CustomerHandoverProof? handoverProof = proof is null ? null : new CustomerHandoverProof(
+            proof.InstallationId,
+            proof.SystemCapacityKw,
+            proof.TestedGenerationKw,
+            proof.GridConnected,
+            proof.PanelArrayPhotoUrl,
+            proof.InverterPhotoUrl,
+            proof.MeterPhotoUrl,
+            proof.CustomerSignatureData,
+            proof.SignedByName,
+            proof.SignedAt
+        );
+
+        return Result.Success(new CustomerPortalData(activeQuote, quoteSummaries, installationSummaries, proposalDto, warranties, handoverProof));
     }
 }

@@ -16,6 +16,7 @@ import { ScheduleForm } from './ScheduleForm';
 import { SurveyChip } from './SurveyChip';
 import { InstallationQuote } from './InstallationQuote';
 import { WarehousePackingSection } from './WarehousePackingSection';
+import { RooftopFieldProofSection } from './RooftopFieldProofSection';
 
 export function InstallationPage() {
   const { role } = useCurrentUser();
@@ -47,6 +48,13 @@ function InstallationView({ installation }: { installation: Installation }) {
     <InstallationQuote installation={installation} />
     {installation.status !== 'Survey' && installation.status !== 'Design' && (
       <WarehousePackingSection installation={installation} />
+    )}
+    {installation.status !== 'Survey' && installation.status !== 'Design' && (
+      <RooftopFieldProofSection
+        installationId={installation.id}
+        customerName={installation.customerName}
+        isTechnician={false}
+      />
     )}
   </>;
 }

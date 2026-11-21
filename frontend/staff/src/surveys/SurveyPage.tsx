@@ -15,6 +15,7 @@ import { QueryView } from '../states/QueryView';
 import { SurveyChip } from './SurveyChip';
 import { ScheduleForm } from './ScheduleForm';
 import { ReportForm } from './ReportForm';
+import { RooftopFieldProofSection } from './RooftopFieldProofSection';
 
 export function SurveyPage() {
   const { role } = useCurrentUser();
@@ -66,6 +67,13 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
           </div>
         )}
       </div>
+    )}
+    {survey.status === 'Approved' && (
+      <RooftopFieldProofSection
+        installationId={survey.installationId}
+        customerName={survey.customerName}
+        isTechnician={!isAdmin}
+      />
     )}
   </>;
 }

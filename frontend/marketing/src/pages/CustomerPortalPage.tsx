@@ -69,12 +69,26 @@ type WarrantyItem = {
   remainingDays: number;
 };
 
+type HandoverProof = {
+  installationId: number;
+  systemCapacityKw: number;
+  testedGenerationKw: number;
+  gridConnected: boolean;
+  panelArrayPhotoUrl: string;
+  inverterPhotoUrl: string;
+  meterPhotoUrl: string;
+  customerSignatureData: string;
+  signedByName: string;
+  signedAt: string;
+};
+
 type PortalData = {
   activeQuote?: QuoteSummary;
   quotes: QuoteSummary[];
   installations: InstallationSummary[];
   proposal?: Proposal;
   warranties?: WarrantyItem[];
+  handoverProof?: HandoverProof;
 };
 
 const STAGES = [
@@ -572,6 +586,78 @@ export function CustomerPortalPage() {
                 </div>
               ))}
             </div>
+          </div>
+        )}
+
+        {/* Rooftop Handover & Commissioning Certificate Card (Scene 4) */}
+        {data?.handoverProof && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1.75rem',
+            background: 'var(--bg-raised)',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'inset 0 0 0 1px var(--line)',
+            borderLeft: '4px solid #16a34a',
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '0.75rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Icon icon={CheckCircle2} size={22} color="#16a34a" />
+                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
+                  Commissioning &amp; Handover Certificate
+                </h3>
+              </div>
+              <span style={{ fontSize: '0.75rem', padding: '0.2rem 0.6rem', borderRadius: '9999px', background: '#dcfce7', color: '#166534', fontWeight: 700 }}>
+                ✓ Official Customer Sign-Off
+              </span>
+            </div>
+
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+              Your rooftop solar system has been installed, commissioned, and synchronized with the electricity grid. Tested live generation: <b style={{ color: '#16a34a' }}>{data.handoverProof.testedGenerationKw} kW</b> on your {data.handoverProof.systemCapacityKw} kW array.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
+              <div>
+                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Rooftop Solar Array</span>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
+                  <img src={data.handoverProof.panelArrayPhotoUrl} alt="Panels" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+              <div>
+                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Inverter &amp; DCDB</span>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
+                  <img src={data.handoverProof.inverterPhotoUrl} alt="Inverter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+              <div>
+                <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Net Meter &amp; Earthing</span>
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
+                  <img src={data.handoverProof.meterPhotoUrl} alt="Meter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                </div>
+              </div>
+            </div>
+
+            {data.handoverProof.customerSignatureData && (
+              <div style={{
+                padding: '0.85rem 1rem',
+                background: 'var(--bg)',
+                borderRadius: 'var(--radius-lg)',
+                boxShadow: 'inset 0 0 0 1px var(--line)',
+                display: 'flex',
+                justifyContent: 'space-between',
+                alignItems: 'center',
+                flexWrap: 'wrap',
+                gap: '0.75rem',
+              }}>
+                <div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Digitally Accepted by Homeowner</span>
+                  <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.9rem' }}>{data.handoverProof.signedByName}</div>
+                  <div style={{ fontSize: '0.75rem', color: 'var(--faint)' }}>{new Date(data.handoverProof.signedAt).toLocaleString()}</div>
+                </div>
+                <div style={{ background: '#000', padding: '0.25rem 0.6rem', borderRadius: '6px' }}>
+                  <img src={data.handoverProof.customerSignatureData} alt="Signature" style={{ maxHeight: '45px', maxWidth: '160px', objectFit: 'contain', filter: 'brightness(1.2)' }} />
+                </div>
+              </div>
+            )}
           </div>
         )}
 
