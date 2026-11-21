@@ -29,6 +29,7 @@ public class InstallationConfig : IEntityTypeConfiguration<Installation>
             .HasColumnName("status")
             .HasConversion<string>()
             .HasMaxLength(50)
+            .IsConcurrencyToken()
             .IsRequired();
 
         // An IANA name, such as America/Chicago

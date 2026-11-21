@@ -182,6 +182,7 @@ namespace Infrastructure.Migrations
                         .HasColumnName("lead_id");
 
                     b.Property<string>("Status")
+                        .IsConcurrencyToken()
                         .IsRequired()
                         .HasMaxLength(50)
                         .HasColumnType("character varying(50)")
@@ -401,6 +402,124 @@ namespace Infrastructure.Migrations
                     b.ToTable("outbox_messages", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.Survey", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<decimal?>("CableDistanceMetres")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("cable_distance_metres");
+
+                    b.Property<DateTime>("CreatedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("created_at");
+
+                    b.Property<int>("CreatedById")
+                        .HasColumnType("integer")
+                        .HasColumnName("created_by_id");
+
+                    b.Property<bool?>("GridSuitable")
+                        .HasColumnType("boolean")
+                        .HasColumnName("grid_suitable");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<decimal?>("MonthlyBillRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("monthly_bill_rupees");
+
+                    b.Property<string>("Notes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("ReviewNotes")
+                        .HasMaxLength(2000)
+                        .HasColumnType("character varying(2000)")
+                        .HasColumnName("review_notes");
+
+                    b.Property<DateTime?>("ReviewedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("reviewed_at");
+
+                    b.Property<int?>("ReviewedById")
+                        .HasColumnType("integer")
+                        .HasColumnName("reviewed_by_id");
+
+                    b.Property<decimal?>("RoofDirectionDegrees")
+                        .HasPrecision(5, 2)
+                        .HasColumnType("numeric(5,2)")
+                        .HasColumnName("roof_direction_degrees");
+
+                    b.Property<decimal?>("RoofTiltDegrees")
+                        .HasPrecision(4, 2)
+                        .HasColumnType("numeric(4,2)")
+                        .HasColumnName("roof_tilt_degrees");
+
+                    b.Property<DateTime>("ScheduledAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_at");
+
+                    b.Property<decimal?>("ShadowFreeRoofAreaSquareMetres")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("shadow_free_roof_area_square_metres");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(30)
+                        .HasColumnType("character varying(30)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime?>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<int?>("SubmittedById")
+                        .HasColumnType("integer")
+                        .HasColumnName("submitted_by_id");
+
+                    b.Property<int>("TechnicianId")
+                        .HasColumnType("integer")
+                        .HasColumnName("technician_id");
+
+                    b.Property<int>("Version")
+                        .IsConcurrencyToken()
+                        .HasColumnType("integer")
+                        .HasColumnName("version");
+
+                    b.HasKey("Id")
+                        .HasName("pk_surveys");
+
+                    b.HasIndex("CreatedById")
+                        .HasDatabaseName("ix_surveys_created_by_id");
+
+                    b.HasIndex("InstallationId")
+                        .IsUnique()
+                        .HasDatabaseName("ux_surveys_installation_open_or_approved")
+                        .HasFilter("status IN ('Scheduled', 'Submitted', 'Approved')");
+
+                    b.HasIndex("ReviewedById")
+                        .HasDatabaseName("ix_surveys_reviewed_by_id");
+
+                    b.HasIndex("SubmittedById")
+                        .HasDatabaseName("ix_surveys_submitted_by_id");
+
+                    b.HasIndex("TechnicianId", "Status", "ScheduledAt")
+                        .HasDatabaseName("ix_surveys_technician_status_scheduled_at");
+
+                    b.ToTable("surveys", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.User", b =>
                 {
                     b.Property<int>("Id")
@@ -583,6 +702,46 @@ namespace Infrastructure.Migrations
                     b.Navigation("Lead");
 
                     b.Navigation("RetriedBy");
+                });
+
+            modelBuilder.Entity("Domain.Entities.Survey", b =>
+                {
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("CreatedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_surveys_users_created_by_id");
+
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithMany()
+                        .HasForeignKey("InstallationId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_surveys_installations_installation_id");
+
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("ReviewedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_surveys_users_reviewed_by_id");
+
+                    b.HasOne("Domain.Entities.User", null)
+                        .WithMany()
+                        .HasForeignKey("SubmittedById")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .HasConstraintName("fk_surveys_users_submitted_by_id");
+
+                    b.HasOne("Domain.Entities.User", "Technician")
+                        .WithMany()
+                        .HasForeignKey("TechnicianId")
+                        .OnDelete(DeleteBehavior.Restrict)
+                        .IsRequired()
+                        .HasConstraintName("fk_surveys_users_technician_id");
+
+                    b.Navigation("Installation");
+
+                    b.Navigation("Technician");
                 });
 
             modelBuilder.Entity("Domain.Entities.Customer", b =>

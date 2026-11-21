@@ -35,6 +35,12 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
         ["POST api/leads/{id:int}/convert"] = Access.Admin,
         ["GET api/customers"] = Access.Admin,
         ["GET api/customers/{id:int}"] = Access.Admin,
+        ["POST api/installations/{installationId:int}/surveys"] = Access.Admin,
+        ["GET api/surveys"] = Access.Staff,
+        ["GET api/surveys/{id:int}"] = Access.Staff,
+        ["PUT api/surveys/{id:int}/schedule"] = Access.Admin,
+        ["PUT api/surveys/{id:int}/report"] = Access.Staff,
+        ["POST api/surveys/{id:int}/review"] = Access.Admin,
         ["GET api/notifications/failed"] = Access.Admin,
         ["POST api/notifications/{id:guid}/retry"] = Access.Admin,
         ["POST api/notifications/failed/retry"] = Access.Admin,
@@ -125,7 +131,7 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
             _ => CreateClient()
         };
         var method = endpoint.Split(' ')[0];
-        var url = "/" + endpoint.Split(' ')[1].Replace("{id:int}", "1").Replace("{id:guid}", Guid.Empty.ToString());
+        var url = "/" + endpoint.Split(' ')[1].Replace("{id:int}", "1").Replace("{installationId:int}", "1").Replace("{id:guid}", Guid.Empty.ToString());
         var request = new HttpRequestMessage(new HttpMethod(method), url)
         {
             Content = method is "POST" or "PUT" ? JsonContent.Create(new { }) : null

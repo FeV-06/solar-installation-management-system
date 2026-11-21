@@ -185,6 +185,7 @@ public static class DependencyInjection
         services.AddScoped<IAddressRepo, AddressRepo>();
         services.AddScoped<ICustomerRepo, CustomerRepo>();
         services.AddScoped<IInstallationRepo, InstallationRepo>();
+        services.AddScoped<ISurveyRepo, SurveyRepo>();
         services.AddScoped<ILeadRepo, LeadRepo>();
         services.AddScoped<IUserRepo, UserRepo>();
         services.AddScoped<IOutboxRepo, OutboxRepo>();
