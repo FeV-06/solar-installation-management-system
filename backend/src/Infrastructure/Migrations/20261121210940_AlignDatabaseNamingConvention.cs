@@ -10,17 +10,12 @@ namespace Infrastructure.Migrations
         /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
-            migrationBuilder.DropForeignKey(
-                name: "FK_installation_proofs_installations_installation_id",
-                table: "installation_proofs");
-
-            migrationBuilder.DropForeignKey(
-                name: "FK_installation_proofs_users_technician_id",
-                table: "installation_proofs");
-
-            migrationBuilder.DropPrimaryKey(
-                name: "PK_installation_proofs",
-                table: "installation_proofs");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"FK_installation_proofs_installations_installation_id\";");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"installation_proofs_installation_id_fkey\";");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"FK_installation_proofs_users_technician_id\";");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"installation_proofs_technician_id_fkey\";");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"PK_installation_proofs\";");
+            migrationBuilder.Sql("ALTER TABLE installation_proofs DROP CONSTRAINT IF EXISTS \"installation_proofs_pkey\";");
 
             migrationBuilder.RenameIndex(
                 name: "IX_service_tickets_replacement_packing_order_id",
@@ -32,10 +27,7 @@ namespace Infrastructure.Migrations
                 table: "service_tickets",
                 newName: "ix_service_tickets_assigned_technician_id");
 
-            migrationBuilder.RenameIndex(
-                name: "IX_installation_proofs_technician_id",
-                table: "installation_proofs",
-                newName: "ix_installation_proofs_technician_id");
+            migrationBuilder.Sql("CREATE INDEX IF NOT EXISTS ix_installation_proofs_technician_id ON installation_proofs (technician_id);");
 
             migrationBuilder.AddPrimaryKey(
                 name: "pk_installation_proofs",
