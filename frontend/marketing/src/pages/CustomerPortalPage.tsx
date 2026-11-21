@@ -618,20 +618,35 @@ export function CustomerPortalPage() {
             <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '1rem', marginBottom: '1.25rem' }}>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Rooftop Solar Array</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
-                  <img src={data.handoverProof.panelArrayPhotoUrl} alt="Panels" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                  <img
+                    src={data.handoverProof.panelArrayPhotoUrl}
+                    alt="Panels"
+                    onError={(e) => { e.currentTarget.src = '/images/panel_array.svg'; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 </div>
               </div>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Inverter &amp; DCDB</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
-                  <img src={data.handoverProof.inverterPhotoUrl} alt="Inverter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                  <img
+                    src={data.handoverProof.inverterPhotoUrl}
+                    alt="Inverter"
+                    onError={(e) => { e.currentTarget.src = '/images/inverter_wiring.svg'; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 </div>
               </div>
               <div>
                 <span className="a-label" style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>Net Meter &amp; Earthing</span>
-                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem' }}>
-                  <img src={data.handoverProof.meterPhotoUrl} alt="Meter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                <div style={{ height: '110px', borderRadius: 'var(--radius-md)', overflow: 'hidden', marginTop: '0.35rem', background: '#000' }}>
+                  <img
+                    src={data.handoverProof.meterPhotoUrl}
+                    alt="Meter"
+                    onError={(e) => { e.currentTarget.src = '/images/net_meter.svg'; }}
+                    style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+                  />
                 </div>
               </div>
             </div>

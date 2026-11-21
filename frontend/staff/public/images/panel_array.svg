@@ -1,0 +1,109 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 600 340" width="100%" height="100%">
+  <defs>
+    <linearGradient id="skyGrad" x1="0%" y1="0%" x2="0%" y2="100%">
+      <stop offset="0%" stop-color="#0f172a"/>
+      <stop offset="60%" stop-color="#1e293b"/>
+      <stop offset="100%" stop-color="#334155"/>
+    </linearGradient>
+    <linearGradient id="sunGlow" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#fef08a" stop-opacity="0.9"/>
+      <stop offset="50%" stop-color="#eab308" stop-opacity="0.4"/>
+      <stop offset="100%" stop-color="#ca8a04" stop-opacity="0"/>
+    </linearGradient>
+    <linearGradient id="roofGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1c1917"/>
+      <stop offset="100%" stop-color="#0c0a09"/>
+    </linearGradient>
+    <linearGradient id="panelGrad" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#1e3a5f"/>
+      <stop offset="50%" stop-color="#0f172a"/>
+      <stop offset="100%" stop-color="#0284c7"/>
+    </linearGradient>
+    <linearGradient id="panelReflection" x1="0%" y1="0%" x2="100%" y2="100%">
+      <stop offset="0%" stop-color="#38bdf8" stop-opacity="0.35"/>
+      <stop offset="50%" stop-color="#0284c7" stop-opacity="0.1"/>
+      <stop offset="100%" stop-color="#0f172a" stop-opacity="0"/>
+    </linearGradient>
+    <filter id="glow">
+      <feGaussianBlur stdDeviation="3" result="coloredBlur"/>
+      <feMerge>
+        <feMergeNode in="coloredBlur"/>
+        <feMergeNode in="SourceGraphic"/>
+      </feMerge>
+    </filter>
+  </defs>
+
+  <!-- Sky Background -->
+  <rect width="600" height="340" fill="url(#skyGrad)"/>
+
+  <!-- Morning Sun -->
+  <circle cx="500" cy="70" r="80" fill="url(#sunGlow)"/>
+  <circle cx="500" cy="70" r="32" fill="#fef08a" filter="url(#glow)"/>
+
+  <!-- Rooftop Plane -->
+  <polygon points="0,220 600,160 600,340 0,340" fill="url(#roofGrad)"/>
+  <!-- Roof Tile Seams -->
+  <line x1="0" y1="260" x2="600" y2="200" stroke="#292524" stroke-width="2"/>
+  <line x1="0" y1="300" x2="600" y2="240" stroke="#292524" stroke-width="2"/>
+
+  <!-- Aluminum Mounting Strut Rails -->
+  <line x1="50" y1="235" x2="550" y2="185" stroke="#94a3b8" stroke-width="4"/>
+  <line x1="50" y1="285" x2="550" y2="235" stroke="#94a3b8" stroke-width="4"/>
+
+  <!-- Solar Panel 1 (Left) -->
+  <g transform="translate(60, 185) skewY(-5)">
+    <rect x="0" y="0" width="105" height="75" rx="3" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelGrad)"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelReflection)"/>
+    <!-- Solar Cells Grid -->
+    <line x1="36" y1="3" x2="36" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="69" y1="3" x2="69" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="26" x2="102" y2="26" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="49" x2="102" y2="49" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- Solar Panel 2 -->
+  <g transform="translate(180, 175) skewY(-5)">
+    <rect x="0" y="0" width="105" height="75" rx="3" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelGrad)"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelReflection)"/>
+    <line x1="36" y1="3" x2="36" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="69" y1="3" x2="69" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="26" x2="102" y2="26" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="49" x2="102" y2="49" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- Solar Panel 3 -->
+  <g transform="translate(300, 165) skewY(-5)">
+    <rect x="0" y="0" width="105" height="75" rx="3" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelGrad)"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelReflection)"/>
+    <line x1="36" y1="3" x2="36" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="69" y1="3" x2="69" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="26" x2="102" y2="26" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="49" x2="102" y2="49" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- Solar Panel 4 (Right) -->
+  <g transform="translate(420, 155) skewY(-5)">
+    <rect x="0" y="0" width="105" height="75" rx="3" fill="#334155" stroke="#94a3b8" stroke-width="2"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelGrad)"/>
+    <rect x="3" y="3" width="99" height="69" rx="2" fill="url(#panelReflection)"/>
+    <line x1="36" y1="3" x2="36" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="69" y1="3" x2="69" y2="72" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="26" x2="102" y2="26" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+    <line x1="3" y1="49" x2="102" y2="49" stroke="#38bdf8" stroke-width="0.75" stroke-opacity="0.4"/>
+  </g>
+
+  <!-- Verification Stamp Badge -->
+  <g transform="translate(20, 20)">
+    <rect width="180" height="34" rx="6" fill="#0f172a" fill-opacity="0.85" stroke="#eab308" stroke-width="1.5"/>
+    <circle cx="18" cy="17" r="7" fill="#16a34a"/>
+    <path d="M14 17 L17 20 L22 14" stroke="#ffffff" stroke-width="2" fill="none" stroke-linecap="round"/>
+    <text x="32" y="16" fill="#f8fafc" font-size="11" font-weight="700" font-family="system-ui, sans-serif">ROOFTOP ARRAY</text>
+    <text x="32" y="27" fill="#94a3b8" font-size="8.5" font-family="system-ui, sans-serif">3.3 kW Monocrystalline PV</text>
+  </g>
+
+  <!-- Technical Spec Watermark -->
+  <text x="580" y="325" text-anchor="end" fill="#64748b" font-size="9" font-family="monospace">FIELD VERIFIED &bull; AZIMUTH 180° &bull; TILT 22°</text>
+</svg>

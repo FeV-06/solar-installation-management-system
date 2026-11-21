@@ -6,9 +6,9 @@ import { Icon } from '../components/Icon';
 import { FormNotice } from '../components/SubmitButton';
 
 // High-fidelity fallback sample field images for solar proof
-const DEFAULT_PANEL_PHOTO = 'https://images.unsplash.com/photo-1509391365360-2e959784a276?auto=format&fit=crop&w=600&q=80';
-const DEFAULT_INVERTER_PHOTO = 'https://images.unsplash.com/photo-1548618085-f8604314c114?auto=format&fit=crop&w=600&q=80';
-const DEFAULT_METER_PHOTO = 'https://images.unsplash.com/photo-1513836279014-a89f7a76ae86?auto=format&fit=crop&w=600&q=80';
+const DEFAULT_PANEL_PHOTO = '/images/panel_array.svg';
+const DEFAULT_INVERTER_PHOTO = '/images/inverter_wiring.svg';
+const DEFAULT_METER_PHOTO = '/images/net_meter.svg';
 
 type Props = {
   installationId: number;
@@ -568,21 +568,36 @@ function HandoverCertificate({ proof }: { proof: InstallationProof }) {
         <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(200px, 1fr))', gap: '0.75rem' }}>
           <div>
             <div style={{ height: '120px', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
-              <img src={proof.panelArrayPhotoUrl} alt="Panel Array" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={proof.panelArrayPhotoUrl}
+                alt="Panel Array"
+                onError={(e) => { e.currentTarget.src = DEFAULT_PANEL_PHOTO; }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block', marginTop: '0.25rem' }}>Rooftop Panel Array</span>
           </div>
 
           <div>
             <div style={{ height: '120px', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
-              <img src={proof.inverterPhotoUrl} alt="Inverter Wiring" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={proof.inverterPhotoUrl}
+                alt="Inverter Wiring"
+                onError={(e) => { e.currentTarget.src = DEFAULT_INVERTER_PHOTO; }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block', marginTop: '0.25rem' }}>Inverter &amp; DCDB Wiring</span>
           </div>
 
           <div>
             <div style={{ height: '120px', borderRadius: '6px', overflow: 'hidden', background: '#000' }}>
-              <img src={proof.meterPhotoUrl} alt="Net Meter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <img
+                src={proof.meterPhotoUrl}
+                alt="Net Meter"
+                onError={(e) => { e.currentTarget.src = DEFAULT_METER_PHOTO; }}
+                style={{ width: '100%', height: '100%', objectFit: 'cover' }}
+              />
             </div>
             <span style={{ fontSize: '0.75rem', color: 'var(--muted)', display: 'block', marginTop: '0.25rem' }}>Net Meter &amp; Earth Pit</span>
           </div>
