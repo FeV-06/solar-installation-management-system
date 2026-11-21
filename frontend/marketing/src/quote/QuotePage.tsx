@@ -260,7 +260,6 @@ export function QuotePage({ customer }: { customer: CustomerUser }) {
             <Choice name="bill" legend="Your usual monthly electricity bill" className="c4" value={values.bill} error={err('bill')} onChange={change}
               help="A rough idea is enough. It tells us how big a system to look at."
               options={[
-              options={[
                 { value: 'under2000', label: 'Under ₹2,000' },
                 { value: '2000-5000', label: '₹2,000 to ₹5,000' },
                 { value: '5000-10000', label: '₹5,000 to ₹10,000' },

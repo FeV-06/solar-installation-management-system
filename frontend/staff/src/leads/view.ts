@@ -34,18 +34,18 @@ const BILLS: Record<string, string> = {
   'in-1500-3000': '₹1,500–3,000 a month',
   'in-3000-5000': '₹3,000–5,000 a month',
   'in-5000plus': '₹5,000 or more a month',
-  under20000: 'Under ₹2,000 a month',
-  '20000-60000': '₹2,000–5,000 a month',
-  '60000-150000': '₹5,000–10,000 a month',
-  '150000plus': 'Over ₹10,000 a month',
+  under20000: 'Under ₹20,000 a month',
+  '20000-60000': '₹20,000–60,000 a month',
+  '60000-150000': '₹60,000–1,50,000 a month',
+  '150000plus': 'Over ₹1,50,000 a month',
   under1500: 'Under ₹1,500 a month',
   '1500-3500': '₹1,500–3,500 a month',
   '3500-7000': '₹3,500–7,000 a month',
   '7000plus': '₹7,000 or more a month',
-  under100: 'Under ₹1,500 a month',
-  '100-200': '₹1,500–3,500 a month',
-  '200-300': '₹3,500–7,000 a month',
-  '300plus': '₹7,000 or more a month',
+  under100: 'Under $100 a month',
+  '100-200': '$100–200 a month',
+  '200-300': '$200–300 a month',
+  '300plus': '$300 or more a month',
 };
 export const billLabel = (value: string) => BILLS[value] ?? value;
 
@@ -60,27 +60,14 @@ export const propertyLabel = (lead: Pick<Lead, 'propertyType' | 'isPropertyOwner
 export const firstNameOf = (lead: Pick<Lead, 'firstName'>) => lead.firstName.trim().split(/\s+/)[0];
 
 /** What the lead's page offers now, from the API's `next` (BR-L2): the app doesn't repeat the rules. */
-export function actionsFor(lead: Pick<Lead, 'next'>): {
-  contact: boolean;
-  convert: boolean;
-  disqualify: boolean;
-  lose: boolean;
-  edit: boolean;
-} {
-  const allowed = new Set(lead.next);
-  const edit = allowed.size > 0;
-  return {
-    contact: allowed.has('Contacted'),
-    convert: allowed.has('Converted'),
-    disqualify: allowed.has('Disqualified'),
-    lose: allowed.has('Lost'),
-    edit,
-  };
-}
+export const actionsFor = (lead: Pick<Lead, 'next'>) => ({
+  contact: lead.next.includes('Contacted'),
+  convert: lead.next.includes('Converted'),
+  disqualify: lead.next.includes('Disqualified'),
+  lose: lead.next.includes('Lost'),
+  edit: lead.next.length > 0,
+});
 
-/**
- * True when the API refused a move with 409 and transition_not_allowed: someone else moved the lead in between.
- * The page reloads the lead so they see where it moved.
- */
-export const isMovedMeanwhile = (err: unknown): boolean =>
-  err instanceof ApiError && err.status === 409 && err.code === 'transition_not_allowed';
+/** The move was refused because the lead isn't where this page thought it was: another Admin moved it first. */
+export const isMovedMeanwhile = (error: unknown): error is ApiError =>
+  error instanceof ApiError && error.code === 'lead.transition_not_allowed';
