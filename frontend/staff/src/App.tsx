@@ -21,6 +21,7 @@ import { SurveysPage } from './surveys/SurveysPage';
 import { SurveyPage } from './surveys/SurveyPage';
 import { InstallationPage } from './surveys/InstallationPage';
 import { InstallationsPage } from './surveys/InstallationsPage';
+import { CommissioningPage } from './surveys/CommissioningPage';
 
 const handle = (title: string): RouteHandle => ({ title });
 
@@ -47,8 +48,10 @@ const routes: RouteObject[] = [
           { path: '/leads/:id', element: <LeadPage />, handle: handle('Leads') },
           { path: '/customers/:id', element: <CustomerPage />, handle: handle('Customers') },
           { path: '/installations/:id', element: <InstallationPage />, handle: handle('Installation') },
+          { path: '/installations/:id/commission', element: <CommissioningPage />, handle: handle('Commissioning') },
           { path: '/surveys/:id', element: <SurveyPage />, handle: handle('Survey') },
           { path: '/my-work/:id', element: <SurveyPage />, handle: handle('My work') },
+          { path: '/my-work/:id/commission', element: <CommissioningPage />, handle: handle('Commissioning') },
           { path: '/users/:id', element: <UserPage />, handle: handle('Users') },
           { path: '*', element: <NotFoundPage />, handle: handle('Page not found') },
         ],

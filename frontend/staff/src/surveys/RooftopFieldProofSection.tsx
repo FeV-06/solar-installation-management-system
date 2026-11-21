@@ -1,14 +1,24 @@
 import { useState, useRef, useEffect, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
-import { CheckCircle2, Clock, FileCheck, RotateCcw, ShieldCheck, SolarPanel, Upload, Zap } from 'lucide-react';
+import {
+  Camera,
+  CheckCircle2,
+  Clock,
+  FileCheck,
+  RotateCcw,
+  ShieldCheck,
+  SolarPanel,
+  Upload,
+  Zap,
+} from 'lucide-react';
 import { fetchInstallationProof, submitInstallationProof, type InstallationProof } from '../api/surveys';
 import { Icon } from '../components/Icon';
 import { FormNotice } from '../components/SubmitButton';
 
-// High-fidelity fallback sample field images for solar proof
-const DEFAULT_PANEL_PHOTO = '/images/panel_array.svg';
-const DEFAULT_INVERTER_PHOTO = '/images/inverter_wiring.svg';
-const DEFAULT_METER_PHOTO = '/images/net_meter.svg';
+// Default high-fidelity fallback illustrations for quick testing
+export const DEFAULT_PANEL_PHOTO = '/images/panel_array.svg';
+export const DEFAULT_INVERTER_PHOTO = '/images/inverter_wiring.svg';
+export const DEFAULT_METER_PHOTO = '/images/net_meter.svg';
 
 type Props = {
   installationId: number;
@@ -38,8 +48,8 @@ export function RooftopFieldProofSection({
 
   if (isLoading) {
     return (
-      <div style={{ padding: '1.5rem', textAlign: 'center', color: 'var(--muted)' }}>
-        Loading field commissioning records…
+      <div style={{ padding: '2rem', textAlign: 'center', color: 'var(--muted)' }}>
+        Loading commissioning records…
       </div>
     );
   }
@@ -82,10 +92,10 @@ function RooftopHandoverForm({
   const [gridConnected, setGridConnected] = useState(true);
   const [signedByName, setSignedByName] = useState(customerName);
 
-  // Photos
-  const [panelPhoto, setPanelPhoto] = useState(DEFAULT_PANEL_PHOTO);
-  const [inverterPhoto, setInverterPhoto] = useState(DEFAULT_INVERTER_PHOTO);
-  const [meterPhoto, setMeterPhoto] = useState(DEFAULT_METER_PHOTO);
+  // Photos - Start null so NO image shows until technician uploads/captures!
+  const [panelPhoto, setPanelPhoto] = useState<string | null>(null);
+  const [inverterPhoto, setInverterPhoto] = useState<string | null>(null);
+  const [meterPhoto, setMeterPhoto] = useState<string | null>(null);
 
   const [notice, setNotice] = useState<string | null>(null);
 
@@ -173,54 +183,67 @@ function RooftopHandoverForm({
     const ctx = canvas.getContext('2d');
     if (!ctx) return;
     ctx.clearRect(0, 0, canvas.width, canvas.height);
-    ctx.lineWidth = 2.5;
-    ctx.lineCap = 'round';
-    ctx.lineJoin = 'round';
-    ctx.strokeStyle = '#eab308';
     setHasSignature(false);
   };
 
   const handleFileUpload = (
     e: React.ChangeEvent<HTMLInputElement>,
-    setter: (url: string) => void
+    setter: (val: string) => void
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
     const reader = new FileReader();
-    reader.onload = ev => {
-      if (typeof ev.target?.result === 'string') {
-        setter(ev.target.result);
+    reader.onload = () => {
+      if (typeof reader.result === 'string') {
+        setter(reader.result);
       }
     };
     reader.readAsDataURL(file);
   };
 
   const mutation = useMutation({
-    mutationFn: (body: any) => submitInstallationProof(installationId, body),
+    mutationFn: (body: {
+      workStartedAt: string;
+      workCompletedAt: string;
+      systemCapacityKw: number;
+      testedGenerationKw: number;
+      gridConnected: boolean;
+      panelArrayPhotoUrl: string;
+      inverterPhotoUrl: string;
+      meterPhotoUrl: string;
+      customerSignatureData: string;
+      signedByName: string;
+      signedAt: string;
+    }) => submitInstallationProof(installationId, body),
     onSuccess: () => {
       onSuccess();
     },
-    onError: (err: any) => {
-      setNotice(err?.message || 'Failed to submit rooftop installation proof.');
+    onError: (err: Error) => {
+      setNotice(err.message || 'Failed to submit commissioning certificate. Please try again.');
     },
   });
 
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
-    if (!hasSignature) {
-      setNotice('Homeowner signature is required to accept the handover.');
+    setNotice(null);
+
+    if (!panelPhoto || !inverterPhoto || !meterPhoto) {
+      setNotice('Please capture or upload all 3 field verification photos before customer sign-off.');
       return;
     }
 
-    const canvas = canvasRef.current;
-    const signatureData = canvas ? canvas.toDataURL('image/png') : '';
+    if (!hasSignature || !canvasRef.current) {
+      setNotice('Customer signature is required to complete the handover.');
+      return;
+    }
 
-    setNotice(null);
+    const signatureData = canvasRef.current.toDataURL('image/png');
+
     mutation.mutate({
       workStartedAt: new Date(startTime).toISOString(),
       workCompletedAt: new Date(endTime).toISOString(),
-      systemCapacityKw: Number(capacityKw),
-      testedGenerationKw: Number(generationKw),
+      systemCapacityKw: capacityKw,
+      testedGenerationKw: generationKw,
       gridConnected,
       panelArrayPhotoUrl: panelPhoto,
       inverterPhotoUrl: inverterPhoto,
@@ -234,7 +257,6 @@ function RooftopHandoverForm({
   return (
     <section
       style={{
-        marginTop: '2rem',
         padding: '1.75rem',
         background: 'var(--bg-raised, #13171f)',
         borderRadius: 'var(--radius-xl, 12px)',
@@ -245,32 +267,32 @@ function RooftopHandoverForm({
         <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
           <Icon icon={SolarPanel} size={22} color="var(--accent, #eab308)" />
           <h2 className="a-heading" style={{ margin: 0, fontSize: '1.25rem' }}>
-            Scene 4: On the Roof — Field Commissioning &amp; Handover
+            Field Commissioning &amp; Handover
           </h2>
         </div>
         <span
           style={{
             fontSize: '0.75rem',
-            padding: '0.2rem 0.6rem',
+            padding: '0.2rem 0.65rem',
             borderRadius: '9999px',
-            background: '#fef08a',
-            color: '#854d0e',
+            background: 'var(--accent, #eab308)',
+            color: '#000',
             fontWeight: 700,
           }}
         >
-          Technician Field Form
+          Technician Checklist
         </span>
       </div>
 
       <p style={{ margin: '0 0 1.5rem', fontSize: '0.9rem', color: 'var(--muted, #94a3b8)', lineHeight: 1.5 }}>
-        Record work hours, test measured live kW generation, upload photographic verification of modules and cabling, and obtain the homeowner&apos;s digital screen signature.
+        Record on-site crew work hours, test measured live kW generation, upload photographic verification of modules and cabling, and obtain the homeowner&apos;s digital screen sign-off.
       </p>
 
       {notice && <FormNotice>{notice}</FormNotice>}
 
       <form onSubmit={handleSubmit} style={{ display: 'flex', flexDirection: 'column', gap: '1.5rem' }}>
         {/* Row 1: Time Tracking & System Readout */}
-        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(240px, 1fr))', gap: '1.25rem' }}>
+        <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1.25rem' }}>
           <div className="field">
             <label className="label" htmlFor="workStartedAt">
               <Icon icon={Clock} size={14} style={{ marginRight: '4px' }} /> Work Started (Clock In)
@@ -350,46 +372,193 @@ function RooftopHandoverForm({
           </label>
         </div>
 
-        {/* 3-Point Photo Evidence Gallery */}
+        {/* 3-Point Photo Evidence Gallery: NO image shows until technician uploads! */}
         <div>
-          <h3 className="display" style={{ fontSize: '1rem', margin: '0 0 0.75rem', color: 'var(--fg, #f8fafc)' }}>
-            Mandatory Field Photo Proof (3 Angles)
-          </h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.75rem', flexWrap: 'wrap', gap: '0.5rem' }}>
+            <h3 className="display" style={{ fontSize: '1rem', margin: 0, color: 'var(--fg, #f8fafc)' }}>
+              Mandatory Field Photo Proof (3 Angles)
+            </h3>
+            <span style={{ fontSize: '0.8rem', color: 'var(--muted, #94a3b8)' }}>
+              Capture photos directly from mobile camera or upload files
+            </span>
+          </div>
+
           <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(220px, 1fr))', gap: '1rem' }}>
             {/* Photo 1: Panel Array */}
             <div style={{ background: 'var(--bg, #0b0e14)', padding: '0.85rem', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--line, #222938)' }}>
-              <span className="label" style={{ display: 'block', marginBottom: '0.5rem' }}>1. Rooftop Panel Array</span>
-              <div style={{ position: 'relative', height: '130px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#1e293b' }}>
-                <img src={panelPhoto} alt="Rooftop Array" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="label" style={{ margin: 0 }}>1. Rooftop Panel Array</span>
+                {panelPhoto && <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600 }}>✓ Attached</span>}
               </div>
-              <label className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}>
-                <Icon icon={Upload} size={14} /> Upload Custom Photo
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setPanelPhoto)} />
-              </label>
+
+              {panelPhoto ? (
+                <div style={{ position: 'relative', height: '135px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#000' }}>
+                  <img src={panelPhoto} alt="Rooftop Array" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button
+                    type="button"
+                    onClick={() => setPanelPhoto(null)}
+                    className="btn btn-quiet btn-sm"
+                    style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '2px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+                  >
+                    ✕ Remove
+                  </button>
+                </div>
+              ) : (
+                <div style={{
+                  height: '135px',
+                  borderRadius: '6px',
+                  border: '2px dashed var(--line, #334155)',
+                  background: 'var(--bg-raised, #13171f)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  marginBottom: '0.5rem',
+                  padding: '0.75rem',
+                  textAlign: 'center',
+                }}>
+                  <Icon icon={Camera} size={28} color="var(--muted, #64748b)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted, #94a3b8)' }}>No photo uploaded</span>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <label className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center', cursor: 'pointer' }}>
+                  <Icon icon={Upload} size={14} />
+                  <span>{panelPhoto ? 'Replace Photo' : 'Upload / Capture Photo'}</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setPanelPhoto)} />
+                </label>
+                {!panelPhoto && (
+                  <button
+                    type="button"
+                    className="btn btn-quiet btn-sm"
+                    style={{ fontSize: '0.75rem' }}
+                    title="Fill sample illustration for testing"
+                    onClick={() => setPanelPhoto(DEFAULT_PANEL_PHOTO)}
+                  >
+                    Sample
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Photo 2: Inverter & DCDB */}
             <div style={{ background: 'var(--bg, #0b0e14)', padding: '0.85rem', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--line, #222938)' }}>
-              <span className="label" style={{ display: 'block', marginBottom: '0.5rem' }}>2. Inverter &amp; Wiring</span>
-              <div style={{ position: 'relative', height: '130px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#1e293b' }}>
-                <img src={inverterPhoto} alt="Inverter Wiring" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="label" style={{ margin: 0 }}>2. Inverter &amp; Wiring</span>
+                {inverterPhoto && <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600 }}>✓ Attached</span>}
               </div>
-              <label className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}>
-                <Icon icon={Upload} size={14} /> Upload Custom Photo
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setInverterPhoto)} />
-              </label>
+
+              {inverterPhoto ? (
+                <div style={{ position: 'relative', height: '135px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#000' }}>
+                  <img src={inverterPhoto} alt="Inverter Wiring" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button
+                    type="button"
+                    onClick={() => setInverterPhoto(null)}
+                    className="btn btn-quiet btn-sm"
+                    style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '2px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+                  >
+                    ✕ Remove
+                  </button>
+                </div>
+              ) : (
+                <div style={{
+                  height: '135px',
+                  borderRadius: '6px',
+                  border: '2px dashed var(--line, #334155)',
+                  background: 'var(--bg-raised, #13171f)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  marginBottom: '0.5rem',
+                  padding: '0.75rem',
+                  textAlign: 'center',
+                }}>
+                  <Icon icon={Camera} size={28} color="var(--muted, #64748b)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted, #94a3b8)' }}>No photo uploaded</span>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <label className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center', cursor: 'pointer' }}>
+                  <Icon icon={Upload} size={14} />
+                  <span>{inverterPhoto ? 'Replace Photo' : 'Upload / Capture Photo'}</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setInverterPhoto)} />
+                </label>
+                {!inverterPhoto && (
+                  <button
+                    type="button"
+                    className="btn btn-quiet btn-sm"
+                    style={{ fontSize: '0.75rem' }}
+                    title="Fill sample illustration for testing"
+                    onClick={() => setInverterPhoto(DEFAULT_INVERTER_PHOTO)}
+                  >
+                    Sample
+                  </button>
+                )}
+              </div>
             </div>
 
             {/* Photo 3: Net Meter & Earthing */}
             <div style={{ background: 'var(--bg, #0b0e14)', padding: '0.85rem', borderRadius: 'var(--radius-md, 8px)', border: '1px solid var(--line, #222938)' }}>
-              <span className="label" style={{ display: 'block', marginBottom: '0.5rem' }}>3. Net-Meter &amp; Earth Pit</span>
-              <div style={{ position: 'relative', height: '130px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#1e293b' }}>
-                <img src={meterPhoto} alt="Net Meter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '0.5rem' }}>
+                <span className="label" style={{ margin: 0 }}>3. Net-Meter &amp; Earth Pit</span>
+                {meterPhoto && <span style={{ fontSize: '0.75rem', color: '#16a34a', fontWeight: 600 }}>✓ Attached</span>}
               </div>
-              <label className="btn btn-secondary btn-sm" style={{ width: '100%', justifyContent: 'center', cursor: 'pointer' }}>
-                <Icon icon={Upload} size={14} /> Upload Custom Photo
-                <input type="file" accept="image/*" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setMeterPhoto)} />
-              </label>
+
+              {meterPhoto ? (
+                <div style={{ position: 'relative', height: '135px', borderRadius: '6px', overflow: 'hidden', marginBottom: '0.5rem', background: '#000' }}>
+                  <img src={meterPhoto} alt="Net Meter" style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                  <button
+                    type="button"
+                    onClick={() => setMeterPhoto(null)}
+                    className="btn btn-quiet btn-sm"
+                    style={{ position: 'absolute', top: '6px', right: '6px', background: 'rgba(0,0,0,0.7)', color: '#fff', padding: '2px 8px', fontSize: '0.75rem', borderRadius: '4px' }}
+                  >
+                    ✕ Remove
+                  </button>
+                </div>
+              ) : (
+                <div style={{
+                  height: '135px',
+                  borderRadius: '6px',
+                  border: '2px dashed var(--line, #334155)',
+                  background: 'var(--bg-raised, #13171f)',
+                  display: 'flex',
+                  flexDirection: 'column',
+                  alignItems: 'center',
+                  justifyContent: 'center',
+                  gap: '0.35rem',
+                  marginBottom: '0.5rem',
+                  padding: '0.75rem',
+                  textAlign: 'center',
+                }}>
+                  <Icon icon={Camera} size={28} color="var(--muted, #64748b)" />
+                  <span style={{ fontSize: '0.8rem', color: 'var(--muted, #94a3b8)' }}>No photo uploaded</span>
+                </div>
+              )}
+
+              <div style={{ display: 'flex', gap: '0.4rem' }}>
+                <label className="btn btn-secondary btn-sm" style={{ flex: 1, justifyContent: 'center', cursor: 'pointer' }}>
+                  <Icon icon={Upload} size={14} />
+                  <span>{meterPhoto ? 'Replace Photo' : 'Upload / Capture Photo'}</span>
+                  <input type="file" accept="image/*" capture="environment" style={{ display: 'none' }} onChange={e => handleFileUpload(e, setMeterPhoto)} />
+                </label>
+                {!meterPhoto && (
+                  <button
+                    type="button"
+                    className="btn btn-quiet btn-sm"
+                    style={{ fontSize: '0.75rem' }}
+                    title="Fill sample illustration for testing"
+                    onClick={() => setMeterPhoto(DEFAULT_METER_PHOTO)}
+                  >
+                    Sample
+                  </button>
+                )}
+              </div>
             </div>
           </div>
         </div>
@@ -485,7 +654,7 @@ function RooftopHandoverForm({
             type="submit"
             className="btn btn-primary"
             disabled={mutation.isPending}
-            style={{ minWidth: '14rem' }}
+            style={{ minWidth: '15rem' }}
           >
             <Icon icon={FileCheck} size={18} />
             <span>{mutation.isPending ? 'Submitting Handover…' : 'Submit Handover Certificate'}</span>
@@ -500,7 +669,6 @@ function HandoverCertificate({ proof }: { proof: InstallationProof }) {
   return (
     <section
       style={{
-        marginTop: '2rem',
         padding: '1.75rem',
         background: 'var(--bg-raised, #13171f)',
         borderRadius: 'var(--radius-xl, 12px)',
@@ -617,21 +785,31 @@ function HandoverCertificate({ proof }: { proof: InstallationProof }) {
         gap: '1rem',
       }}>
         <div>
-          <span className="label" style={{ fontSize: '0.75rem' }}>Customer Digital Sign-Off</span>
-          <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.95rem', marginTop: '0.2rem' }}>
+          <span className="label" style={{ fontSize: '0.75rem' }}>Digital Signature Sign-Off</span>
+          <div style={{ fontWeight: 600, color: 'var(--fg, #f8fafc)', marginTop: '0.2rem' }}>
             {proof.signedByName}
           </div>
-          <div style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
-            Signed on {new Date(proof.signedAt).toLocaleDateString()} at {new Date(proof.signedAt).toLocaleTimeString()}
-          </div>
+          <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+            Signed on {new Date(proof.signedAt).toLocaleString()}
+          </span>
         </div>
 
         {proof.customerSignatureData && (
-          <div style={{ background: '#04070d', padding: '0.4rem 0.8rem', borderRadius: '6px', border: '1px solid var(--line)' }}>
+          <div style={{
+            height: '65px',
+            minWidth: '160px',
+            background: '#04070d',
+            borderRadius: '6px',
+            padding: '4px 8px',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            border: '1px solid #222938',
+          }}>
             <img
               src={proof.customerSignatureData}
               alt="Customer Signature"
-              style={{ maxHeight: '55px', maxWidth: '200px', objectFit: 'contain', filter: 'brightness(1.2)' }}
+              style={{ maxHeight: '100%', maxWidth: '100%', objectFit: 'contain' }}
             />
           </div>
         )}

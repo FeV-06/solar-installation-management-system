@@ -1,7 +1,7 @@
 import { useState, type FormEvent } from 'react';
 import { useMutation, useQuery, useQueryClient } from '@tanstack/react-query';
 import { Link, useParams } from 'react-router-dom';
-import { ArrowLeft } from 'lucide-react';
+import { ArrowLeft, Zap } from 'lucide-react';
 import { ApiError } from '../api/errors';
 import { fetchSurvey, reviewSurvey, surveyKey, SURVEYS_KEY, type Survey } from '../api/surveys';
 import { Icon } from '../components/Icon';
@@ -15,7 +15,6 @@ import { QueryView } from '../states/QueryView';
 import { SurveyChip } from './SurveyChip';
 import { ScheduleForm } from './ScheduleForm';
 import { ReportForm } from './ReportForm';
-import { RooftopFieldProofSection } from './RooftopFieldProofSection';
 
 export function SurveyPage() {
   const { role } = useCurrentUser();
@@ -69,11 +68,24 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
       </div>
     )}
     {survey.status === 'Approved' && (
-      <RooftopFieldProofSection
-        installationId={survey.installationId}
-        customerName={survey.customerName}
-        isTechnician={!isAdmin}
-      />
+      <div className="rec-card" style={{ marginTop: '1.5rem', borderLeft: '4px solid var(--accent, #eab308)' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '1rem' }}>
+          <div>
+            <h2 className="a-heading" style={{ margin: 0 }}>Field Commissioning &amp; Handover</h2>
+            <p className="page-intro" style={{ margin: '0.25rem 0 0' }}>
+              On-site crew work checklist: test measured kW generation, capture 3-angle photo proofs, and obtain customer screen sign-off.
+            </p>
+          </div>
+          <Link
+            to={`/installations/${survey.installationId}/commission`}
+            className="btn btn-primary"
+            style={{ minWidth: '13rem', display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+          >
+            <Icon icon={Zap} />
+            <span>Open Commissioning Form →</span>
+          </Link>
+        </div>
+      </div>
     )}
   </>;
 }
