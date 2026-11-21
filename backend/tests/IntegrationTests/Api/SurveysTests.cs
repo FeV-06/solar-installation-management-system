@@ -120,6 +120,28 @@ public class SurveysTests(PostgresFixture database) : ApiTestBase(database)
     }
 
     [Fact]
+    public async Task AdminCannotSubmitReport_AssignedTechnicianCan_AndAdminCanReview()
+    {
+        var admin = await CreateClientAsAsync(UserRole.Admin);
+        var technician = await CreateClientAsAsync(UserRole.Technician);
+        var technicianId = await IdOfAsync(TestTechnician.Email);
+        var installationId = await CreateInstallation(admin);
+        var surveyId = await CreateSurvey(admin, installationId, technicianId);
+
+        (await admin.PutAsJsonAsync($"/api/surveys/{surveyId}/report", Report(), Ct)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        var unchanged = await Context.Surveys.AsNoTracking().SingleAsync(Ct);
+        unchanged.Status.Should().Be(SurveyStatus.Scheduled);
+        unchanged.SubmittedById.Should().BeNull();
+        unchanged.SubmittedAt.Should().BeNull();
+        unchanged.ShadowFreeRoofAreaSquareMetres.Should().BeNull();
+        unchanged.MonthlyBillRupees.Should().BeNull();
+        unchanged.GridSuitable.Should().BeNull();
+
+        (await technician.PutAsJsonAsync($"/api/surveys/{surveyId}/report", Report(), Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
+        (await admin.PostAsJsonAsync($"/api/surveys/{surveyId}/review", new { approved = true }, Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
+    }
+
+    [Fact]
     public async Task UnassignedTechnician_CannotReadOrSubmitAnotherPersonsSurvey()
     {
         var admin = await CreateClientAsAsync(UserRole.Admin);

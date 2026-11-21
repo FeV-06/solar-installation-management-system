@@ -49,7 +49,8 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
       </dl>{isAdmin && survey.status === 'Scheduled' && !editingSchedule && <button className="btn btn-secondary" type="button" onClick={() => setEditingSchedule(true)}>Change appointment</button>}</div>
     </div>
     {editingSchedule && <ScheduleForm installationId={survey.installationId} existing={survey} onCancel={() => setEditingSchedule(false)} />}
-    {survey.status === 'Scheduled' && <ReportForm survey={survey} />}
+    {survey.status === 'Scheduled' && !isAdmin && <ReportForm survey={survey} />}
+    {survey.status === 'Scheduled' && isAdmin && <div className="notice tone-info survey-followup"><p className="notice-title">Waiting for the site report</p><p>{survey.technicianName} will submit the measurements after the visit. You can review them here once submitted.</p></div>}
     {survey.status !== 'Scheduled' && <ReportDetails survey={survey} />}
     {isAdmin && survey.status === 'Submitted' && <ReviewForm survey={survey} />}
     {survey.status === 'Rejected' && <div className="notice tone-warning survey-followup"><p className="notice-title">Survey rejected</p><p>{survey.reviewNotes || 'No review notes were provided.'}</p>{isAdmin && <div className="actions"><Link className="btn btn-secondary btn-sm" to={`/installations/${survey.installationId}`}>Schedule another visit</Link></div>}</div>}

@@ -50,10 +50,11 @@ public class SurveysController(ISurveyService service) : ApiControllerBase
     }
 
     [HttpPut("{id:int}/report")]
+    [Authorize(Policy = Policies.Technician)]
     public async Task<ActionResult<SurveyResponse>> Submit(int id, [FromBody] SubmitSurveyReportRequest request)
     {
         if (CurrentUserId is not { } me) return Problem(AuthErrors.SignedOut);
-        var result = await service.SubmitAsync(id, request, me, IsAdmin);
+        var result = await service.SubmitAsync(id, request, me);
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
 

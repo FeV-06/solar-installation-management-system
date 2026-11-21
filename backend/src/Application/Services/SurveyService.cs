@@ -58,9 +58,9 @@ public class SurveyService(
         return await SaveAsync(survey);
     }
 
-    public async Task<Result<SurveyResponse>> SubmitAsync(int id, SubmitSurveyReportRequest request, int userId, bool isAdmin)
+    public async Task<Result<SurveyResponse>> SubmitAsync(int id, SubmitSurveyReportRequest request, int userId)
     {
-        var survey = await surveys.GetVisibleAsync(id, userId, isAdmin);
+        var survey = await surveys.GetVisibleAsync(id, userId, isAdmin: false);
         if (survey is null) return Result.Failure<SurveyResponse>(SurveyErrors.NotFound(id));
         if (survey.Status != SurveyStatus.Scheduled || survey.Installation.Status != InstallationStatus.Survey)
             return Result.Failure<SurveyResponse>(SurveyErrors.InvalidState);
