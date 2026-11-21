@@ -60,14 +60,15 @@ public class CustomerJourneyTests(PostgresFixture database) : ApiTestBase(databa
         portal.GetProperty("quotes").EnumerateArray().Should().ContainSingle();
 
         var admin = await CreateClientAsAsync(UserRole.Admin);
+        var sales = await CreateClientAsAsync(UserRole.Sales);
         var technician = await CreateClientAsAsync(UserRole.Technician);
         var technicianId = await IdOfAsync(TestTechnician.Email);
         (await admin.GetAsync("/api/customer-portal", Ct)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await sales.PutAsJsonAsync($"/api/leads/{leadId}/status", new { status = "Contacted" }, Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
         (await admin.PutAsJsonAsync($"/api/leads/{leadId}", new
         {
             firstName = "Jane", lastName = "Doe", email = "other@example.test", phone = "+1 512 555 0100"
         }, Ct)).StatusCode.Should().Be(HttpStatusCode.Conflict);
-        (await admin.PutAsJsonAsync($"/api/leads/{leadId}/status", new { status = "Contacted" }, Ct)).StatusCode.Should().Be(HttpStatusCode.OK);
         var converted = await admin.PostAsync($"/api/leads/{leadId}/convert", null, Ct);
         converted.StatusCode.Should().Be(HttpStatusCode.OK);
         var result = await Json(converted);

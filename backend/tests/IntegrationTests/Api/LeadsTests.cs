@@ -104,9 +104,10 @@ public class LeadsTests(PostgresFixture database) : ApiTestBase(database)
         var created = await JsonAsync(await CreateClient().PostAsJsonAsync("/api/leads", ErrorResponseTests.ValidLead(), Ct));
         var id = created.GetProperty("id").GetInt32();
         var admin = await CreateClientAsAsync(UserRole.Admin);
+        var sales = await CreateClientAsAsync(UserRole.Sales);
 
         // Act 1 - after a call
-        var contacted = await admin.PutAsJsonAsync($"/api/leads/{id}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
+        var contacted = await sales.PutAsJsonAsync($"/api/leads/{id}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
 
         // Assert 1 - the lead as its page shows it
         contacted.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -159,7 +160,7 @@ public class LeadsTests(PostgresFixture database) : ApiTestBase(database)
     {
         await SeedLeadAsync(LeadStatus.Lost);
 
-        var response = await (await CreateClientAsAsync(UserRole.Admin)).PutAsJsonAsync("/api/leads/1/status",
+        var response = await (await CreateClientAsAsync(UserRole.Sales)).PutAsJsonAsync("/api/leads/1/status",
             new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
 
         var body = await ShouldBeProblemAsync(response, HttpStatusCode.Conflict, "lead.transition_not_allowed");
@@ -169,7 +170,7 @@ public class LeadsTests(PostgresFixture database) : ApiTestBase(database)
     [Fact]
     public async Task UpdateLead_OpenLead_Returns200WithTheCorrectedLead()
     {
-        await SeedLeadAsync(LeadStatus.New);
+        await SeedLeadAsync(LeadStatus.Contacted);
 
         var response = await (await CreateClientAsAsync(UserRole.Admin)).PutAsJsonAsync("/api/leads/1",
             new UpdateLeadRequest { FirstName = "Dana", LastName = "Whitfield", Email = "dana@example.com", Phone = "(512) 555-0187" }, Ct);

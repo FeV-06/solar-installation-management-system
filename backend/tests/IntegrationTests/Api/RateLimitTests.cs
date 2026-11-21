@@ -292,7 +292,9 @@ public class RateLimitTests(PostgresFixture database) : ApiTestBase(database)
             $"{RateLimits.QuoteForm}: WebAPI.Controllers.LeadsController.Create",
             $"{RateLimits.QuoteForm}: WebAPI.Controllers.CustomerPortalController.CreateQuoteRequest",
             $"{RateLimits.PasswordChecks}: WebAPI.Controllers.AuthController.Login",
-            $"{RateLimits.PasswordChecks}: WebAPI.Controllers.AuthController.ChangePassword");
+            $"{RateLimits.PasswordChecks}: WebAPI.Controllers.AuthController.ChangePassword",
+            $"{RateLimits.CustomerOtpRequest}: WebAPI.Controllers.CustomerAuthController.RequestOtp",
+            $"{RateLimits.CustomerOtpVerify}: WebAPI.Controllers.CustomerAuthController.VerifyOtp");
     }
 
     #endregion

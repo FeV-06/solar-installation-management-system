@@ -57,7 +57,7 @@ namespace Infrastructure.Migrations
                 unique: true);
 
             migrationBuilder.CreateIndex(
-                name: "IX_installation_proofs_technician_id",
+                name: "ix_installation_proofs_technician_id",
                 table: "installation_proofs",
                 column: "technician_id");
         }

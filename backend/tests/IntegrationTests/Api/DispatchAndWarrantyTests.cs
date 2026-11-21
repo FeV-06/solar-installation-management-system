@@ -51,7 +51,8 @@ public class DispatchAndWarrantyTests(PostgresFixture database) : ApiTestBase(da
         created.StatusCode.Should().Be(HttpStatusCode.Created);
         var leadId = (await Json(created)).GetProperty("id").GetInt32();
 
-        await admin.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
+        var sales = await CreateClientAsAsync(UserRole.Sales);
+        await sales.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
         var converted = await admin.PostAsync($"/api/leads/{leadId}/convert", null, Ct);
         converted.StatusCode.Should().Be(HttpStatusCode.OK);
         var convJson = await Json(converted);

@@ -54,7 +54,8 @@ public class ServiceTicketTests(PostgresFixture database) : ApiTestBase(database
         var created = await CreateClient().PostAsJsonAsync("/api/leads", leadReq, Ct);
         var leadId = (await Json(created)).GetProperty("id").GetInt32();
 
-        await admin.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
+        var sales = await CreateClientAsAsync(UserRole.Sales);
+        await sales.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
         var converted = await admin.PostAsync($"/api/leads/{leadId}/convert", null, Ct);
         var convJson = await Json(converted);
         var installationId = convJson.GetProperty("installationId").GetInt32();

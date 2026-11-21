@@ -27,6 +27,7 @@ namespace Infrastructure.Migrations
                 table: "service_tickets",
                 newName: "ix_service_tickets_assigned_technician_id");
 
+            migrationBuilder.Sql("DROP INDEX IF EXISTS \"IX_installation_proofs_technician_id\";");
             migrationBuilder.Sql("CREATE INDEX IF NOT EXISTS ix_installation_proofs_technician_id ON installation_proofs (technician_id);");
 
             migrationBuilder.AddPrimaryKey(

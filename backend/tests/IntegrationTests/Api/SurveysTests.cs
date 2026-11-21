@@ -30,7 +30,8 @@ public class SurveysTests(PostgresFixture database) : ApiTestBase(database)
         var created = await CreateClient().PostAsJsonAsync("/api/leads", ErrorResponseTests.ValidLead(), Ct);
         created.StatusCode.Should().Be(HttpStatusCode.Created);
         var leadId = (await Json(created)).GetProperty("id").GetInt32();
-        var contacted = await admin.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
+        var sales = await CreateClientAsAsync(UserRole.Sales);
+        var contacted = await sales.PutAsJsonAsync($"/api/leads/{leadId}/status", new UpdateLeadStatusRequest { Status = "Contacted" }, Ct);
         contacted.StatusCode.Should().Be(HttpStatusCode.OK);
         var converted = await admin.PostAsync($"/api/leads/{leadId}/convert", null, Ct);
         converted.StatusCode.Should().Be(HttpStatusCode.OK);
