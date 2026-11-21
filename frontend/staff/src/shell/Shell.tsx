@@ -1,7 +1,7 @@
 import { useEffect, useRef, useState } from 'react';
 import { useQueryClient } from '@tanstack/react-query';
 import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatches } from 'react-router-dom';
-import { Menu, X } from 'lucide-react';
+import { Menu, Sparkles, X } from 'lucide-react';
 import { signOut } from '../api/auth';
 import { Icon } from '../components/Icon';
 import { landingFor, REASON_KEY, SESSION_KEY, useCurrentUser } from '../session/session';
@@ -9,6 +9,7 @@ import { ChangePasswordDialog } from '../users/AccountDialogs';
 import { AccountMenu } from './AccountMenu';
 import { sectionsFor, type Section } from './sections';
 import { useTheme } from './theme';
+import { AiCommandCenter } from '../components/AiCommandCenter/AiCommandCenter';
 
 /** What a route tells the shell: the page's title, for the browser's tab */
 export type RouteHandle = { title: string };
@@ -64,10 +65,22 @@ export function Shell() {
   const drawer = useRef<HTMLDialogElement>(null);
   const shown = useRef(pathname);
   const [changingPassword, setChangingPassword] = useState(false);
+  const [isAiOpen, setIsAiOpen] = useState(false);
   const title = (matches.at(-1)?.handle as RouteHandle | undefined)?.title;
   const sections = sectionsFor(user.role);
   const home = landingFor(user.role);
   const navLabel = user.role === 'Admin' ? 'Office' : undefined;
+
+  useEffect(() => {
+    const onKeyDown = (e: KeyboardEvent) => {
+      if ((e.ctrlKey || e.metaKey) && e.key.toLowerCase() === 'k') {
+        e.preventDefault();
+        setIsAiOpen(prev => !prev);
+      }
+    };
+    window.addEventListener('keydown', onKeyDown);
+    return () => window.removeEventListener('keydown', onKeyDown);
+  }, []);
 
   useEffect(() => { document.title = title ? `${title} · Sol` : 'Sol'; }, [title]);
 
@@ -104,6 +117,18 @@ export function Shell() {
       <aside className="side">
         <Logo to={home} />
         <Nav sections={sections} label={navLabel} />
+        <button
+          type="button"
+          className="nav-ai-btn"
+          onClick={() => setIsAiOpen(true)}
+          title="Open Sol AI Operations Copilot (Ctrl+K)"
+        >
+          <span className="nav-ai-btn-inner">
+            <Icon icon={Sparkles} />
+            <span>AI Copilot</span>
+          </span>
+          <span className="nav-ai-badge">Ctrl+K</span>
+        </button>
         {account('account-side')}
       </aside>
 
@@ -112,6 +137,15 @@ export function Shell() {
           <Icon icon={Menu} />
         </button>
         <Logo to={home} />
+        <button
+          className="btn btn-quiet btn-icon"
+          type="button"
+          aria-label="Open AI Copilot"
+          title="Open AI Copilot"
+          onClick={() => setIsAiOpen(true)}
+        >
+          <Icon icon={Sparkles} />
+        </button>
         {account('account-top', true)}
       </header>
 
@@ -123,6 +157,19 @@ export function Shell() {
             <button className="btn btn-quiet btn-icon" type="button" aria-label="Close the menu" onClick={closeDrawer}><Icon icon={X} /></button>
           </div>
           <Nav sections={sections} label={navLabel} onPick={closeDrawer} />
+          <button
+            type="button"
+            className="nav-ai-btn"
+            onClick={() => {
+              closeDrawer();
+              setIsAiOpen(true);
+            }}
+          >
+            <span className="nav-ai-btn-inner">
+              <Icon icon={Sparkles} />
+              <span>AI Operations Copilot</span>
+            </span>
+          </button>
         </div>
       </dialog>
 
@@ -130,6 +177,12 @@ export function Shell() {
         <Outlet />
       </main>
       {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}
+      <AiCommandCenter
+        isOpen={isAiOpen}
+        onClose={() => setIsAiOpen(false)}
+        userRole={user.role}
+        userName={user.name}
+      />
       <ScrollRestoration />
     </div>
   );

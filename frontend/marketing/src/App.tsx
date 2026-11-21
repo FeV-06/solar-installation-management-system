@@ -16,6 +16,7 @@ import { QuoteSentPage } from './quote/QuoteSentPage';
 import { CustomerSignInPage } from './pages/CustomerSignInPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
 import { CustomerAuthProvider } from './lib/customerAuth';
+import { AiAssistant } from './components/AiAssistant/AiAssistant';
 
 export default function App() {
   const logoRef = useRef<SVGSVGElement>(null);
@@ -60,6 +61,7 @@ export default function App() {
         </Routes>
       </main>
       <Footer />
+      <AiAssistant />
     </CustomerAuthProvider>
   );
 }

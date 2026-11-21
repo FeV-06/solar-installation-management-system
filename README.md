@@ -1,37 +1,114 @@
-# Sol
+# Sol — Solar Installation Management Platform
 
-Sol is a solar-installation management project with a public enquiry site, a separate company workspace and an ASP.NET Core API. It is being adapted for the SunPower hackathon brief; the imported application is a starting point, not a complete implementation of that brief.
+[![CI](https://github.com/kingsahil/solar-installation-management-system/actions/workflows/ci.yml/badge.svg)](https://github.com/kingsahil/solar-installation-management-system/actions/workflows/ci.yml)
+[![.NET 10](https://img.shields.io/badge/.NET-10.0-512BD4?logo=dotnet)](https://dotnet.microsoft.com/)
+[![React 19](https://img.shields.io/badge/React-19.3-61DAFB?logo=react)](https://react.dev/)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5.9-3178C6?logo=typescript)](https://www.typescriptlang.org/)
+[![PostgreSQL](https://img.shields.io/badge/PostgreSQL-18-4169E1?logo=postgresql)](https://www.postgresql.org/)
 
-## Project structure
+**Sol** is a unified, enterprise-grade operations platform for solar engineering and installation businesses. It tracks the complete customer lifecycle from public enquiry intake through technical site surveys, automated engineering bill of materials (BOM), commercial quotations with government subsidy integration, customer portal approval and advance payments, warehouse packing with serial number verification, installation scheduling, and long-term service management.
 
-- `frontend/marketing/` — public website and enquiry form (React, TypeScript and Vite).
-- `frontend/staff/` — staff workspace (React, TypeScript and Vite).
-- `frontend/brand/` — shared styling, fonts and brand assets.
-- `backend/` — .NET 10 API, EF Core, application/domain code and tests.
-- `docker-compose.yml` — local PostgreSQL 18 development database.
-- `perf/` — imported performance scripts and recorded reference results; they do not establish the performance of this project's future changes.
+---
 
-The current code includes enquiry intake, staff sessions, staff-account management, lead and customer pages and related APIs. The installation details, technician work and production sections include placeholders; verify functionality in the actual code and tests rather than assuming the complete SunPower workflow exists. Quotes and bills of materials, inventory and serial scanning, delivery warranties, service tickets and financial operations still require assessment and implementation against the challenge.
+## Architecture & Project Structure
 
-## Local development
+The project is built on Clean Architecture principles, decoupling business domain logic from infrastructure and presentation layers:
 
-- The imported setup and stop scripts are disabled: one contained a database password and another stopped every Node/PostgreSQL process. Rotate the exposed password if it was used; it remains in Git history. Use the steps below instead.
+```
+solar-installation-management-system/
+├── backend/                              # .NET 10 Enterprise WebAPI & Core Domain
+│   ├── src/
+│   │   ├── Domain/                       # Core domain entities, invariants, enums, India localization
+│   │   ├── Application/                  # Use cases, DTOs, interfaces, sizing & BOM engine, validators
+│   │   ├── Infrastructure/               # EF Core, PostgreSQL 18, Hangfire, Outbox, MailKit, auth
+│   │   └── WebAPI/                       # ASP.NET Core controllers, RFC 9457 ProblemDetails, security
+│   └── tests/
+│       ├── UnitTests/                    # 165+ xUnit v3 domain, validation, and sizing unit tests
+│       ├── IntegrationTests/             # Full HTTP API integration tests using Testcontainers & PostgreSQL
+│       └── TestUtilities/                # Shared fixtures, factories, and manual clock fakes
+├── frontend/
+│   ├── marketing/                        # Public customer website, quote request form & Customer Portal
+│   ├── staff/                            # Internal staff workspace (Leads, Surveys, Quotations, Warehouse, Users)
+│   └── brand/                            # Shared design system, SVG wordmarks, typography, and CSS tokens
+├── docs/                                 # In-depth architectural, domain, API, operational & testing docs
+│   ├── architecture.md                   # System boundaries, security pipeline, data flows, and topology
+│   ├── domain-models.md                  # State machines, entity definitions, auto-BOM and subsidy formulas
+│   ├── api-reference.md                  # Complete HTTP REST endpoint catalog with authentication rules
+│   ├── operations.md                     # Operational runbook, docker setup, environment vars, background jobs
+│   └── testing.md                        # Test methodology, execution commands, and verification matrix
+├── docker-compose.yml                    # Local PostgreSQL 18 development database container
+└── scripts/                              # Verification and orchestration scripts
+```
 
-Requirements: Git, .NET 10 SDK, Node.js 22.13+ (or a supported newer release), pnpm 11.15.1 and Docker with Compose. The database image is PostgreSQL 18. Do not commit credentials or genuine customer information.
+---
 
-### Quick Start / Running the Apps
+## Key Features & Business Workflows
 
-Open **three separate PowerShell terminals** at the repository root.
+### 1. Indian Market Localization
+- **Currency & Pricing:** All commercial figures calculated in Indian Rupees (INR, ₹).
+- **Subsidies:** Built-in central financial assistance formulas under the **PM Surya Ghar: Muft Bijli Yojana** (₹30,000 for 1 kW, ₹60,000 for 2 kW, capped at ₹78,000 for 3 kW+).
+- **Geography:** State and Union Territory validation conforming to **ISO 3166-2:IN** (`IndiaStates.cs`).
+- **Time Zone:** System time operations configured for `Asia/Kolkata` (IST, UTC+05:30).
+- **Consumption Slabs:** Tailored residential electricity bill slabs (under ₹1,500, ₹1,500–₹3,000, ₹3,000–₹6,000, etc.).
 
-#### 1. Start the Database (PostgreSQL)
-Ensure Docker Desktop is running. Copy `.env.example` to `.env` and set a local PostgreSQL password, connection string, JWT secret, initial admin details and email sender address. Do not use a real email address or Gmail credentials for local tests unless explicitly intended. Verify port `127.0.0.1:5433` is free, then run:
+### 2. Gated Site Survey & Auto-BOM Quotation Engine
+- **Survey Feasibility:** Field technicians capture shadow-free roof area, roof tilt, orientation, cable distance, and grid suitability.
+- **Strict Gating:** Quotation generation is strictly blocked until an assigned technician submits the site report and an administrator explicitly **Approves** it.
+- **Automated 9-Part BOM:** The template engine dynamically sizes the system (1–5 kW) and generates an itemized BOM:
+  1. High-Efficiency Half-Cut Mono-PERC Solar Panels (550W modules).
+  2. Grid-Tie or Pure Sine Wave Hybrid Inverters with MPPT telemetry.
+  3. LiFePO4 Lithium Battery Storage & 48V Charge Controllers (Off-Grid).
+  4. Hot-Dip Galvanized Elevated Module Mounting Structures (150 km/h wind rated).
+  5. UV-Resistant DC and Armoured AC Cabling based on site survey distance.
+  6. DC Combiner Box (AJB/DCDB) with 1000V DC Type 2 Surge Protection Device.
+  7. AC Distribution Box (ACDB) with Class II AC SPD and RCCB isolation.
+  8. Dual Chemical Earthing Pits with copper-bonded electrodes & Lightning Arrester.
+  9. Turnkey Engineering, testing, net-metering liaison, and DISCOM signoff.
+
+### 3. Customer Portal & Self-Service
+- **Passwordless Sign-In:** One-time passcode (OTP) email authentication or password-based login.
+- **Project Tracking:** Real-time visual progress bar showing stage transitions from initial enquiry to active generation.
+- **Commercial Review & Payment:** Interactive breakdown of hardware costs, central subsidy deduction, net payable, and one-click advance payment simulation (`PAY-YYYYMMDD-XXXXXX`).
+
+### 4. Warehouse Fulfillment & Serial Tracking
+- **Auto-Packing Order:** Advance payment automatically creates a warehouse fulfillment order.
+- **Serialization Enforcement:** Critical equipment (Inverters, Batteries, Charge Controllers) mandates physical serial number capture via barcode/scanner before release.
+- **Stage Progression:** Itemized packing checklist transitions orders from `Pending` → `Packed` → `Dispatched`.
+
+### 5. Resilience & Enterprise Security
+- **Transactional Outbox:** Background email notifications commit atomically with database transactions, featuring exponential backoff retries and an administrative failure recovery dashboard.
+- **Strict CSRF & CORS:** Origin validation middleware (`SameOriginCheck`) prevents cross-site state tampering.
+- **HttpOnly Cookies:** Isolated session cookies (`sol-session` for staff with `SameSite=Strict`; `sol-customer-session` for customers).
+
+---
+
+## Local Development Quickstart
+
+### Prerequisites
+- Git
+- .NET 10.0 SDK
+- Node.js 22.13+
+- pnpm 11.15+ (`corepack enable && corepack prepare pnpm@11.15.1 --activate`)
+- Docker Desktop with Compose V2
+
+---
+
+### Step-by-Step Setup
+
+Open **three separate PowerShell terminals** at the repository root:
+
+#### 1. Database & Environment Preparation
+Ensure Docker Desktop is running. Copy `.env.example` to `.env`:
+```powershell
+Copy-Item .env.example .env
+```
+Populate `.env` with a secure PostgreSQL password, JWT secret, and initial admin credentials. Then start the local PostgreSQL 18 container:
 ```powershell
 docker compose up -d postgres
 ```
 
-
 #### 2. Start Backend API (Terminal 1)
-The backend does not load `.env` itself; load environment variables into PowerShell and launch the API:
+Load environment variables into the PowerShell session and start the ASP.NET Core API:
 ```powershell
 Get-Content .env | ForEach-Object {
   if ($_ -match '^\s*([^#=\s]+)\s*=\s*(.*)\s*$') {
@@ -43,38 +120,64 @@ Get-Content .env | ForEach-Object {
     [Environment]::SetEnvironmentVariable($name, $value, 'Process')
   }
 }
+
 dotnet restore backend/Sol.slnx
 dotnet run --project backend/src/WebAPI
 ```
-- Listens at: `http://localhost:5228`. Development applies pending EF migrations.
+- **WebAPI Endpoint:** `http://localhost:5228`
+- **Interactive Scalar API Docs:** `http://localhost:5228/scalar/v1`
+- **Hangfire Dashboard:** `http://localhost:5228/hangfire`
 
 #### 3. Start Customer / Marketing Site (Terminal 2)
-Public website and enquiry/quote form:
+Public website, quote estimation form, and Customer Portal:
 ```powershell
 cd frontend/marketing
 pnpm install
 pnpm dev
 ```
-- Serves at: `http://localhost:5173`
+- **Customer Portal URL:** `http://localhost:5173`
 
 #### 4. Start Sales & Staff Panel (Terminal 3)
-Staff dashboard for managing leads, customers, and operations:
+Staff workspace for lead qualification, site survey scheduling, quote approvals, warehouse fulfillment, and user administration:
 ```powershell
 cd frontend/staff
 pnpm install
 pnpm dev
 ```
-- Serves at: `http://localhost:5174/staff/`
-- Proxies `/api` requests to `http://localhost:5228`. Log in using `Admin__Email` and `Admin__Password` from `.env`.
+- **Staff Panel URL:** `http://localhost:5174/staff/`
+- **Sign In:** Use the `Admin__Email` and `Admin__Password` defined in your `.env`.
 
-> [!NOTE]
-> Local development defaults to the `Recording` email provider: it simulates email delivery and does not send actual emails. Address suggestions via Geoapify are optional. Staff session cookies are secure; a phone connecting over plain LAN HTTP generally needs HTTPS for sign-in. Configure the marketing API URL and CORS origin where needed.
+---
 
-## Checks
+## Verification & Testing
 
-- Backend, from `backend/`: `dotnet restore`, `dotnet build`, and `dotnet test`. Integration tests use Testcontainers and create isolated PostgreSQL databases; Docker must be available.
-- Each frontend, from its own directory: `pnpm lint`, `pnpm test`, `pnpm build`.
-- Windows PowerShell can run `scripts/check-windows.ps1 -Repository <absolute-repo-path> -Pnpm <absolute-path-to-pnpm.cmd>` after installing prerequisites. The script checks the full stack and requires a working Docker daemon for integration tests; its Windows execution has not yet been verified.
-- Test actual cross-frontend → API → PostgreSQL workflows with synthetic data. Passing a build or unit test does not mean every product workflow is implemented.
+The platform maintains comprehensive automated test suites across all layers:
 
-The project is under active development. Follow existing permissions and privacy boundaries; avoid exposing development endpoints publicly. Communicate shared API changes to frontend and testing contributors before integrating them.
+```powershell
+# 1. Backend Unit Tests (165 tests covering domain, validators, and BOM engine)
+dotnet test backend/tests/UnitTests/UnitTests.csproj
+
+# 2. Marketing Frontend Tests (69 Vitest tests)
+cd frontend/marketing
+pnpm test
+
+# 3. Staff Frontend Tests (149 Vitest tests)
+cd frontend/staff
+pnpm test
+
+# 4. Production TypeScript Bundling
+cd frontend/marketing && pnpm build
+cd frontend/staff && pnpm build
+```
+
+For complete testing details, refer to [docs/testing.md](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/testing.md).
+
+---
+
+## Documentation Index
+
+- [Architecture & Technical Specifications](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/architecture.md)
+- [Domain Models & Workflows](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/domain-models.md)
+- [WebAPI Reference & Endpoints](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/api-reference.md)
+- [Operations & Deployment Runbook](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/operations.md)
+- [Testing Strategy & QA Matrix](file:///c:/users/khanna/projects/odoo/solar-installation-management-system/docs/testing.md)

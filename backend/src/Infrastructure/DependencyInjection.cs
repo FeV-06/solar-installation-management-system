@@ -12,6 +12,7 @@ using Infrastructure.Measurement;
 using Infrastructure.Outbox;
 using Infrastructure.Repositories;
 using Infrastructure.Services;
+using Infrastructure.Services.Ai;
 using Infrastructure.Settings;
 using Microsoft.AspNetCore.Authentication.JwtBearer;
 using Microsoft.AspNetCore.Http;
@@ -224,6 +225,14 @@ public static class DependencyInjection
         services.AddScoped<ICustomerAuthService, CustomerAuthService>();
         services.AddScoped<ICustomerPortalService, CustomerPortalService>();
         services.AddScoped<IQuoteService, QuoteService>();
+
+        // AI Assistant, Knowledge Base and Dynamic Tool Discovery
+        services.AddOptions<AiOptions>()
+            .Bind(configuration.GetSection(AiOptions.SectionName));
+        services.AddHttpClient();
+        services.AddSingleton<IKnowledgeBaseService, KnowledgeBaseService>();
+        services.AddSingleton<IAiToolRegistry, DynamicEndpointScanner>();
+        services.AddScoped<IAiService, AiService>();
 
         // Email: the provider's sender (Email:Provider), which the measurement harness wraps in Development
         services.AddSingleton<IGmailAuthService, GmailAuthService>();
