@@ -6,12 +6,12 @@
 
 | Operational Scene | SunPower Challenge Requirement | Status | Verification & Code Artefacts |
 | :--- | :--- | :--- | :--- |
-| **Scene 1: Rooftop Inquiry & Site Survey** | Public intake, OTP auth, survey scheduling, roof measurements, admin approval. | **COMPLETED** | `SurveysController.cs`, `SurveyService.cs`, `SurveyPage.tsx`, 6/6 Integration Tests. |
+| **Scene 1: Rooftop Inquiry & Site Survey** | Public intake, OTP auth, Sales-first contact ownership, survey scheduling, roof measurements, admin approval. | **COMPLETED** | `SurveysController.cs`, `SurveyService.cs`, `SurveyPage.tsx`, `LeadsController.cs`, Integration Tests. |
 | **Scene 2: Getting the Kit Right** | Auto-BOM sizing (1-5 kW), 10 itemized parts, PM Surya Ghar subsidy, 20% advance payment, warehouse packing generation. | **COMPLETED** | `QuoteTemplateEngine.cs`, `QuotesController.cs`, `InstallationsPage.tsx`, `/portal`. |
-| **Scene 3: Dispatch Day & Serial Scanning** | High-value hardware serial scanning gate, warehouse dispatch, automated 2-yr & 20-yr warranty clocks, sub-second lookup. | **COMPLETED** | `warranties` table, `POST /api/packing-orders/{id}/dispatch`, `POST /api/packing-orders/{id}/deliver`, `DispatchAndWarrantyTests.cs`. |
-| **Scene 4: On the Roof** | Mobile field execution: start/finish times, kW generation test readout, photo evidence, customer digital signature. | **PENDING** | **Phase 1 Target** |
-| **Scene 5: Rainy Season Breakdown** | Sub-second warranty check, fault ticket intake, ₹0 covered vs billable logic, customer-confirmed ticket closure. | **PENDING** | **Phase 2 Target** |
-| **Scene 6: Director's Month-End** | Job-level unit economics (profit/loss), cash vs receivables, subsidy tracker, technician compensation, exportable reports. | **PENDING** | **Phase 3 Target** |
+| **Scene 3: Dispatch Day & Serial Scanning** | High-value hardware serial scanning gate, warehouse dispatch, technician delivery permissions, automated 2-yr & 20-yr warranty clocks, sub-second lookup. | **COMPLETED** | `warranties` table, `POST /api/packing-orders/{id}/dispatch`, `POST /api/packing-orders/{id}/deliver`, `DispatchAndWarrantyTests.cs`. |
+| **Scene 4: On the Roof** | Mobile field execution: start/finish times, kW generation test readout, photo evidence, customer digital signature, mobile packing handover. | **COMPLETED** | `InstallationProof.cs`, `CommissioningPage.tsx`, `RooftopFieldProofSection.tsx`, Customer Portal Handover Certificate. |
+| **Scene 5: Rainy Season Breakdown** | Sub-second warranty check, fault ticket intake, ₹0 covered vs billable logic, technician scheduling, replacement commissioning certificate, customer restoration signoff gate. | **COMPLETED** | `ServiceTicket.cs`, `ServiceTicketsController.cs`, `TicketsPage.tsx`, Customer Portal Claims Desk & Replacement Certificate. |
+| **Scene 6: Director's Month-End** | Job-level unit economics (profit/loss), cash vs receivables, subsidy tracker, technician compensation, exportable reports. | **PENDING** | **Final Target** |
 
 ---
 
