@@ -158,12 +158,23 @@ public class ServiceTicketTests(PostgresFixture database) : ApiTestBase(database
         var packingOrderRes = await admin.GetAsync($"/api/installations/{installationId}/packing-order", Ct);
         packingOrderRes.StatusCode.Should().Be(HttpStatusCode.OK);
 
-        // 5. Technician resolves ticket on-site with new replacement serial number and customer screen signature
+        // 4b. Admin schedules active technician for replacement visit
         var techClient = await CreateClientAsAsync(UserRole.Technician);
+        var technicianId = await IdOfAsync(TestTechnician.Email);
+        var scheduleRes = await admin.PutAsJsonAsync($"/api/service-tickets/{ticket.Id}/schedule", new ScheduleServiceTicketRequest(technicianId, DateTime.UtcNow.AddDays(1)), Ct);
+        scheduleRes.StatusCode.Should().Be(HttpStatusCode.OK);
+        var scheduledTicket = await scheduleRes.Content.ReadFromJsonAsync<ServiceTicketDto>(Ct);
+        scheduledTicket!.Status.Should().Be("InProgress");
+        scheduledTicket.AssignedTechnicianId.Should().Be(technicianId);
+
+        // 5. Technician resolves ticket on-site with replacement serial, tested generation, and customer signature
         var resolveReq = new ResolveServiceTicketRequest(
             "INV-GROWATT-REPLACE-4491",
+            2.92m,
+            "https://sol.test/photos/inverter-swapped.jpg",
             "Swapped out faulty inverter unit. Tested power output at 2.92 kW. Replaced seals.",
-            "data:image/svg+xml;base64,PHN2Zz5zaWduYXR1cmU8L3N2Zz4=");
+            "data:image/svg+xml;base64,PHN2Zz5zaWduYXR1cmU8L3N2Zz4=",
+            "Jane Doe");
 
         var resolveRes = await techClient.PostAsJsonAsync($"/api/service-tickets/{ticket.Id}/resolve", resolveReq, Ct);
         resolveRes.StatusCode.Should().Be(HttpStatusCode.OK);
@@ -172,6 +183,8 @@ public class ServiceTicketTests(PostgresFixture database) : ApiTestBase(database
         // Invariant: Ticket must stay in ResolvedPendingCustomerConfirmation until Homeowner confirms
         resolvedTicket!.Status.Should().Be("ResolvedPendingCustomerConfirmation");
         resolvedTicket.ReplacementSerialNumber.Should().Be("INV-GROWATT-REPLACE-4491");
+        resolvedTicket.TestedGenerationKw.Should().Be(2.92m);
+        resolvedTicket.SignedByName.Should().Be("Jane Doe");
 
         // 6. Homeowner confirms power restored in Customer Portal -> Formally closes ticket
         var confirmRes = await customer.PostAsJsonAsync($"/api/customer-portal/tickets/{ticket.Id}/confirm", new ConfirmServiceTicketRequest("Confirmed. AC and inverter running perfectly."), Ct);

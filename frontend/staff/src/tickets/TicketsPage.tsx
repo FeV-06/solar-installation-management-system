@@ -7,15 +7,18 @@ import {
   Clock,
   LoaderCircle,
   ChevronDown,
+  Calendar,
 } from 'lucide-react';
 import {
   fetchServiceTickets,
   reviewServiceTicket,
+  scheduleServiceTicket,
   resolveServiceTicket,
   TICKETS_KEY,
   type ServiceTicket,
 } from '../api/serviceTickets';
 import { lookupWarranty, type Warranty } from '../api/quotes';
+import { fetchTechnicians } from '../api/surveys';
 import { Icon } from '../components/Icon';
 import { useCurrentUser } from '../session/session';
 
@@ -28,6 +31,7 @@ export function TicketsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTicket, setSelectedTicket] = useState<ServiceTicket | null>(null);
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [showScheduleModal, setShowScheduleModal] = useState<boolean>(false);
   const [showResolveModal, setShowResolveModal] = useState<boolean>(false);
 
   // Review form state
@@ -37,14 +41,26 @@ export function TicketsPage() {
   const [laborCost, setLaborCost] = useState<number>(0);
   const [adminNotes, setAdminNotes] = useState<string>('');
 
+  // Schedule visit state
+  const [scheduledTechId, setScheduledTechId] = useState<number>(0);
+  const [scheduledAt, setScheduledAt] = useState<string>('');
+
   // Resolve form state
   const [replacementSerial, setReplacementSerial] = useState<string>('');
+  const [testedGenerationKw, setTestedGenerationKw] = useState<number>(2.85);
+  const [signedByName, setSignedByName] = useState<string>('');
+  const [replacementPhotoUrl, setReplacementPhotoUrl] = useState<string>('/images/inverter_wiring.svg');
   const [resolutionNotes, setResolutionNotes] = useState<string>('');
   const [signatureData, setSignatureData] = useState<string>('');
 
   const ticketsQuery = useQuery({
     queryKey: TICKETS_KEY(activeTab === 'All' ? undefined : activeTab),
     queryFn: ({ signal }) => fetchServiceTickets(activeTab === 'All' ? undefined : activeTab, signal),
+  });
+
+  const techniciansQuery = useQuery({
+    queryKey: ['technicians'],
+    queryFn: ({ signal }) => fetchTechnicians(signal),
   });
 
   const warrantyLookupQuery = useQuery({
@@ -58,6 +74,15 @@ export function TicketsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['service-tickets'] });
       setShowReviewModal(false);
+      setSelectedTicket(null);
+    },
+  });
+
+  const scheduleMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: any }) => scheduleServiceTicket(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['service-tickets'] });
+      setShowScheduleModal(false);
       setSelectedTicket(null);
     },
   });
@@ -81,10 +106,21 @@ export function TicketsPage() {
     setShowReviewModal(true);
   };
 
+  const openSchedule = (ticket: ServiceTicket) => {
+    setSelectedTicket(ticket);
+    const firstTech = techniciansQuery.data?.[0]?.id ?? 0;
+    setScheduledTechId(ticket.assignedTechnicianId ?? firstTech);
+    setScheduledAt(ticket.scheduledVisitAt ? ticket.scheduledVisitAt.slice(0, 16) : new Date(Date.now() + 86400000).toISOString().slice(0, 16));
+    setShowScheduleModal(true);
+  };
+
   const openResolve = (ticket: ServiceTicket) => {
     setSelectedTicket(ticket);
     setReplacementSerial('');
-    setResolutionNotes('');
+    setTestedGenerationKw(2.85);
+    setSignedByName(ticket.customerName);
+    setReplacementPhotoUrl('/images/inverter_wiring.svg');
+    setResolutionNotes('Swapped inverter unit. Verified DC/AC voltages and tested live generation.');
     setSignatureData('data:image/svg+xml;base64,PHN2Zz5zaWduYXR1cmU8L3N2Zz4=');
     setShowResolveModal(true);
   };
@@ -311,6 +347,13 @@ export function TicketsPage() {
                     </div>
                   )}
 
+                  {ticket.assignedTechnicianName && ticket.scheduledVisitAt && (
+                    <div style={{ marginTop: '0.5rem', fontSize: '0.825rem', color: '#1e40af', background: '#eff6ff', padding: '0.4rem 0.6rem', borderRadius: '4px', display: 'inline-block' }}>
+                      <Icon icon={Calendar} size={13} style={{ marginRight: '4px', verticalAlign: '-1px' }} />
+                      Scheduled: <b>{ticket.assignedTechnicianName}</b> &bull; {new Date(ticket.scheduledVisitAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}
+                    </div>
+                  )}
+
                   {ticket.adminNotes && (
                     <div style={{ marginTop: '0.5rem', fontSize: '0.85rem', color: 'var(--muted)', fontStyle: 'italic' }}>
                       Admin Notes: {ticket.adminNotes}
@@ -319,7 +362,7 @@ export function TicketsPage() {
                 </div>
 
                 {/* Actions */}
-                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '150px' }}>
+                <div style={{ display: 'flex', flexDirection: 'column', gap: '0.5rem', minWidth: '160px' }}>
                   {isAdmin && (ticket.status === 'Open' || ticket.status === 'Reviewed') && (
                     <button
                       type="button"
@@ -327,6 +370,16 @@ export function TicketsPage() {
                       onClick={() => openReview(ticket)}
                     >
                       Review &amp; Set Terms
+                    </button>
+                  )}
+
+                  {isAdmin && (ticket.status === 'Approved' || ticket.status === 'InProgress' || ticket.status === 'Reviewed') && (
+                    <button
+                      type="button"
+                      className="btn btn-secondary btn-sm"
+                      onClick={() => openSchedule(ticket)}
+                    >
+                      {ticket.assignedTechnicianId ? 'Reschedule Visit' : 'Assign Technician'}
                     </button>
                   )}
 
@@ -454,36 +507,143 @@ export function TicketsPage() {
         </div>
       )}
 
-      {/* Technician On-Site Swap Modal */}
-      {showResolveModal && selectedTicket && (
+      {/* Admin Schedule Technician Visit Modal */}
+      {showScheduleModal && selectedTicket && (
         <div className="modal-backdrop" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
-          <div className="rec-card" style={{ background: 'var(--bg)', width: '100%', maxWidth: '520px', padding: '1.75rem', borderRadius: 'var(--radius-lg)' }}>
-            <h2 className="a-heading" style={{ margin: '0 0 1rem' }}>
-              On-Site Hardware Swap &amp; Customer Handover
+          <div className="rec-card" style={{ background: 'var(--bg)', width: '100%', maxWidth: '480px', padding: '1.75rem', borderRadius: 'var(--radius-lg)' }}>
+            <h2 className="a-heading" style={{ margin: '0 0 1rem', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+              <Icon icon={Calendar} size={18} color="var(--accent)" />
+              <span>Schedule Technician Visit (Ticket #{selectedTicket.id})</span>
             </h2>
-            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: '0 0 1rem' }}>
-              Physical unit replacement for ticket #{selectedTicket.id}. Enter scanned replacement serial number and capture customer handover signature.
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: '0 0 1.25rem' }}>
+              Assign an active technician to visit customer site at {selectedTicket.propertyAddress} for hardware swap.
             </p>
 
             <div style={{ marginBottom: '1rem' }}>
-              <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>New Replacement Serial Number</label>
+              <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Select Technician</label>
+              <div className="control">
+                <select
+                  value={scheduledTechId}
+                  onChange={(e) => setScheduledTechId(Number(e.target.value))}
+                >
+                  <option value={0}>Choose technician...</option>
+                  {techniciansQuery.data?.map((tech) => (
+                    <option key={tech.id} value={tech.id}>
+                      {tech.name} &bull; {tech.email}
+                    </option>
+                  ))}
+                </select>
+                <Icon icon={ChevronDown} className="chev" />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
+              <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Appointment Date &amp; Time</label>
+              <div className="control">
+                <input
+                  type="datetime-local"
+                  required
+                  value={scheduledAt}
+                  onChange={(e) => setScheduledAt(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+              <button
+                type="button"
+                className="btn btn-quiet"
+                onClick={() => setShowScheduleModal(false)}
+              >
+                Cancel
+              </button>
+              <button
+                type="button"
+                className="btn btn-primary"
+                disabled={!scheduledTechId || !scheduledAt || scheduleMutation.isPending}
+                onClick={() =>
+                  scheduleMutation.mutate({
+                    id: selectedTicket.id,
+                    body: {
+                      technicianId: scheduledTechId,
+                      scheduledAt: new Date(scheduledAt).toISOString(),
+                    },
+                  })
+                }
+              >
+                {scheduleMutation.isPending ? 'Scheduling...' : 'Save & Assign Technician'}
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+
+      {/* Technician On-Site Swap Modal */}
+      {showResolveModal && selectedTicket && (
+        <div className="modal-backdrop" style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.5)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 50 }}>
+          <div className="rec-card" style={{ background: 'var(--bg)', width: '100%', maxWidth: '540px', padding: '1.75rem', borderRadius: 'var(--radius-lg)' }}>
+            <h2 className="a-heading" style={{ margin: '0 0 1rem' }}>
+              On-Site Hardware Swap &amp; Commissioning
+            </h2>
+            <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: '0 0 1.25rem' }}>
+              Replacement for ticket #{selectedTicket.id} ({selectedTicket.hardwareItem}). Enter the new serial number, generation test output, and capture customer sign-off.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+              <div>
+                <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>New Replacement Serial</label>
+                <input
+                  type="text"
+                  required
+                  value={replacementSerial}
+                  placeholder="e.g. INV-GROWATT-992144"
+                  onChange={(e) => setReplacementSerial(e.target.value)}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg-field)', color: 'var(--fg)' }}
+                />
+              </div>
+              <div>
+                <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Tested Output (kW)</label>
+                <input
+                  type="number"
+                  step="0.01"
+                  required
+                  value={testedGenerationKw}
+                  onChange={(e) => setTestedGenerationKw(Number(e.target.value))}
+                  style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg-field)', color: 'var(--fg)' }}
+                />
+              </div>
+            </div>
+
+            <div style={{ marginBottom: '1rem' }}>
+              <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Homeowner Name (Accepting Work)</label>
               <input
                 type="text"
-                value={replacementSerial}
-                placeholder="Scan or enter new unit S/N..."
-                onChange={(e) => setReplacementSerial(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)' }}
+                required
+                value={signedByName}
+                placeholder="Homeowner full name"
+                onChange={(e) => setSignedByName(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg-field)', color: 'var(--fg)' }}
               />
             </div>
 
             <div style={{ marginBottom: '1rem' }}>
+              <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Replacement Unit Photo URL / Proof</label>
+              <input
+                type="text"
+                value={replacementPhotoUrl}
+                onChange={(e) => setReplacementPhotoUrl(e.target.value)}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg-field)', color: 'var(--fg)' }}
+              />
+            </div>
+
+            <div style={{ marginBottom: '1.25rem' }}>
               <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>On-Site Testing &amp; Resolution Notes</label>
               <textarea
                 rows={2}
                 value={resolutionNotes}
-                placeholder="e.g. Swapped inverter, tested generation at 2.8 kW, seals verified."
+                placeholder="Swapped inverter, tested generation at 2.85 kW, seals verified."
                 onChange={(e) => setResolutionNotes(e.target.value)}
-                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)' }}
+                style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg-field)', color: 'var(--fg)' }}
               />
             </div>
 
@@ -504,13 +664,16 @@ export function TicketsPage() {
                     id: selectedTicket.id,
                     body: {
                       replacementSerialNumber: replacementSerial,
+                      testedGenerationKw,
+                      replacementPhotoUrl,
                       resolutionNotes,
                       customerSignatureData: signatureData,
+                      signedByName,
                     },
                   })
                 }
               >
-                {resolveMutation.isPending ? 'Saving...' : 'Complete Swap & Request Customer Signoff'}
+                {resolveMutation.isPending ? 'Saving...' : 'Complete Swap & Issue Certificate'}
               </button>
             </div>
           </div>

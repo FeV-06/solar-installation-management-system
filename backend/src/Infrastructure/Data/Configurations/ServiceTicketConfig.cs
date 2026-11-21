@@ -15,6 +15,7 @@ public class ServiceTicketConfig : IEntityTypeConfiguration<ServiceTicket>
         builder.Property(t => t.InstallationId).HasColumnName("installation_id");
         builder.Property(t => t.CustomerId).HasColumnName("customer_id");
         builder.Property(t => t.AssignedTechnicianId).HasColumnName("assigned_technician_id");
+        builder.Property(t => t.ScheduledVisitAt).HasColumnName("scheduled_visit_at");
         builder.Property(t => t.SerialNumber).HasColumnName("serial_number").HasMaxLength(100).IsRequired();
         builder.Property(t => t.HardwareItem).HasColumnName("hardware_item").HasMaxLength(255).IsRequired();
         builder.Property(t => t.Category).HasColumnName("category").HasConversion<string>().HasMaxLength(50).IsRequired();
@@ -36,10 +37,13 @@ public class ServiceTicketConfig : IEntityTypeConfiguration<ServiceTicket>
 
         builder.Property(t => t.ReplacementPackingOrderId).HasColumnName("replacement_packing_order_id");
         builder.Property(t => t.ReplacementSerialNumber).HasColumnName("replacement_serial_number").HasMaxLength(100);
+        builder.Property(t => t.TestedGenerationKw).HasColumnName("tested_generation_kw").HasPrecision(6, 2);
+        builder.Property(t => t.ReplacementPhotoUrl).HasColumnName("replacement_photo_url");
         builder.Property(t => t.TechnicianResolutionNotes).HasColumnName("technician_resolution_notes");
         builder.Property(t => t.ResolvedAt).HasColumnName("resolved_at");
 
         builder.Property(t => t.CustomerSignatureData).HasColumnName("customer_signature_data");
+        builder.Property(t => t.SignedByName).HasColumnName("signed_by_name").HasMaxLength(150);
         builder.Property(t => t.TechnicianSignedAt).HasColumnName("technician_signed_at");
         builder.Property(t => t.CustomerConfirmedAt).HasColumnName("customer_confirmed_at");
         builder.Property(t => t.CreatedAt).HasColumnName("created_at");

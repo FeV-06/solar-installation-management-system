@@ -67,6 +67,7 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
         ["GET api/service-tickets"] = Access.Staff,
         ["GET api/service-tickets/{id:int}"] = Access.Staff,
         ["PUT api/service-tickets/{id:int}/review"] = Access.Admin,
+        ["PUT api/service-tickets/{id:int}/schedule"] = Access.Admin,
         ["POST api/service-tickets/{id:int}/resolve"] = Access.Staff,
         ["GET api/surveys"] = Access.Staff,
         ["GET api/surveys/{id:int}"] = Access.Staff,

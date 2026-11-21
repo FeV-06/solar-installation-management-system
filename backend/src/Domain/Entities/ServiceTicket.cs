@@ -18,6 +18,7 @@ public class ServiceTicket
 
     public int? AssignedTechnicianId { get; set; }
     public User? AssignedTechnician { get; set; }
+    public DateTime? ScheduledVisitAt { get; set; }
 
     public string SerialNumber { get; set; } = string.Empty;
     public string HardwareItem { get; set; } = string.Empty;
@@ -46,11 +47,14 @@ public class ServiceTicket
     public PackingOrder? ReplacementPackingOrder { get; set; }
 
     public string? ReplacementSerialNumber { get; set; }
+    public decimal? TestedGenerationKw { get; set; }
+    public string? ReplacementPhotoUrl { get; set; }
     public string? TechnicianResolutionNotes { get; set; }
     public DateTime? ResolvedAt { get; set; }
 
     /// <summary>Homeowner digital screen signature captured on-site upon physical swap.</summary>
     public string? CustomerSignatureData { get; set; }
+    public string? SignedByName { get; set; }
     public DateTime? TechnicianSignedAt { get; set; }
 
     /// <summary>Final digital signoff by homeowner in Customer Portal confirming power restoration.</summary>

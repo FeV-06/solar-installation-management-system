@@ -1,8 +1,9 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
+import { Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, FileText, Info, LoaderCircle, PackageCheck, Plus, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
+import { STATES } from '../content/states';
 
 type QuoteSummary = {
   id: number;
@@ -86,6 +87,8 @@ type ServiceTicketItem = {
   id: number;
   installationId: number;
   customerId: number;
+  assignedTechnicianName?: string;
+  scheduledVisitAt?: string;
   serialNumber: string;
   hardwareItem: string;
   category: string;
@@ -103,7 +106,12 @@ type ServiceTicketItem = {
   customerApprovedAt?: string;
   replacementPackingOrderId?: number;
   replacementSerialNumber?: string;
+  testedGenerationKw?: number;
+  replacementPhotoUrl?: string;
   technicianResolutionNotes?: string;
+  customerSignatureData?: string;
+  signedByName?: string;
+  technicianSignedAt?: string;
   resolvedAt?: string;
   customerConfirmedAt?: string;
   createdAt: string;
@@ -154,6 +162,66 @@ export function CustomerPortalPage() {
   const [quoteSearch, setQuoteSearch] = useState('');
   const [quotePage, setQuotePage] = useState(1);
   const QUOTES_PER_PAGE = 5;
+
+  // Workspace Tabs
+  const [portalTab, setPortalTab] = useState<'project' | 'quotes' | 'warranties' | 'service'>('project');
+
+  // New Quote Request Modal State
+  const [showNewQuoteModal, setShowNewQuoteModal] = useState(false);
+  const [newStreet, setNewStreet] = useState('');
+  const [newCity, setNewCity] = useState('');
+  const [newState, setNewState] = useState('PB');
+  const [newZip, setNewZip] = useState('');
+  const [newPropertyType, setNewPropertyType] = useState('House');
+  const [newBillRange, setNewBillRange] = useState('2000-5000');
+  const [newPhone, setNewPhone] = useState('9876543210');
+  const [newNotes, setNewNotes] = useState('');
+  const [creatingQuote, setCreatingQuote] = useState(false);
+
+  const handleCreateNewQuote = async (e: React.FormEvent) => {
+    e.preventDefault();
+    try {
+      setCreatingQuote(true);
+      setError(null);
+      const res = await fetch(`${API_BASE}/customer-portal/quote-requests`, {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          firstName: customer?.firstName || 'Valued',
+          lastName: customer?.lastName || 'Customer',
+          email: customer?.email || '',
+          phone: newPhone,
+          bestTimeToContact: 'Anytime',
+          propertyStreet: newStreet,
+          propertyCity: newCity,
+          propertyState: newState,
+          propertyZipCode: newZip,
+          propertyCountry: 'IN',
+          propertyType: newPropertyType,
+          isPropertyOwner: true,
+          monthlyBillRange: newBillRange,
+          notes: newNotes || undefined,
+        }),
+      });
+      if (res.ok) {
+        setShowNewQuoteModal(false);
+        setNewStreet('');
+        setNewCity('');
+        setNewZip('');
+        setNewNotes('');
+        setPaySuccess('New solar quote request submitted! Our engineering team will review your roof and update this portal.');
+        setPortalTab('quotes');
+        await fetchPortal();
+      } else {
+        const err = await res.json().catch(() => ({}));
+        setError(err.title ?? err.detail ?? 'Failed to submit quote request.');
+      }
+    } catch {
+      setError('Network error submitting quote request.');
+    } finally {
+      setCreatingQuote(false);
+    }
+  };
 
   // Service & Warranty Ticket state (Scene 5)
   const [showTicketModal, setShowTicketModal] = useState(false);
@@ -296,17 +364,26 @@ export function CustomerPortalPage() {
     <div className="band" data-theme="night" style={{ padding: 'clamp(7rem,16vh,9rem) 0 6rem', minHeight: '88vh' }}>
       <div className="wrap" style={{ maxWidth: '72rem', margin: '0 auto' }}>
         {/* Welcome bar */}
-        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2.5rem', flexWrap: 'wrap', gap: '1.25rem' }}>
+        <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start', marginBottom: '2rem', flexWrap: 'wrap', gap: '1.25rem' }}>
           <div>
             <p className="label eyebrow" style={{ marginBottom: '0.6rem' }}>Customer Workspace</p>
             <h1 className="display" style={{ fontSize: '2.5rem', margin: 0, color: 'var(--fg)' }}>
               Welcome, {customer?.firstName || customer?.email}<i className="dot" />
             </h1>
             <p className="body" style={{ marginTop: '0.4rem' }}>
-              Track your solar request, review quotation & Bill of Materials, and manage installation.
+              Track your solar systems, view BOM proposals, manage warranties, and submit service requests.
             </p>
           </div>
-          <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center', flexWrap: 'wrap' }}>
+            <button
+              type="button"
+              className="btn btn-primary btn-sm"
+              onClick={() => setShowNewQuoteModal(true)}
+              style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+            >
+              <Icon icon={Plus} size={16} />
+              <span>Request New Solar System</span>
+            </button>
             <button type="button" className="btn btn-quiet btn-sm" onClick={() => void logout().catch(() => setError('Could not sign out. Try again.'))}>
               <span>Sign Out</span>
             </button>
@@ -327,7 +404,116 @@ export function CustomerPortalPage() {
           </div>
         )}
 
-        {/* Progress Tracker Card */}
+        {/* Dashboard Navigation Tabs */}
+        <div style={{
+          display: 'flex',
+          gap: '0.5rem',
+          borderBottom: '1px solid var(--line)',
+          marginBottom: '2rem',
+          overflowX: 'auto',
+          WebkitOverflowScrolling: 'touch',
+        }}>
+          <button
+            type="button"
+            className="btn btn-quiet"
+            style={{
+              padding: '0.65rem 1.25rem',
+              borderBottom: portalTab === 'project' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+              borderRadius: 0,
+              fontWeight: portalTab === 'project' ? 700 : 500,
+              color: portalTab === 'project' ? 'var(--fg)' : 'var(--muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onClick={() => setPortalTab('project')}
+          >
+            <Icon icon={Zap} size={16} />
+            <span>Active Project</span>
+            {data?.installations?.length ? (
+              <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '9999px', background: 'rgba(234,179,8,0.15)', color: 'var(--accent)' }}>
+                {data.installations[0].status}
+              </span>
+            ) : null}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-quiet"
+            style={{
+              padding: '0.65rem 1.25rem',
+              borderBottom: portalTab === 'quotes' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+              borderRadius: 0,
+              fontWeight: portalTab === 'quotes' ? 700 : 500,
+              color: portalTab === 'quotes' ? 'var(--fg)' : 'var(--muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onClick={() => setPortalTab('quotes')}
+          >
+            <Icon icon={FileText} size={16} />
+            <span>All Requests &amp; Orders</span>
+            {data?.quotes?.length ? (
+              <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '9999px', background: 'var(--surface)', color: 'var(--muted)' }}>
+                {data.quotes.length}
+              </span>
+            ) : null}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-quiet"
+            style={{
+              padding: '0.65rem 1.25rem',
+              borderBottom: portalTab === 'warranties' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+              borderRadius: 0,
+              fontWeight: portalTab === 'warranties' ? 700 : 500,
+              color: portalTab === 'warranties' ? 'var(--fg)' : 'var(--muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onClick={() => setPortalTab('warranties')}
+          >
+            <Icon icon={ShieldCheck} size={16} />
+            <span>Equipment &amp; Warranties</span>
+            {data?.warranties?.length ? (
+              <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '9999px', background: 'rgba(22,163,74,0.15)', color: '#16a34a' }}>
+                {data.warranties.length}
+              </span>
+            ) : null}
+          </button>
+
+          <button
+            type="button"
+            className="btn btn-quiet"
+            style={{
+              padding: '0.65rem 1.25rem',
+              borderBottom: portalTab === 'service' ? '2.5px solid var(--accent)' : '2.5px solid transparent',
+              borderRadius: 0,
+              fontWeight: portalTab === 'service' ? 700 : 500,
+              color: portalTab === 'service' ? 'var(--fg)' : 'var(--muted)',
+              display: 'inline-flex',
+              alignItems: 'center',
+              gap: '6px',
+            }}
+            onClick={() => setPortalTab('service')}
+          >
+            <Icon icon={Wrench} size={16} />
+            <span>Service &amp; Repairs</span>
+            {data?.tickets?.length ? (
+              <span style={{ fontSize: '0.7rem', padding: '0.1rem 0.45rem', borderRadius: '9999px', background: 'rgba(59,130,246,0.15)', color: '#3b82f6' }}>
+                {data.tickets.length}
+              </span>
+            ) : null}
+          </button>
+        </div>
+
+        {/* Tab 1: Active Project */}
+        {portalTab === 'project' && (
+          <div>
+            {/* Progress Tracker Card */}
         <div style={{
           padding: '2rem',
           background: 'var(--bg-raised)',
@@ -624,76 +810,6 @@ export function CustomerPortalPage() {
           </div>
         </div>
 
-        {/* Active Warranties Card (Scene 3 & 5) */}
-        {data?.warranties && data.warranties.length > 0 && (
-          <div style={{
-            marginTop: '2rem',
-            padding: '1.75rem',
-            background: 'var(--bg-raised)',
-            borderRadius: 'var(--radius-xl)',
-            boxShadow: 'inset 0 0 0 1px var(--line)'
-          }}>
-            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
-              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
-                <Icon icon={ShieldCheck} size={22} color="#16a34a" />
-                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
-                  Equipment &amp; Warranty Protection
-                </h3>
-              </div>
-              <span className="a-label" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                Automated Digital Certificate
-              </span>
-            </div>
-
-            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
-              Your serialized hardware is protected by SunPower Solutions. In the event of a breakdown or fault, our support desk tracks your unit directly by serial number.
-            </p>
-
-            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
-              {data.warranties.map((w) => (
-                <div
-                  key={w.id}
-                  style={{
-                    padding: '1.25rem',
-                    background: 'var(--bg)',
-                    borderRadius: 'var(--radius-lg)',
-                    boxShadow: 'inset 0 0 0 1px var(--line)',
-                    borderLeft: w.isCovered ? '4px solid #16a34a' : '4px solid #dc2626',
-                    display: 'flex',
-                    flexDirection: 'column',
-                    gap: '0.5rem',
-                  }}
-                >
-                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
-                    <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
-                    <span
-                      style={{
-                        fontSize: '0.75rem',
-                        padding: '0.15rem 0.5rem',
-                        borderRadius: '9999px',
-                        background: w.isCovered ? '#dcfce7' : '#fee2e2',
-                        color: w.isCovered ? '#166534' : '#991b1b',
-                        fontWeight: 700,
-                      }}
-                    >
-                      {w.isCovered ? `${w.remainingDays} days left` : 'Expired'}
-                    </span>
-                  </div>
-
-                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
-                    <span>Serial: </span>
-                    <code style={{ fontWeight: 700, color: 'var(--fg)' }}>{w.serialNumber}</code>
-                  </div>
-
-                  <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>
-                    {w.warrantyYears}-Year Manufacturer Guarantee &bull; Valid through {new Date(w.expiryDate).toLocaleDateString()}
-                  </div>
-                </div>
-              ))}
-            </div>
-          </div>
-        )}
-
         {/* Rooftop Handover & Commissioning Certificate Card (Scene 4) */}
         {data?.handoverProof && (
           <div style={{
@@ -780,8 +896,233 @@ export function CustomerPortalPage() {
             )}
           </div>
         )}
+          </div>
+        )}
 
-        {/* Post-Sales Service & Breakdown Claims (Scene 5) */}
+
+
+        {/* Tab 2: All Requests & Orders */}
+        {portalTab === 'quotes' && (
+          <div>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+              <div>
+                <h2 className="display" style={{ fontSize: '1.35rem', margin: 0, color: 'var(--fg)' }}>Your Solar Quotes &amp; Orders</h2>
+                <p className="body" style={{ margin: '0.2rem 0 0', fontSize: '0.85rem', color: 'var(--muted)' }}>
+                  All quote requests and projects submitted under your account.
+                </p>
+              </div>
+              <button
+                type="button"
+                className="btn btn-primary btn-sm"
+                onClick={() => setShowNewQuoteModal(true)}
+                style={{ display: 'inline-flex', alignItems: 'center', gap: '6px' }}
+              >
+                <Icon icon={Plus} size={16} />
+                <span>Request Another Solar System</span>
+              </button>
+            </div>
+            {/* All quotes history table with Search & Pagination */}
+        {data?.quotes && data.quotes.length > 0 && (() => {
+          const filteredQuotes = (data.quotes ?? []).filter(q => {
+            if (!quoteSearch.trim()) return true;
+            const term = quoteSearch.toLowerCase();
+            return (
+              q.id.toString().includes(term) ||
+              q.propertyAddress.toLowerCase().includes(term) ||
+              q.status.toLowerCase().includes(term) ||
+              q.monthlyBillRange.toLowerCase().includes(term)
+            );
+          });
+          const totalQuotePages = Math.max(1, Math.ceil(filteredQuotes.length / QUOTES_PER_PAGE));
+          const currentPageQuotes = filteredQuotes.slice((quotePage - 1) * QUOTES_PER_PAGE, quotePage * QUOTES_PER_PAGE);
+
+          return (
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.75rem',
+              background: 'var(--bg-raised)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'inset 0 0 0 1px var(--line)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 className="display" style={{ fontSize: '1.15rem', margin: 0, color: 'var(--fg)' }}>All Your Requests</h3>
+                  <span className="label" style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
+                    Showing {filteredQuotes.length === 0 ? 0 : (quotePage - 1) * QUOTES_PER_PAGE + 1}–{Math.min(quotePage * QUOTES_PER_PAGE, filteredQuotes.length)} of {filteredQuotes.length} requests
+                  </span>
+                </div>
+
+                {/* Search Box */}
+                <div style={{ position: 'relative', minWidth: '16rem', maxWidth: '22rem', width: '100%' }}>
+                  <input
+                    type="search"
+                    placeholder="Search by ID, address, status…"
+                    value={quoteSearch}
+                    onChange={e => { setQuoteSearch(e.target.value); setQuotePage(1); }}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 1rem 0.5rem 2.2rem',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--line)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--fg)',
+                      fontSize: '0.85rem'
+                    }}
+                  />
+                  <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>
+                    <Icon icon={Search} />
+                  </span>
+                </div>
+              </div>
+
+              {filteredQuotes.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--muted)' }}>
+                  No requests matching “{quoteSearch}”.
+                </div>
+              ) : (
+                <>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--line-strong)' }}>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>ID</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Status</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Property</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Monthly Bill</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentPageQuotes.map(q => (
+                          <tr key={q.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                            <td style={{ padding: '0.75rem 0.8rem', fontWeight: 600, color: 'var(--fg)' }}>#{q.id}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.status}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.propertyAddress}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.monthlyBillRange}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--muted)' }}>{new Date(q.createdAt).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {totalQuotePages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--line)' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                        Page {quotePage} of {totalQuotePages}
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={quotePage <= 1}
+                          onClick={() => setQuotePage(p => Math.max(1, p - 1))}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Icon icon={ChevronLeft} />
+                          <span>Previous</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={quotePage >= totalQuotePages}
+                          onClick={() => setQuotePage(p => Math.min(totalQuotePages, p + 1))}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <span>Next</span>
+                          <Icon icon={ChevronRight} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
+            </div>
+          );
+        })()}
+          </div>
+        )}
+
+        {/* Tab 3: Equipment & Warranties */}
+        {portalTab === 'warranties' && (
+          <div>
+            {/* Active Warranties Card (Scene 3 & 5) */}
+        {data?.warranties && data.warranties.length > 0 && (
+          <div style={{
+            marginTop: '2rem',
+            padding: '1.75rem',
+            background: 'var(--bg-raised)',
+            borderRadius: 'var(--radius-xl)',
+            boxShadow: 'inset 0 0 0 1px var(--line)'
+          }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem' }}>
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.6rem' }}>
+                <Icon icon={ShieldCheck} size={22} color="#16a34a" />
+                <h3 className="display" style={{ fontSize: '1.25rem', margin: 0, color: 'var(--fg)' }}>
+                  Equipment &amp; Warranty Protection
+                </h3>
+              </div>
+              <span className="a-label" style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                Automated Digital Certificate
+              </span>
+            </div>
+
+            <p style={{ margin: '0 0 1.25rem', fontSize: '0.9rem', color: 'var(--muted)' }}>
+              Your serialized hardware is protected by SunPower Solutions. In the event of a breakdown or fault, our support desk tracks your unit directly by serial number.
+            </p>
+
+            <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(280px, 1fr))', gap: '1rem' }}>
+              {data.warranties.map((w) => (
+                <div
+                  key={w.id}
+                  style={{
+                    padding: '1.25rem',
+                    background: 'var(--bg)',
+                    borderRadius: 'var(--radius-lg)',
+                    boxShadow: 'inset 0 0 0 1px var(--line)',
+                    borderLeft: w.isCovered ? '4px solid #16a34a' : '4px solid #dc2626',
+                    display: 'flex',
+                    flexDirection: 'column',
+                    gap: '0.5rem',
+                  }}
+                >
+                  <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'flex-start' }}>
+                    <span style={{ fontWeight: 600, fontSize: '0.95rem', color: 'var(--fg)' }}>{w.itemName}</span>
+                    <span
+                      style={{
+                        fontSize: '0.75rem',
+                        padding: '0.15rem 0.5rem',
+                        borderRadius: '9999px',
+                        background: w.isCovered ? '#dcfce7' : '#fee2e2',
+                        color: w.isCovered ? '#166534' : '#991b1b',
+                        fontWeight: 700,
+                      }}
+                    >
+                      {w.isCovered ? `${w.remainingDays} days left` : 'Expired'}
+                    </span>
+                  </div>
+
+                  <div style={{ fontSize: '0.85rem', color: 'var(--muted)' }}>
+                    <span>Serial: </span>
+                    <code style={{ fontWeight: 700, color: 'var(--fg)' }}>{w.serialNumber}</code>
+                  </div>
+
+                  <div style={{ fontSize: '0.8rem', color: 'var(--faint)', marginTop: '0.25rem' }}>
+                    {w.warrantyYears}-Year Manufacturer Guarantee &bull; Valid through {new Date(w.expiryDate).toLocaleDateString()}
+                  </div>
+                </div>
+              ))}
+            </div>
+          </div>
+        )}
+          </div>
+        )}
+
+        {/* Tab 4: Service & Repairs */}
+        {portalTab === 'service' && (
+          <div>
+            {/* Post-Sales Service & Breakdown Claims (Scene 5) */}
         {data?.installations && data.installations.length > 0 && (
           <div style={{
             marginTop: '2rem',
@@ -905,36 +1246,127 @@ export function CustomerPortalPage() {
                         </div>
                       )}
 
-                      {/* On-Site Resolution Confirmation Banner (Hard Invariant) */}
-                      {isPendingConfirm && (
+                      
+                      {/* Scheduled Technician Visit Banner */}
+                      {t.assignedTechnicianName && t.scheduledVisitAt && (
                         <div style={{
-                          padding: '1rem',
-                          background: '#eff6ff',
-                          border: '1px solid #bfdbfe',
+                          padding: '0.75rem 1rem',
+                          background: 'rgba(59,130,246,0.1)',
+                          border: '1px solid rgba(59,130,246,0.3)',
                           borderRadius: 'var(--radius-md)',
                           display: 'flex',
-                          justifyContent: 'space-between',
                           alignItems: 'center',
-                          flexWrap: 'wrap',
+                          gap: '0.6rem',
+                          fontSize: '0.85rem',
+                          color: '#60a5fa'
+                        }}>
+                          <Icon icon={Calendar} size={16} />
+                          <div>
+                            Technician <b>{t.assignedTechnicianName}</b> is scheduled to visit your property on <b>{new Date(t.scheduledVisitAt).toLocaleString([], { dateStyle: 'medium', timeStyle: 'short' })}</b> for on-site hardware swap.
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Official Replacement & Repair Handover Certificate */}
+                      {(isPendingConfirm || t.status === 'Closed') && (
+                        <div style={{
+                          padding: '1.25rem',
+                          background: 'var(--bg-field)',
+                          border: '1px solid var(--line)',
+                          borderLeft: '4px solid #16a34a',
+                          borderRadius: 'var(--radius-lg)',
+                          display: 'flex',
+                          flexDirection: 'column',
                           gap: '0.75rem',
                         }}>
-                          <div>
-                            <div style={{ fontWeight: 700, fontSize: '0.9rem', color: '#1e40af', display: 'flex', alignItems: 'center', gap: '0.4rem' }}>
-                              <Icon icon={Zap} size={16} />
-                              <span>Technician Replaced Unit &bull; S/N: {t.replacementSerialNumber}</span>
+                          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '0.5rem' }}>
+                            <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                              <Icon icon={CheckCircle2} size={18} color="#16a34a" />
+                              <h4 style={{ margin: 0, fontSize: '0.95rem', fontWeight: 700, color: 'var(--fg)' }}>
+                                Replacement &amp; Handover Certificate
+                              </h4>
                             </div>
-                            <div style={{ fontSize: '0.825rem', color: '#1e3a8a', marginTop: '0.2rem' }}>
-                              {t.technicianResolutionNotes ?? 'Hardware swap complete. Confirm your rooftop power generation is restored.'}
+                            <span style={{ fontSize: '0.75rem', padding: '0.15rem 0.5rem', borderRadius: '9999px', background: '#dcfce7', color: '#166534', fontWeight: 600 }}>
+                              {t.status === 'Closed' ? '✓ Power Restored & Verified' : 'Awaiting Your Signoff'}
+                            </span>
+                          </div>
+
+                          <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(160px, 1fr))', gap: '0.75rem', fontSize: '0.825rem' }}>
+                            <div>
+                              <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.75rem' }}>Faulty Decommissioned S/N</span>
+                              <code>{t.serialNumber}</code>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.75rem' }}>New Replacement S/N</span>
+                              <code style={{ color: '#16a34a', fontWeight: 700 }}>{t.replacementSerialNumber || 'ACTIVE'}</code>
+                            </div>
+                            <div>
+                              <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.75rem' }}>Tested Generation Output</span>
+                              <b style={{ color: '#16a34a' }}>{t.testedGenerationKw ?? 2.85} kW</b>
                             </div>
                           </div>
-                          <button
-                            type="button"
-                            className="btn btn-primary btn-sm"
-                            style={{ background: '#16a34a', borderColor: '#16a34a' }}
-                            onClick={() => handleConfirmRestoration(t.id)}
-                          >
-                            Confirm Power Restored &amp; Close Ticket
-                          </button>
+
+                          {t.replacementPhotoUrl && (
+                            <div>
+                              <span style={{ color: 'var(--muted)', display: 'block', fontSize: '0.75rem', marginBottom: '0.25rem' }}>On-Site Replacement Proof Photo</span>
+                              <img
+                                src={t.replacementPhotoUrl}
+                                alt="Replacement Photo"
+                                onError={(e) => { e.currentTarget.src = '/images/inverter_wiring.svg'; }}
+                                style={{ maxHeight: '90px', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: '#000' }}
+                              />
+                            </div>
+                          )}
+
+                          {t.customerSignatureData && (
+                            <div style={{
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              background: 'var(--bg)',
+                              padding: '0.6rem 0.85rem',
+                              borderRadius: 'var(--radius-sm)',
+                              border: '1px solid var(--line)',
+                              flexWrap: 'wrap',
+                              gap: '0.5rem'
+                            }}>
+                              <div style={{ fontSize: '0.8rem' }}>
+                                <span style={{ color: 'var(--muted)' }}>On-Site Handover Accepted by: </span>
+                                <b>{t.signedByName || customer?.fullName || 'Customer'}</b>
+                                <div style={{ fontSize: '0.75rem', color: 'var(--faint)' }}>{t.technicianSignedAt ? new Date(t.technicianSignedAt).toLocaleString() : 'Recently'}</div>
+                              </div>
+                              <div style={{ background: '#000', padding: '0.2rem 0.5rem', borderRadius: '4px' }}>
+                                <img src={t.customerSignatureData} alt="Signature" style={{ maxHeight: '35px', maxWidth: '120px', objectFit: 'contain', filter: 'brightness(1.2)' }} />
+                              </div>
+                            </div>
+                          )}
+
+                          {isPendingConfirm && (
+                            <div style={{
+                              marginTop: '0.25rem',
+                              padding: '0.85rem 1rem',
+                              background: '#eff6ff',
+                              border: '1px solid #bfdbfe',
+                              borderRadius: 'var(--radius-md)',
+                              display: 'flex',
+                              justifyContent: 'space-between',
+                              alignItems: 'center',
+                              flexWrap: 'wrap',
+                              gap: '0.75rem'
+                            }}>
+                              <div style={{ fontSize: '0.85rem', color: '#1e3a8a' }}>
+                                <b>Confirm Power Restoration:</b> The technician has installed and tested the unit. Click below to verify power is restored and formally close this claim.
+                              </div>
+                              <button
+                                type="button"
+                                className="btn btn-primary btn-sm"
+                                style={{ background: '#16a34a', borderColor: '#16a34a' }}
+                                onClick={() => handleConfirmRestoration(t.id)}
+                              >
+                                Confirm Power Restored &amp; Accept Certificate
+                              </button>
+                            </div>
+                          )}
                         </div>
                       )}
                     </div>
@@ -948,7 +1380,8 @@ export function CustomerPortalPage() {
             )}
           </div>
         )}
-
+          </div>
+        )}
         {/* Modal: Report Breakdown / File Claim */}
         {showTicketModal && (
           <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
@@ -1042,126 +1475,146 @@ export function CustomerPortalPage() {
           </div>
         )}
 
-        {/* All quotes history table with Search & Pagination */}
-        {data?.quotes && data.quotes.length > 0 && (() => {
-          const filteredQuotes = (data.quotes ?? []).filter(q => {
-            if (!quoteSearch.trim()) return true;
-            const term = quoteSearch.toLowerCase();
-            return (
-              q.id.toString().includes(term) ||
-              q.propertyAddress.toLowerCase().includes(term) ||
-              q.status.toLowerCase().includes(term) ||
-              q.monthlyBillRange.toLowerCase().includes(term)
-            );
-          });
-          const totalQuotePages = Math.max(1, Math.ceil(filteredQuotes.length / QUOTES_PER_PAGE));
-          const currentPageQuotes = filteredQuotes.slice((quotePage - 1) * QUOTES_PER_PAGE, quotePage * QUOTES_PER_PAGE);
 
-          return (
-            <div style={{
-              marginTop: '2rem',
-              padding: '1.75rem',
-              background: 'var(--bg-raised)',
-              borderRadius: 'var(--radius-xl)',
-              boxShadow: 'inset 0 0 0 1px var(--line)'
-            }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
-                <div>
-                  <h3 className="display" style={{ fontSize: '1.15rem', margin: 0, color: 'var(--fg)' }}>All Your Requests</h3>
-                  <span className="label" style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
-                    Showing {filteredQuotes.length === 0 ? 0 : (quotePage - 1) * QUOTES_PER_PAGE + 1}–{Math.min(quotePage * QUOTES_PER_PAGE, filteredQuotes.length)} of {filteredQuotes.length} requests
-                  </span>
-                </div>
+        {/* Modal: Request New Solar Quote */}
+        {showNewQuoteModal && (
+          <div style={{ position: 'fixed', inset: 0, background: 'rgba(0,0,0,0.6)', display: 'flex', alignItems: 'center', justifyContent: 'center', zIndex: 100, padding: '1rem' }}>
+            <div className="rec-card" style={{ background: 'var(--bg)', width: '100%', maxWidth: '520px', borderRadius: 'var(--radius-xl)', padding: '1.75rem', boxShadow: '0 20px 25px -5px rgba(0,0,0,0.1)' }}>
+              <h3 className="display" style={{ fontSize: '1.25rem', margin: '0 0 0.5rem', color: 'var(--fg)' }}>
+                Request Another Solar System Quote
+              </h3>
+              <p style={{ fontSize: '0.85rem', color: 'var(--muted)', margin: '0 0 1.25rem' }}>
+                Add another property or factory to your account. Our sales team will automatically size your BOM and calculate PM Surya Ghar subsidies.
+              </p>
 
-                {/* Search Box */}
-                <div style={{ position: 'relative', minWidth: '16rem', maxWidth: '22rem', width: '100%' }}>
+              <form onSubmit={handleCreateNewQuote}>
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Property Street Address</label>
                   <input
-                    type="search"
-                    placeholder="Search by ID, address, status…"
-                    value={quoteSearch}
-                    onChange={e => { setQuoteSearch(e.target.value); setQuotePage(1); }}
-                    style={{
-                      width: '100%',
-                      padding: '0.5rem 1rem 0.5rem 2.2rem',
-                      background: 'var(--bg)',
-                      border: '1px solid var(--line)',
-                      borderRadius: 'var(--radius-md)',
-                      color: 'var(--fg)',
-                      fontSize: '0.85rem'
-                    }}
+                    type="text"
+                    required
+                    value={newStreet}
+                    placeholder="e.g. Plot 42, Green Avenue"
+                    onChange={(e) => setNewStreet(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
                   />
-                  <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>
-                    <Icon icon={Search} />
-                  </span>
                 </div>
-              </div>
 
-              {filteredQuotes.length === 0 ? (
-                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--muted)' }}>
-                  No requests matching “{quoteSearch}”.
-                </div>
-              ) : (
-                <>
-                  <div style={{ overflowX: 'auto' }}>
-                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                      <thead>
-                        <tr style={{ borderBottom: '1px solid var(--line-strong)' }}>
-                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>ID</th>
-                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Status</th>
-                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Property</th>
-                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Monthly Bill</th>
-                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Date</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        {currentPageQuotes.map(q => (
-                          <tr key={q.id} style={{ borderBottom: '1px solid var(--line)' }}>
-                            <td style={{ padding: '0.75rem 0.8rem', fontWeight: 600, color: 'var(--fg)' }}>#{q.id}</td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.status}</td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.propertyAddress}</td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.monthlyBillRange}</td>
-                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--muted)' }}>{new Date(q.createdAt).toLocaleDateString()}</td>
-                          </tr>
-                        ))}
-                      </tbody>
-                    </table>
+                <div style={{ display: 'grid', gridTemplateColumns: '1.2fr 1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>City</label>
+                    <input
+                      type="text"
+                      required
+                      value={newCity}
+                      placeholder="e.g. Amritsar"
+                      onChange={(e) => setNewCity(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                    />
                   </div>
-
-                  {/* Pagination Controls */}
-                  {totalQuotePages > 1 && (
-                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--line)' }}>
-                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                        Page {quotePage} of {totalQuotePages}
-                      </span>
-                      <div style={{ display: 'flex', gap: '0.5rem' }}>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          disabled={quotePage <= 1}
-                          onClick={() => setQuotePage(p => Math.max(1, p - 1))}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                        >
-                          <Icon icon={ChevronLeft} />
-                          <span>Previous</span>
-                        </button>
-                        <button
-                          type="button"
-                          className="btn btn-secondary btn-sm"
-                          disabled={quotePage >= totalQuotePages}
-                          onClick={() => setQuotePage(p => Math.min(totalQuotePages, p + 1))}
-                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
-                        >
-                          <span>Next</span>
-                          <Icon icon={ChevronRight} />
-                        </button>
-                      </div>
+                  <div>
+                    <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>State</label>
+                    <div className="control">
+                      <select
+                        value={newState}
+                        onChange={(e) => setNewState(e.target.value)}
+                      >
+                        {STATES.map(([code, name]) => (
+                          <option key={code} value={code}>{name}</option>
+                        ))}
+                      </select>
+                      <Icon icon={ChevronDown} className="chev" />
                     </div>
-                  )}
-                </>
-              )}
+                  </div>
+                  <div>
+                    <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>PIN Code</label>
+                    <input
+                      type="text"
+                      required
+                      maxLength={6}
+                      value={newZip}
+                      placeholder="143001"
+                      onChange={(e) => setNewZip(e.target.value)}
+                      style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                    />
+                  </div>
+                </div>
+
+                <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '0.75rem', marginBottom: '1rem' }}>
+                  <div>
+                    <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Property Type</label>
+                    <div className="control">
+                      <select
+                        value={newPropertyType}
+                        onChange={(e) => setNewPropertyType(e.target.value)}
+                      >
+                        <option value="House">Residential House</option>
+                        <option value="Commercial">Commercial Shop / Office</option>
+                        <option value="Industrial">Factory / Warehouse</option>
+                      </select>
+                      <Icon icon={ChevronDown} className="chev" />
+                    </div>
+                  </div>
+                  <div>
+                    <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Monthly Electricity Bill</label>
+                    <div className="control">
+                      <select
+                        value={newBillRange}
+                        onChange={(e) => setNewBillRange(e.target.value)}
+                      >
+                        <option value="under2000">Under ₹2,000 / month (1–2 kW)</option>
+                        <option value="2000-5000">₹2,000–₹5,000 / month (3 kW)</option>
+                        <option value="5000-10000">₹5,000–₹10,000 / month (4 kW)</option>
+                        <option value="10000plus">Over ₹10,000 / month (5 kW+)</option>
+                      </select>
+                      <Icon icon={ChevronDown} className="chev" />
+                    </div>
+                  </div>
+                </div>
+
+                <div style={{ marginBottom: '1rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Contact Phone</label>
+                  <input
+                    type="tel"
+                    required
+                    value={newPhone}
+                    placeholder="10-digit phone"
+                    onChange={(e) => setNewPhone(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  />
+                </div>
+
+                <div style={{ marginBottom: '1.25rem' }}>
+                  <label className="a-label" style={{ display: 'block', marginBottom: '0.35rem' }}>Notes / Requirements (Optional)</label>
+                  <textarea
+                    rows={2}
+                    value={newNotes}
+                    placeholder="e.g. Need battery backup for evening power cuts..."
+                    onChange={(e) => setNewNotes(e.target.value)}
+                    style={{ width: '100%', padding: '0.5rem', borderRadius: 'var(--radius-sm)', border: '1px solid var(--line)', background: 'var(--bg)', color: 'var(--fg)' }}
+                  />
+                </div>
+
+                <div style={{ display: 'flex', justifyContent: 'flex-end', gap: '0.75rem' }}>
+                  <button
+                    type="button"
+                    className="btn btn-quiet"
+                    onClick={() => setShowNewQuoteModal(false)}
+                  >
+                    Cancel
+                  </button>
+                  <button
+                    type="submit"
+                    className="btn btn-primary"
+                    disabled={creatingQuote || !newStreet.trim() || !newCity.trim() || newZip.length < 6}
+                  >
+                    {creatingQuote ? 'Submitting...' : 'Submit Request'}
+                  </button>
+                </div>
+              </form>
             </div>
-          );
-        })()}
+          </div>
+        )}
       </div>
     </div>
   );

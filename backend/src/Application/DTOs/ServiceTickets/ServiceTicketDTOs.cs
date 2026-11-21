@@ -18,10 +18,17 @@ public record ReviewServiceTicketRequest(
 public record ApproveServiceTicketRequest(
     string? CustomerNotes = null);
 
+public record ScheduleServiceTicketRequest(
+    int TechnicianId,
+    DateTime ScheduledAt);
+
 public record ResolveServiceTicketRequest(
     string ReplacementSerialNumber,
+    decimal TestedGenerationKw,
+    string? ReplacementPhotoUrl,
     string ResolutionNotes,
-    string CustomerSignatureData);
+    string CustomerSignatureData,
+    string SignedByName);
 
 public record ConfirmServiceTicketRequest(
     string? HomeownerFeedback = null);
@@ -36,6 +43,7 @@ public record ServiceTicketDto(
     string PropertyAddress,
     int? AssignedTechnicianId,
     string? AssignedTechnicianName,
+    DateTime? ScheduledVisitAt,
     string SerialNumber,
     string HardwareItem,
     string Category,
@@ -53,9 +61,12 @@ public record ServiceTicketDto(
     DateTime? CustomerApprovedAt,
     int? ReplacementPackingOrderId,
     string? ReplacementSerialNumber,
+    decimal? TestedGenerationKw,
+    string? ReplacementPhotoUrl,
     string? TechnicianResolutionNotes,
     DateTime? ResolvedAt,
     string? CustomerSignatureData,
+    string? SignedByName,
     DateTime? TechnicianSignedAt,
     DateTime? CustomerConfirmedAt,
     DateTime CreatedAt);
