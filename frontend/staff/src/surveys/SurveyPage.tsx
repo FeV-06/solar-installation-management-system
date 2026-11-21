@@ -54,7 +54,19 @@ function SurveyView({ survey, isAdmin, base }: { survey: Survey; isAdmin: boolea
     {survey.status !== 'Scheduled' && <ReportDetails survey={survey} />}
     {isAdmin && survey.status === 'Submitted' && <ReviewForm survey={survey} />}
     {survey.status === 'Rejected' && <div className="notice tone-warning survey-followup"><p className="notice-title">Survey rejected</p><p>{survey.reviewNotes || 'No review notes were provided.'}</p>{isAdmin && <div className="actions"><Link className="btn btn-secondary btn-sm" to={`/installations/${survey.installationId}`}>Schedule another visit</Link></div>}</div>}
-    {survey.status === 'Approved' && <div className="notice tone-positive survey-followup"><p className="notice-title">Survey approved</p><p>The installation is ready for its design stage. Quote creation is not available yet.</p></div>}
+    {survey.status === 'Approved' && (
+      <div className="notice tone-positive survey-followup">
+        <p className="notice-title">Survey approved</p>
+        <p>The system quotation and exact Bill of Materials (BOM) have been automatically generated for this installation.</p>
+        {isAdmin && (
+          <div className="actions" style={{ marginTop: '0.75rem' }}>
+            <Link className="btn btn-primary btn-sm" to={`/installations/${survey.installationId}`}>
+              View Quote & BOM →
+            </Link>
+          </div>
+        )}
+      </div>
+    )}
   </>;
 }
 
