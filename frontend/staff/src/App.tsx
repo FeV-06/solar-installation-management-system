@@ -32,6 +32,8 @@ const INSTALLATION: Section = {
   holds: 'One installation: the stage tracker, the next move, the design, the time zone to confirm, the assignments and the history.',
 };
 
+export const STAFF_BASENAME = '/staff';
+
 const routes: RouteObject[] = [
   { path: '/login', element: <SignInPage />, errorElement: <ErrorPage /> },
   {
@@ -55,7 +57,7 @@ const routes: RouteObject[] = [
   },
 ];
 
-const router = createBrowserRouter(routes);
+const router = createBrowserRouter(routes, { basename: STAFF_BASENAME });
 const queryClient = createQueryClient();
 
 export function App() {

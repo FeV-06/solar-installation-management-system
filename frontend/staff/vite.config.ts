@@ -22,6 +22,7 @@ export default defineConfig(({ mode }) => {
   };
 
   return {
+    base: '/staff/',
     plugins: [react()],
     server: {
       port: 5174,   // the marketing site's server takes 5173
