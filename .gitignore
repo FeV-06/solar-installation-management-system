@@ -442,3 +442,4 @@ $RECYCLE.BIN/
 .env.local
 .env.development
 .env.production
+scratch_create_deck.py
