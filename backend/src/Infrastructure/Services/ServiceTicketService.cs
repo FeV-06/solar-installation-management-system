@@ -277,6 +277,23 @@ public class ServiceTicketService(AppDbContext db) : IServiceTicketService
         return await GetByIdAsync(ticket.Id, ct);
     }
 
+    public async Task<Result<ServiceTicketDto>> ScheduleVisitAsync(int id, ScheduleServiceTicketRequest request, CancellationToken ct = default)
+    {
+        var ticket = await db.ServiceTickets.FirstOrDefaultAsync(t => t.Id == id, ct);
+        if (ticket == null)
+            return Result.Failure<ServiceTicketDto>(ServiceTicketErrors.NotFound(id));
+
+        ticket.AssignedTechnicianId = request.TechnicianId;
+        ticket.ScheduledVisitAt = request.ScheduledAt.ToUniversalTime();
+        if (ticket.Status == ServiceTicketStatus.Approved)
+        {
+            ticket.Status = ServiceTicketStatus.InProgress;
+        }
+
+        await db.SaveChangesAsync(ct);
+        return await GetByIdAsync(ticket.Id, ct);
+    }
+
     public async Task<Result<ServiceTicketDto>> TechnicianResolveTicketAsync(int id, int technicianUserId, ResolveServiceTicketRequest request, CancellationToken ct = default)
     {
         var ticket = await db.ServiceTickets
@@ -290,8 +307,11 @@ public class ServiceTicketService(AppDbContext db) : IServiceTicketService
         var newSerial = request.ReplacementSerialNumber.Trim();
 
         ticket.ReplacementSerialNumber = newSerial;
+        ticket.TestedGenerationKw = request.TestedGenerationKw;
+        ticket.ReplacementPhotoUrl = request.ReplacementPhotoUrl;
         ticket.TechnicianResolutionNotes = request.ResolutionNotes.Trim();
         ticket.CustomerSignatureData = request.CustomerSignatureData;
+        ticket.SignedByName = request.SignedByName.Trim();
         ticket.TechnicianSignedAt = now;
         ticket.ResolvedAt = now;
         ticket.AssignedTechnicianId = technicianUserId;
@@ -351,6 +371,7 @@ public class ServiceTicketService(AppDbContext db) : IServiceTicketService
             : "Site address",
         t.AssignedTechnicianId,
         t.AssignedTechnician?.Name,
+        t.ScheduledVisitAt,
         t.SerialNumber,
         t.HardwareItem,
         t.Category.ToString(),
@@ -368,9 +389,12 @@ public class ServiceTicketService(AppDbContext db) : IServiceTicketService
         t.CustomerApprovedAt,
         t.ReplacementPackingOrderId,
         t.ReplacementSerialNumber,
+        t.TestedGenerationKw,
+        t.ReplacementPhotoUrl,
         t.TechnicianResolutionNotes,
         t.ResolvedAt,
         t.CustomerSignatureData,
+        t.SignedByName,
         t.TechnicianSignedAt,
         t.CustomerConfirmedAt,
         t.CreatedAt);

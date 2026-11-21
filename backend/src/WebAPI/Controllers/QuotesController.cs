@@ -51,7 +51,6 @@ public class QuotesController(IQuoteService service) : ApiControllerBase
     }
 
     [HttpPut("packing-orders/{packingOrderId:int}/items/{itemId:int}")]
-    [Authorize(Policy = Policies.Admin)]
     public async Task<ActionResult<PackingOrderDto>> UpdatePackingItem(
         int packingOrderId,
         int itemId,
@@ -64,7 +63,6 @@ public class QuotesController(IQuoteService service) : ApiControllerBase
     }
 
     [HttpPost("packing-orders/{packingOrderId:int}/dispatch")]
-    [Authorize(Policy = Policies.Admin)]
     public async Task<ActionResult<PackingOrderDto>> DispatchPackingOrder(int packingOrderId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
@@ -73,7 +71,6 @@ public class QuotesController(IQuoteService service) : ApiControllerBase
     }
 
     [HttpPost("packing-orders/{packingOrderId:int}/deliver")]
-    [Authorize(Policy = Policies.Admin)]
     public async Task<ActionResult<PackingOrderDto>> DeliverPackingOrder(int packingOrderId, CancellationToken ct)
     {
         if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);

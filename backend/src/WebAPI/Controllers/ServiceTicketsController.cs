@@ -39,6 +39,15 @@ public class ServiceTicketsController(IServiceTicketService service) : ApiContro
         return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
     }
 
+    [HttpPut("{id:int}/schedule")]
+    [Authorize(Policy = Policies.Admin)]
+    public async Task<ActionResult<ServiceTicketDto>> Schedule(int id, [FromBody] ScheduleServiceTicketRequest request, CancellationToken ct)
+    {
+        if (CurrentUserId is null) return Problem(AuthErrors.SignedOut);
+        var result = await service.ScheduleVisitAsync(id, request, ct);
+        return result.IsSuccess ? Ok(result.Value) : Problem(result.Error);
+    }
+
     [HttpPost("{id:int}/resolve")]
     public async Task<ActionResult<ServiceTicketDto>> Resolve(int id, [FromBody] ResolveServiceTicketRequest request, CancellationToken ct)
     {

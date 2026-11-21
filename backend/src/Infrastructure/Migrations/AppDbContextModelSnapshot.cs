@@ -941,6 +941,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("integer")
                         .HasColumnName("replacement_packing_order_id");
 
+                    b.Property<string>("ReplacementPhotoUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("replacement_photo_url");
+
                     b.Property<string>("ReplacementSerialNumber")
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
@@ -954,11 +958,20 @@ namespace Infrastructure.Migrations
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("reviewed_at");
 
+                    b.Property<DateTime?>("ScheduledVisitAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("scheduled_visit_at");
+
                     b.Property<string>("SerialNumber")
                         .IsRequired()
                         .HasMaxLength(100)
                         .HasColumnType("character varying(100)")
                         .HasColumnName("serial_number");
+
+                    b.Property<string>("SignedByName")
+                        .HasMaxLength(150)
+                        .HasColumnType("character varying(150)")
+                        .HasColumnName("signed_by_name");
 
                     b.Property<string>("Status")
                         .IsRequired()
@@ -973,6 +986,11 @@ namespace Infrastructure.Migrations
                     b.Property<DateTime?>("TechnicianSignedAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("technician_signed_at");
+
+                    b.Property<decimal?>("TestedGenerationKw")
+                        .HasPrecision(6, 2)
+                        .HasColumnType("numeric(6,2)")
+                        .HasColumnName("tested_generation_kw");
 
                     b.Property<decimal>("TotalBilledRupees")
                         .HasPrecision(12, 2)

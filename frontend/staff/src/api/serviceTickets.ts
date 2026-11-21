@@ -11,6 +11,7 @@ export const serviceTicketSchema = z.object({
   propertyAddress: z.string(),
   assignedTechnicianId: z.number().int().nullable().optional(),
   assignedTechnicianName: z.string().nullable().optional(),
+  scheduledVisitAt: z.string().nullable().optional(),
   serialNumber: z.string(),
   hardwareItem: z.string(),
   category: z.string(),
@@ -28,9 +29,12 @@ export const serviceTicketSchema = z.object({
   customerApprovedAt: z.string().nullable().optional(),
   replacementPackingOrderId: z.number().int().nullable().optional(),
   replacementSerialNumber: z.string().nullable().optional(),
+  testedGenerationKw: z.number().nullable().optional(),
+  replacementPhotoUrl: z.string().nullable().optional(),
   technicianResolutionNotes: z.string().nullable().optional(),
   resolvedAt: z.string().nullable().optional(),
   customerSignatureData: z.string().nullable().optional(),
+  signedByName: z.string().nullable().optional(),
   technicianSignedAt: z.string().nullable().optional(),
   customerConfirmedAt: z.string().nullable().optional(),
   createdAt: z.string(),
@@ -70,12 +74,28 @@ export const reviewServiceTicket = (
     schema: serviceTicketSchema,
   });
 
+export const scheduleServiceTicket = (
+  id: number,
+  body: {
+    technicianId: number;
+    scheduledAt: string;
+  }
+) =>
+  request(`/service-tickets/${id}/schedule`, {
+    method: 'PUT',
+    body,
+    schema: serviceTicketSchema,
+  });
+
 export const resolveServiceTicket = (
   id: number,
   body: {
     replacementSerialNumber: string;
+    testedGenerationKw: number;
+    replacementPhotoUrl?: string | null;
     resolutionNotes: string;
     customerSignatureData: string;
+    signedByName: string;
   }
 ) =>
   request(`/service-tickets/${id}/resolve`, {

@@ -7,19 +7,27 @@ import {
   LoaderCircle,
   ChevronDown,
   CheckCircle2,
+  Calendar,
 } from 'lucide-react';
 import {
   fetchServiceTickets,
   reviewServiceTicket,
+  scheduleServiceTicket,
   resolveServiceTicket,
   TICKETS_KEY,
   type ServiceTicket,
 } from '../api/serviceTickets';
 import { lookupWarranty, type Warranty } from '../api/quotes';
+import { fetchTechnicians } from '../api/surveys';
 import { Icon } from '../components/Icon';
 import { Dialog } from '../components/Dialog';
 import { PageHead } from '../components/PageHead';
 import { useCurrentUser } from '../session/session';
+
+const localDateTimeValue = (date: Date) => {
+  const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000);
+  return local.toISOString().slice(0, 16);
+};
 
 export function TicketsPage() {
   const user = useCurrentUser();
@@ -30,6 +38,7 @@ export function TicketsPage() {
   const [searchQuery, setSearchQuery] = useState<string>('');
   const [selectedTicket, setSelectedTicket] = useState<ServiceTicket | null>(null);
   const [showReviewModal, setShowReviewModal] = useState<boolean>(false);
+  const [showScheduleModal, setShowScheduleModal] = useState<boolean>(false);
   const [showResolveModal, setShowResolveModal] = useState<boolean>(false);
 
   // Review form state
@@ -39,14 +48,26 @@ export function TicketsPage() {
   const [laborCost, setLaborCost] = useState<number>(0);
   const [adminNotes, setAdminNotes] = useState<string>('');
 
+  // Scheduled technician visit state
+  const [scheduledTechId, setScheduledTechId] = useState<number>(0);
+  const [scheduledAt, setScheduledAt] = useState<string>('');
+
   // Resolve form state
   const [replacementSerial, setReplacementSerial] = useState<string>('');
+  const [testedGenerationKw, setTestedGenerationKw] = useState<number>(2.85);
+  const [signedByName, setSignedByName] = useState<string>('');
+  const [replacementPhotoUrl, setReplacementPhotoUrl] = useState<string>('/images/inverter_wiring.svg');
   const [resolutionNotes, setResolutionNotes] = useState<string>('');
   const [signatureData, setSignatureData] = useState<string>('');
 
   const ticketsQuery = useQuery({
     queryKey: TICKETS_KEY(activeTab === 'All' ? undefined : activeTab),
     queryFn: ({ signal }) => fetchServiceTickets(activeTab === 'All' ? undefined : activeTab, signal),
+  });
+
+  const techniciansQuery = useQuery({
+    queryKey: ['technicians'],
+    queryFn: ({ signal }) => fetchTechnicians(signal),
   });
 
   const warrantyLookupQuery = useQuery({
@@ -60,6 +81,15 @@ export function TicketsPage() {
     onSuccess: () => {
       qc.invalidateQueries({ queryKey: ['service-tickets'] });
       setShowReviewModal(false);
+      setSelectedTicket(null);
+    },
+  });
+
+  const scheduleMutation = useMutation({
+    mutationFn: ({ id, body }: { id: number; body: { technicianId: number; scheduledAt: string } }) => scheduleServiceTicket(id, body),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ['service-tickets'] });
+      setShowScheduleModal(false);
       setSelectedTicket(null);
     },
   });
@@ -83,10 +113,22 @@ export function TicketsPage() {
     setShowReviewModal(true);
   };
 
+  const openSchedule = (ticket: ServiceTicket) => {
+    setSelectedTicket(ticket);
+    setScheduledTechId(ticket.assignedTechnicianId ?? techniciansQuery.data?.[0]?.id ?? 0);
+    setScheduledAt(ticket.scheduledVisitAt
+      ? localDateTimeValue(new Date(ticket.scheduledVisitAt))
+      : localDateTimeValue(new Date(Date.now() + 86400000)));
+    setShowScheduleModal(true);
+  };
+
   const openResolve = (ticket: ServiceTicket) => {
     setSelectedTicket(ticket);
     setReplacementSerial('');
-    setResolutionNotes('');
+    setTestedGenerationKw(ticket.testedGenerationKw ?? 2.85);
+    setSignedByName(ticket.customerName);
+    setReplacementPhotoUrl(ticket.replacementPhotoUrl ?? '/images/inverter_wiring.svg');
+    setResolutionNotes(ticket.technicianResolutionNotes ?? '');
     setSignatureData('data:image/svg+xml;base64,PHN2Zz5zaWduYXR1cmU8L3N2Zz4=');
     setShowResolveModal(true);
   };
@@ -215,6 +257,16 @@ export function TicketsPage() {
                       </button>
                     )}
 
+                    {isAdmin && (ticket.status === 'Reviewed' || ticket.status === 'Approved' || ticket.status === 'InProgress') && (
+                      <button
+                        type="button"
+                        className="btn btn-secondary btn-sm"
+                        onClick={() => openSchedule(ticket)}
+                      >
+                        {ticket.assignedTechnicianId ? 'Reschedule visit' : 'Assign technician'}
+                      </button>
+                    )}
+
                     {(ticket.status === 'Approved' || ticket.status === 'InProgress') && (
                       <button
                         type="button"
@@ -235,6 +287,9 @@ export function TicketsPage() {
                   <div>Serial: <code>{ticket.serialNumber}</code></div>
                   <div>Installation: <b>#{ticket.installationId}</b></div>
                   <div>Reported: {new Date(ticket.createdAt).toLocaleDateString()}</div>
+                  {ticket.assignedTechnicianName && ticket.scheduledVisitAt && (
+                    <div><Icon icon={Calendar} size={14} /> Scheduled: <b>{ticket.assignedTechnicianName}</b> · {new Date(ticket.scheduledVisitAt).toLocaleString([], { dateStyle: 'short', timeStyle: 'short' })}</div>
+                  )}
                 </div>
 
                 {ticket.replacementSerialNumber && (
@@ -372,6 +427,46 @@ export function TicketsPage() {
         </Dialog>
       )}
 
+      {showScheduleModal && selectedTicket && (
+        <Dialog labelledBy="schedule-dialog-title" onClose={() => setShowScheduleModal(false)}>
+          <form
+            onSubmit={(e) => {
+              e.preventDefault();
+              if (!scheduledTechId || !scheduledAt) return;
+              scheduleMutation.mutate({
+                id: selectedTicket.id,
+                body: { technicianId: scheduledTechId, scheduledAt: new Date(scheduledAt).toISOString() },
+              });
+            }}
+          >
+            <h2 className="a-heading" id="schedule-dialog-title">Schedule technician visit</h2>
+            <p className="a-body">Assign an active technician to visit {selectedTicket.propertyAddress} for ticket #{selectedTicket.id}.</p>
+            <div className="field">
+              <label className="field-label" htmlFor="schedule-technician">Technician</label>
+              <div className="control">
+                <select id="schedule-technician" required value={scheduledTechId} onChange={(e) => setScheduledTechId(Number(e.target.value))}>
+                  <option value={0}>Choose technician</option>
+                  {techniciansQuery.data?.map(tech => <option key={tech.id} value={tech.id}>{tech.name} · {tech.email}</option>)}
+                </select>
+                <Icon icon={ChevronDown} className="chev" />
+              </div>
+            </div>
+            <div className="field">
+              <label className="field-label" htmlFor="schedule-at">Appointment date and time</label>
+              <div className="control">
+                <input id="schedule-at" type="datetime-local" required value={scheduledAt} onChange={(e) => setScheduledAt(e.target.value)} />
+              </div>
+            </div>
+            <div className="actions">
+              <button type="button" className="btn btn-secondary" onClick={() => setShowScheduleModal(false)}>Cancel</button>
+              <button type="submit" className="btn btn-primary" disabled={!scheduledTechId || !scheduledAt || scheduleMutation.isPending}>
+                {scheduleMutation.isPending ? 'Scheduling…' : 'Save visit'}
+              </button>
+            </div>
+          </form>
+        </Dialog>
+      )}
+
       {/* Technician On-Site Swap Modal */}
       {showResolveModal && selectedTicket && (
         <Dialog labelledBy="resolve-dialog-title" onClose={() => setShowResolveModal(false)}>
@@ -383,8 +478,11 @@ export function TicketsPage() {
                 id: selectedTicket.id,
                 body: {
                   replacementSerialNumber: replacementSerial.trim(),
+                  testedGenerationKw,
+                  replacementPhotoUrl,
                   resolutionNotes: resolutionNotes.trim(),
                   customerSignatureData: signatureData,
+                  signedByName: signedByName.trim(),
                 },
               });
             }}
@@ -406,6 +504,46 @@ export function TicketsPage() {
                   value={replacementSerial}
                   placeholder="Scan or enter new unit S/N…"
                   onChange={(e) => setReplacementSerial(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="resolve-output">Tested generation (kW)</label>
+              <div className="control">
+                <input
+                  id="resolve-output"
+                  type="number"
+                  min="0"
+                  step="0.01"
+                  required
+                  value={testedGenerationKw}
+                  onChange={(e) => setTestedGenerationKw(Number(e.target.value))}
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="resolve-signed-by">Customer accepting the work</label>
+              <div className="control">
+                <input
+                  id="resolve-signed-by"
+                  type="text"
+                  required
+                  value={signedByName}
+                  onChange={(e) => setSignedByName(e.target.value)}
+                />
+              </div>
+            </div>
+
+            <div className="field">
+              <label className="field-label" htmlFor="resolve-photo">Replacement unit photo URL</label>
+              <div className="control">
+                <input
+                  id="resolve-photo"
+                  type="text"
+                  value={replacementPhotoUrl}
+                  onChange={(e) => setReplacementPhotoUrl(e.target.value)}
                 />
               </div>
             </div>
@@ -434,7 +572,7 @@ export function TicketsPage() {
               <button
                 type="submit"
                 className="btn btn-primary"
-                disabled={!replacementSerial.trim() || resolveMutation.isPending}
+                disabled={!replacementSerial.trim() || !signedByName.trim() || resolveMutation.isPending}
               >
                 {resolveMutation.isPending ? 'Saving…' : 'Complete swap and request customer signoff'}
               </button>
