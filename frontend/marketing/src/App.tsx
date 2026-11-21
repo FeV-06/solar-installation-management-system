@@ -11,7 +11,7 @@ import { HowItWorksPage } from './pages/HowItWorksPage';
 import { NotFoundPage } from './pages/NotFoundPage';
 import { PrivacyPage } from './pages/PrivacyPage';
 import { QuestionsPage } from './pages/QuestionsPage';
-import { QuotePage } from './quote/QuotePage';
+import { CustomerQuotePage } from './quote/CustomerQuotePage';
 import { QuoteSentPage } from './quote/QuoteSentPage';
 import { CustomerSignInPage } from './pages/CustomerSignInPage';
 import { CustomerPortalPage } from './pages/CustomerPortalPage';
@@ -51,7 +51,7 @@ export default function App() {
           <Route path="/how-it-works" element={<HowItWorksPage />} />
           <Route path="/questions" element={<QuestionsPage />} />
           <Route path="/about" element={<AboutPage />} />
-          <Route path="/quote" element={<QuotePage />} />
+          <Route path="/quote" element={<CustomerQuotePage />} />
           <Route path="/quote/sent" element={<QuoteSentPage />} />
           <Route path="/signin" element={<CustomerSignInPage />} />
           <Route path="/portal" element={<CustomerPortalPage />} />

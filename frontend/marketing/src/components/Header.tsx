@@ -4,7 +4,7 @@ import { Menu, User, X } from 'lucide-react';
 import { addScroller } from '../lib/motion';
 import { Icon } from './Icon';
 import { Wordmark } from './Wordmark';
-import { useCustomerAuth } from '../lib/customerAuth';
+import { useCustomerAuth } from '../lib/customerAuthContext';
 
 const NAV = [
   ['/how-it-works', 'How it works'],

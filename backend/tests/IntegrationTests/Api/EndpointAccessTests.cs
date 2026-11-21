@@ -16,7 +16,7 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
 {
     private static CancellationToken Ct => TestContext.Current.CancellationToken;
 
-    public enum Access { Anyone, Staff, Admin, Technician }
+    public enum Access { Anyone, Staff, Admin, Technician, Customer }
 
     public enum Caller { SignedOut, Technician, Admin }
 
@@ -27,6 +27,12 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
         ["POST api/auth/logout"] = Access.Anyone,
         ["GET api/auth/me"] = Access.Staff,
         ["PUT api/auth/password"] = Access.Staff,
+        ["POST api/customer-auth/request-otp"] = Access.Anyone,
+        ["POST api/customer-auth/verify-otp"] = Access.Anyone,
+        ["GET api/customer-auth/me"] = Access.Customer,
+        ["POST api/customer-auth/logout"] = Access.Anyone,
+        ["GET api/customer-portal"] = Access.Customer,
+        ["POST api/customer-portal/quote-requests"] = Access.Customer,
         ["POST api/leads"] = Access.Anyone,   // the website's quote form
         ["GET api/leads"] = Access.Admin,
         ["GET api/leads/{id:int}"] = Access.Admin,
@@ -142,6 +148,7 @@ public class EndpointAccessTests(PostgresFixture database) : ApiTestBase(databas
             Access.Anyone => true,
             Access.Staff => caller != Caller.SignedOut,
             Access.Technician => caller == Caller.Technician,
+            Access.Customer => false,
             _ => caller == Caller.Admin
         };
 

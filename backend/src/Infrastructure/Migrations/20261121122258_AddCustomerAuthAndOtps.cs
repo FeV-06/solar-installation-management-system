@@ -1,4 +1,4 @@
-using System;
+﻿using System;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
@@ -51,14 +51,14 @@ namespace Infrastructure.Migrations
                 });
 
             migrationBuilder.CreateIndex(
-                name: "ix_customer_otps_normalized_email",
-                table: "customer_otps",
-                column: "normalized_email");
-
-            migrationBuilder.CreateIndex(
                 name: "ix_customer_otps_expires_at_utc",
                 table: "customer_otps",
                 column: "expires_at_utc");
+
+            migrationBuilder.CreateIndex(
+                name: "ix_customer_otps_normalized_email",
+                table: "customer_otps",
+                column: "normalized_email");
         }
 
         /// <inheritdoc />

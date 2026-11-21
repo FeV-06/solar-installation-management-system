@@ -1,12 +1,13 @@
 import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { Navigate, useLocation, useNavigate } from 'react-router-dom';
 import { CircleAlert, KeyRound, LoaderCircle, Mail } from 'lucide-react';
 import { Icon } from '../components/Icon';
-import { useCustomerAuth } from '../lib/customerAuth';
+import { useCustomerAuth } from '../lib/customerAuthContext';
 
 export function CustomerSignInPage() {
-  const { customer, requestOtp, verifyOtp } = useCustomerAuth();
+  const { customer, loading: checkingSession, requestOtp, verifyOtp } = useCustomerAuth();
   const navigate = useNavigate();
+  const returnTo = new URLSearchParams(useLocation().search).get('returnTo') === '/quote' ? '/quote' : '/portal';
 
   const [email, setEmail] = useState('');
   const [code, setCode] = useState('');
@@ -15,10 +16,8 @@ export function CustomerSignInPage() {
   const [error, setError] = useState<string | null>(null);
   const [info, setInfo] = useState<string | null>(null);
 
-  if (customer) {
-    navigate('/portal', { replace: true });
-    return null;
-  }
+  if (customer) return <Navigate to={returnTo} replace />;
+  if (checkingSession) return <section className="band" data-theme="night"><div className="wrap" role="status">Checking your session…</div></section>;
 
   const handleSendCode = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -49,7 +48,7 @@ export function CustomerSignInPage() {
     const result = await verifyOtp(email, code);
     setLoading(false);
     if (result.success) {
-      navigate('/portal');
+      navigate(returnTo, { replace: true });
     } else {
       setError(result.message ?? 'Invalid code.');
     }
@@ -139,6 +138,7 @@ export function CustomerSignInPage() {
                     placeholder="123456"
                     value={code}
                     onChange={e => setCode(e.target.value.replace(/\D/g, ''))}
+                    autoComplete="one-time-code"
                     autoFocus
                     required
                     disabled={loading}

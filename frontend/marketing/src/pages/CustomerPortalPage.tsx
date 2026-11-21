@@ -1,8 +1,8 @@
 import { useEffect, useState } from 'react';
-import { Link, useNavigate } from 'react-router-dom';
+import { Link, Navigate } from 'react-router-dom';
 import { CheckCircle2, CircleAlert, Clock, Info, LoaderCircle } from 'lucide-react';
 import { Icon } from '../components/Icon';
-import { useCustomerAuth } from '../lib/customerAuth';
+import { useCustomerAuth } from '../lib/customerAuthContext';
 
 type QuoteSummary = {
   id: number;
@@ -30,16 +30,18 @@ type PortalData = {
 };
 
 const STAGES = [
-  { key: 'quote', title: 'Quote Requested', desc: 'Property details received' },
-  { key: 'review', title: 'Sales Consultation', desc: 'Contacted by solar specialist' },
-  { key: 'survey', title: 'Site Survey & Design', desc: 'Engineering & custom CAD plan' },
-  { key: 'install', title: 'Permits & Installation', desc: 'City approval and panel mount' },
-  { key: 'active', title: 'Switch-On & Active', desc: 'Grid inspection and power generation' },
+  { key: 'quote', title: 'Request received', desc: 'Property details received' },
+  { key: 'review', title: 'Contacted', desc: 'The office has contacted you' },
+  { key: 'survey', title: 'Site survey', desc: 'A technician visits the property' },
+  { key: 'install', title: 'Design and installation', desc: 'Work after survey approval' },
+  { key: 'active', title: 'Active', desc: 'The installation is active' },
 ];
 
-function getStageIndex(status?: string, hasInstallation?: boolean): number {
-  if (hasInstallation) return 3;
-  if (!status) return 0;
+function getStageIndex(status?: string, installationStatus?: string): number {
+  if (installationStatus === 'Active') return 4;
+  if (installationStatus === 'Survey') return 2;
+  if (['Design', 'Permits', 'Installation', 'Inspection'].includes(installationStatus ?? '')) return 3;
+  if (!status || ['Lost', 'Disqualified'].includes(status)) return -1;
   if (status.toLowerCase() === 'new') return 0;
   if (status.toLowerCase() === 'contacted') return 1;
   if (status.toLowerCase() === 'converted') return 2;
@@ -49,18 +51,12 @@ function getStageIndex(status?: string, hasInstallation?: boolean): number {
 const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 
 export function CustomerPortalPage() {
-  const { customer, loading: authLoading, logout } = useCustomerAuth();
-  const navigate = useNavigate();
+  const { customer, loading: authLoading, error: authError, refresh, logout } = useCustomerAuth();
 
   const [data, setData] = useState<PortalData | null>(null);
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
 
-  useEffect(() => {
-    if (!authLoading && !customer) {
-      navigate('/signin', { replace: true });
-    }
-  }, [authLoading, customer, navigate]);
 
   useEffect(() => {
     if (!customer) return;
@@ -85,7 +81,7 @@ export function CustomerPortalPage() {
     fetchPortal();
   }, [customer]);
 
-  if (authLoading || (!customer && loading)) {
+  if (authLoading || (!!customer && loading)) {
     return (
       <div style={{ minHeight: '60vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
         <Icon icon={LoaderCircle} className="spin" />
@@ -93,8 +89,10 @@ export function CustomerPortalPage() {
     );
   }
 
+  if (authError) return <div className="band" data-theme="night"><div className="wrap"><p role="alert">{authError}</p><button className="btn btn-secondary" type="button" onClick={() => void refresh()}>Try again</button></div></div>;
+  if (!customer) return <Navigate to="/signin" replace />;
   const activeQuote = data?.activeQuote ?? data?.quotes?.[0];
-  const currentStageIndex = getStageIndex(activeQuote?.status, (data?.installations?.length ?? 0) > 0);
+  const currentStageIndex = getStageIndex(activeQuote?.status, data?.installations?.[0]?.status);
 
   return (
     <div className="band" data-theme="night" style={{ padding: 'clamp(7rem,16vh,9rem) 0 6rem', minHeight: '88vh' }}>
@@ -107,11 +105,11 @@ export function CustomerPortalPage() {
               Welcome, {customer?.firstName || customer?.email}<i className="dot" />
             </h1>
             <p className="body" style={{ marginTop: '0.4rem' }}>
-              Track your solar installation steps, engineering design, and electricity system status.
+              Track your solar request and installation status.
             </p>
           </div>
           <div style={{ display: 'flex', gap: '0.8rem', alignItems: 'center' }}>
-            <button type="button" className="btn btn-quiet btn-sm" onClick={() => logout()}>
+            <button type="button" className="btn btn-quiet btn-sm" onClick={() => void logout().catch(() => setError('Could not sign out. Try again.'))}>
               <span>Sign Out</span>
             </button>
           </div>
@@ -136,7 +134,7 @@ export function CustomerPortalPage() {
             <h2 className="display" style={{ fontSize: '1.35rem', margin: 0, color: 'var(--fg)' }}>Project Progress</h2>
             {activeQuote && (
               <span className="label" style={{ color: 'var(--accent)' }}>
-                Quote #{activeQuote.id} &bull; {activeQuote.status}
+                Request #{activeQuote.id} &bull; {activeQuote.status}
               </span>
             )}
           </div>
@@ -184,7 +182,7 @@ export function CustomerPortalPage() {
             borderRadius: 'var(--radius-xl)',
             boxShadow: 'inset 0 0 0 1px var(--line)'
           }}>
-            <h3 className="display" style={{ fontSize: '1.15rem', margin: '0 0 1.25rem', color: 'var(--fg)' }}>Property & Quote Details</h3>
+            <h3 className="display" style={{ fontSize: '1.15rem', margin: '0 0 1.25rem', color: 'var(--fg)' }}>Property & Request Details</h3>
             {activeQuote ? (
               <div style={{ display: 'flex', flexDirection: 'column', gap: '1rem' }}>
                 <div>
@@ -206,7 +204,7 @@ export function CustomerPortalPage() {
               </div>
             ) : (
               <div style={{ textAlign: 'center', padding: '1.5rem 0' }}>
-                <p className="body" style={{ marginBottom: '1.25rem' }}>No active quote found for your account.</p>
+                <p className="body" style={{ marginBottom: '1.25rem' }}>No request found for your account.</p>
                 <Link to="/quote" className="btn btn-primary btn-sm">Get a quote now</Link>
               </div>
             )}
@@ -235,7 +233,7 @@ export function CustomerPortalPage() {
                 <div style={{ display: 'flex', gap: '0.75rem', alignItems: 'flex-start' }}>
                   <Icon icon={Info} style={{ marginTop: '0.2rem', color: 'var(--accent)' }} />
                   <p className="body" style={{ fontSize: '0.875rem', lineHeight: '1.45', margin: 0 }}>
-                    Your system hardware, panel layouts, and daily energy generation dashboards will appear here as soon as our survey team completes your site design.
+                    Your installation will appear here after the office converts your request.
                   </p>
                 </div>
               </div>
@@ -252,7 +250,7 @@ export function CustomerPortalPage() {
             borderRadius: 'var(--radius-xl)',
             boxShadow: 'inset 0 0 0 1px var(--line)'
           }}>
-            <h3 className="display" style={{ fontSize: '1.15rem', margin: '0 0 1.25rem', color: 'var(--fg)' }}>All Your Quotes</h3>
+            <h3 className="display" style={{ fontSize: '1.15rem', margin: '0 0 1.25rem', color: 'var(--fg)' }}>All Your Requests</h3>
             <div style={{ overflowX: 'auto' }}>
               <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
                 <thead>

@@ -5,6 +5,7 @@ import { Icon } from '../components/Icon';
 import { InfoNotice } from '../components/Notice';
 import { STATES } from '../content/states';
 import { prefersReducedMotion } from '../lib/motion';
+import type { CustomerUser } from '../lib/customerAuthContext';
 import { AddressField } from './AddressField';
 import { buildLeadRequest } from './lead';
 import { sendLead, type Problem } from './submit';
@@ -70,10 +71,10 @@ const STEP_NAMES = ['Contact', 'Property', 'Last details'];
 const STEP_TITLES = ['Who should we contact?', 'Where is the property?', 'Last details'];
 
 /** The quote form: three steps, checked one at a time, then sent to the API as a new lead. */
-export function QuotePage() {
+export function QuotePage({ customer }: { customer: CustomerUser }) {
   const navigate = useNavigate();
   const [step, setStep] = useState(0);
-  const [values, setValues] = useState<QuoteValues>(EMPTY_VALUES);
+  const [values, setValues] = useState<QuoteValues>(() => ({ ...EMPTY_VALUES, email: customer.email }));
   const [errors, setErrors] = useState<FieldErrors>({});
   const [picked, setPicked] = useState<PickedAddress | null>(null);
   const [sending, setSending] = useState(false);
@@ -220,7 +221,7 @@ export function QuotePage() {
               <TextField name="firstName" label="First name" autoComplete="given-name" value={values.firstName} error={err('firstName')} onChange={change} />
               <TextField name="lastName" label="Last name" autoComplete="family-name" value={values.lastName} error={err('lastName')} onChange={change} />
             </div>
-            <TextField name="email" label="Email" type="email" autoComplete="email" inputMode="email" help="We send a copy of your request here." value={values.email} error={err('email')} onChange={change} />
+            <TextField name="email" label="Verified email" type="email" autoComplete="email" inputMode="email" help="This request belongs to your signed-in account." value={values.email} error={err('email')} onChange={change} readOnly />
             <TextField name="phone" label="Phone" type="tel" autoComplete="tel" inputMode="tel" value={values.phone} error={err('phone')} onChange={change} />
           </div>
 

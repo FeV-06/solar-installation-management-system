@@ -13,6 +13,9 @@ public static class CustomerAuthErrors
     public static readonly Error InvalidCode =
         new(ErrorKind.Invalid, "customer_auth.invalid_code", "The verification code is incorrect or has expired.", "Code");
 
+    public static readonly Error DeliveryUnavailable =
+        new(ErrorKind.Invalid, "customer_auth.delivery_unavailable", "We couldn't send the code. Please try again later.", "Email");
+
     public static readonly Error CodeExpired =
         new(ErrorKind.Invalid, "customer_auth.code_expired", "This verification code has expired. Please request a new one.");
 

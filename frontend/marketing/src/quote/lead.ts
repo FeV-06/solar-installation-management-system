@@ -1,4 +1,4 @@
-// The request the form sends to the API's public endpoint, POST /api/leads (CreateLeadRequest).
+// The request the form sends to POST /api/customer-portal/quote-requests (CreateLeadRequest).
 import type { PickedAddress, QuoteValues } from './types';
 
 export type CreateLeadRequest = {

@@ -12,7 +12,7 @@ public static class CustomerEmails
 
     public static RenderedEmail OtpVerification(string otp, string recipientEmail, int expiryMinutes = 5)
     {
-        var subject = $"{otp} is your Sol verification code";
+        var subject = "Your Sol verification code";
         var preheader = $"Use this code to sign in to your Sol customer account. Valid for {expiryMinutes} minutes.";
 
         var html = $@"<!DOCTYPE html>

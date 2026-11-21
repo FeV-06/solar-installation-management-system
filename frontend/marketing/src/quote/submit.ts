@@ -66,7 +66,7 @@ const API_BASE = import.meta.env.VITE_API_BASE_URL ?? '/api';
 export async function sendLead(request: CreateLeadRequest, send: typeof fetch = fetch): Promise<Outcome> {
   let response: Response;
   try {
-    response = await send(`${API_BASE}/leads`, {
+    response = await send(`${API_BASE}/customer-portal/quote-requests`, {
       method: 'POST',
       headers: { 'Content-Type': 'application/json', Accept: 'application/json, application/problem+json' },
       body: JSON.stringify(request),

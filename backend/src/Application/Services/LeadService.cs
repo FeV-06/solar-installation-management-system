@@ -39,7 +39,12 @@ public class LeadService(
             : Result.Success(await DetailsAsync(lead));
     }
 
-    public async Task<LeadCreated> CreateAsync(CreateLeadRequest request)
+    public Task<LeadCreated> CreateAsync(CreateLeadRequest request) => CreateCoreAsync(request, null);
+
+    public Task<LeadCreated> CreateForCustomerAsync(CreateLeadRequest request, int customerId) =>
+        CreateCoreAsync(request, customerId);
+
+    private async Task<LeadCreated> CreateCoreAsync(CreateLeadRequest request, int? customerId)
     {
         // BR-L1, checked here and not by the database, on purpose: this is the naive version P3a measures, which lets
         // duplicates through when the same form is sent many times at once. The fix is a unique index.
@@ -49,6 +54,7 @@ public class LeadService(
         var lead = request.Adapt<Lead>();
         lead.Status = LeadStatus.New;
         lead.CreatedAt = Now();
+        lead.CustomerId = customerId;
         var address = lead.Address;
         address.UniqueAddressHash = Address.BuildHash(address.Street, address.City, address.State, address.ZipCode,
             address.Country);
@@ -95,8 +101,15 @@ public class LeadService(
         if (!lead.TryMoveTo(LeadStatus.Converted, now))
             return Result.Failure<LeadResponse>(LeadErrors.TransitionNotAllowed(lead.Status, LeadStatus.Converted));
 
-        var customer = await customers.GetOrAddAsync(Customer.FromLead(lead, now));
+        var customer = lead.Customer ?? await customers.GetOrAddAsync(Customer.FromLead(lead, now));
         lead.Customer = customer;
+        if (string.IsNullOrWhiteSpace(customer.PhoneNumber))
+        {
+            customer.FirstName = lead.FirstName;
+            customer.LastName = lead.LastName;
+            customer.PhoneNumber = lead.PhoneNumber;
+            customer.ContactAddressId = lead.AddressId;
+        }
         var installation = Installation.ForConvertedLead(lead, customer.Id,
             UsTimeZones.ProposedFor(lead.Address.State), now);
         installations.Add(installation);
@@ -115,6 +128,9 @@ public class LeadService(
             return Result.Failure<LeadResponse>(LeadErrors.NotFound(id));
         if (!lead.IsOpen)
             return Result.Failure<LeadResponse>(LeadErrors.Closed(lead.Status));
+
+        if (lead.Customer is { } linked && Emails.Normalize(request.Email) != linked.NormalizedEmail)
+            return Result.Failure<LeadResponse>(LeadErrors.CustomerEmailMismatch);
 
         // BR-L1, checked in the service like the quote form's (the naive version; the fix is a unique index).
         if (await leads.FindOpenIdByEmailAsync(request.Email, exceptId: id) is not null)

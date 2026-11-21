@@ -21,4 +21,7 @@ public static class LeadErrors
     /// <summary>One open lead per email (BR-L1).</summary>
     public static readonly Error EmailTaken =
         new(ErrorKind.Conflict, "lead.email_taken", "Another open lead has this email.");
+
+    public static readonly Error CustomerEmailMismatch =
+        new(ErrorKind.Conflict, "lead.customer_email_mismatch", "This request is linked to a verified customer. Contact details must retain their verified email.");
 }

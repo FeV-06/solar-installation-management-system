@@ -56,14 +56,14 @@ describe('interpret', () => {
 });
 
 describe('sendLead', () => {
-  it('posts the request as JSON to the leads endpoint', async () => {
+  it('posts the request as JSON to the signed-in customer endpoint', async () => {
     const send = vi.fn(async () => new Response(JSON.stringify({ id: 1 }), { status: 201 }));
     const request = buildLeadRequest({ ...EMPTY_VALUES, firstName: 'Jane' }, null);
 
     expect(await sendLead(request, send)).toEqual({ kind: 'sent' });
 
     const [url, init] = send.mock.calls[0] as unknown as [string, RequestInit];
-    expect(url).toMatch(/\/leads$/);
+    expect(url).toMatch(/\/customer-portal\/quote-requests$/);
     expect(init.method).toBe('POST');
     expect(new Headers(init.headers).get('Content-Type')).toBe('application/json');
     expect(JSON.parse(init.body as string)).toEqual(request);

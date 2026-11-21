@@ -21,10 +21,10 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
         if (customer == null)
             return Result.Failure<CustomerPortalData>(new Error(ErrorKind.NotFound, "customer_portal.not_found", "Customer not found."));
 
-        // Retrieve leads matching customer's normalized email or linked customerId
+        // New signed-in requests link by customer ID. Include older unlinked requests only by verified email.
         var leads = await db.Leads
             .Include(l => l.Address)
-            .Where(l => l.CustomerId == customerId || l.Email.ToLower() == customer.Email.ToLower())
+            .Where(l => l.CustomerId == customerId || (l.CustomerId == null && l.Email.Trim().ToUpper() == customer.NormalizedEmail))
             .OrderByDescending(l => l.CreatedAt)
             .ToListAsync(cancellationToken);
 

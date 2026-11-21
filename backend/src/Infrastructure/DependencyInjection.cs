@@ -72,9 +72,7 @@ public static class DependencyInjection
             // unique index rejecting a duplicate, which the unit of work turns into SaveOutcome.Duplicate). Whoever
             // catches the exception decides: an expected failure isn't an error, and an unexpected one reaches the
             // API's exception handler, which logs it once. Raise the EF Core categories to Debug to see these events.
-            .ConfigureWarnings(warnings => warnings
-                .Ignore(RelationalEventId.PendingModelChangesWarning)
-                .Log(
+            .ConfigureWarnings(warnings => warnings.Log(
                     (RelationalEventId.CommandError, LogLevel.Debug),
                     (RelationalEventId.ConnectionError, LogLevel.Debug),
                     (CoreEventId.SaveChangesFailed, LogLevel.Debug),
@@ -143,16 +141,25 @@ public static class DependencyInjection
                     {
                         if (string.IsNullOrEmpty(context.Request.Headers.Authorization))
                         {
-                            if (context.Request.Cookies.TryGetValue(Session.CustomerCookieName, out var customerToken))
-                                context.Token = customerToken;
-                            else if (context.Request.Cookies.TryGetValue(Session.CookieName, out var staffToken))
-                                context.Token = staffToken;
+                            var path = context.Request.Path;
+                            var customerPath = path.StartsWithSegments("/api/customer-auth") ||
+                                               path.StartsWithSegments("/api/customer-portal");
+                            var cookieName = customerPath ? Session.CustomerCookieName : Session.CookieName;
+                            if (context.Request.Cookies.TryGetValue(cookieName, out var token))
+                                context.Token = token;
                         }
                         return Task.CompletedTask;
                     },
                     OnTokenValidated = async context =>
                     {
                         var role = context.Principal?.FindFirst(Session.RoleClaim)?.Value;
+                        if (context.SecurityToken is not JsonWebToken checkedToken ||
+                            (role == Session.CustomerRole && !checkedToken.Audiences.Contains("sol-customer")) ||
+                            (role != Session.CustomerRole && !checkedToken.Audiences.Contains(jwt.Audience)))
+                        {
+                            context.Fail("Session audience does not match the account role.");
+                            return;
+                        }
                         if (role == Session.CustomerRole)
                         {
                             var db = context.HttpContext.RequestServices.GetRequiredService<AppDbContext>();

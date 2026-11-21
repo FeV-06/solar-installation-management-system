@@ -1,4 +1,5 @@
 using System.Globalization;
+using System.ComponentModel.DataAnnotations;
 using System.Security.Cryptography;
 using System.Text;
 using Application.Common.Models;
@@ -30,7 +31,8 @@ public class CustomerAuthService(
 
     public async Task<Result<bool>> RequestOtpAsync(RequestOtpRequest request, string? clientIp, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || !request.Email.Contains('@'))
+        if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Trim().Length > 255 ||
+            !new EmailAddressAttribute().IsValid(request.Email.Trim()))
             return Result.Failure<bool>(CustomerAuthErrors.InvalidEmail);
 
         var normalizedEmail = Emails.Normalize(request.Email);
@@ -38,7 +40,7 @@ public class CustomerAuthService(
 
         // Rate limiting check: check if an active OTP was created in the last 60 seconds
         var recentOtp = await db.CustomerOtps
-            .Where(o => o.NormalizedEmail == normalizedEmail && o.CreatedAtUtc > now.AddSeconds(-60))
+            .Where(o => o.NormalizedEmail == normalizedEmail && o.ConsumedAtUtc == null && o.CreatedAtUtc > now.AddSeconds(-60))
             .FirstOrDefaultAsync(cancellationToken);
 
         if (recentOtp != null)
@@ -89,9 +91,12 @@ public class CustomerAuthService(
         {
             await emailSender.SendAsync(emailMessage, cancellationToken);
         }
-        catch (Exception ex)
+        catch (Exception ex) when (ex is not OperationCanceledException)
         {
-            logger.LogError(ex, "Failed to send OTP verification email to {Email}", request.Email);
+            logger.LogWarning("The customer verification email could not be sent ({ErrorType}).", ex.GetType().Name);
+            otpRecord.ConsumedAtUtc = DateTime.UtcNow;
+            await db.SaveChangesAsync(cancellationToken);
+            return Result.Failure<bool>(CustomerAuthErrors.DeliveryUnavailable);
         }
 
         return Result.Success(true);
@@ -99,7 +104,8 @@ public class CustomerAuthService(
 
     public async Task<Result<CustomerSignedIn>> VerifyOtpAsync(VerifyOtpRequest request, CancellationToken cancellationToken = default)
     {
-        if (string.IsNullOrWhiteSpace(request.Email) || string.IsNullOrWhiteSpace(request.Code))
+        if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Trim().Length > 255 ||
+            string.IsNullOrWhiteSpace(request.Code) || request.Code.Length != 6 || request.Code.Any(c => c is < '0' or > '9'))
             return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCode);
 
         var normalizedEmail = Emails.Normalize(request.Email);
@@ -127,7 +133,8 @@ public class CustomerAuthService(
             Encoding.UTF8.GetBytes(otpRecord.OtpHash)))
         {
             otpRecord.FailedAttempts++;
-            await db.SaveChangesAsync(cancellationToken);
+            try { await db.SaveChangesAsync(cancellationToken); }
+            catch (DbUpdateConcurrencyException) { return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCode); }
 
             return Result.Failure<CustomerSignedIn>(
                 otpRecord.IsLockedOut ? CustomerAuthErrors.LockedOut : CustomerAuthErrors.InvalidCode);
@@ -137,35 +144,36 @@ public class CustomerAuthService(
         otpRecord.ConsumedAtUtc = now;
 
         // Find or create customer
-        var customer = await db.Customers
+        var existing = await db.Customers.AsNoTracking()
             .FirstOrDefaultAsync(c => c.NormalizedEmail == normalizedEmail, cancellationToken);
+        if (existing is { IsActive: false })
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.Deactivated);
 
-        if (customer == null)
+        await using var transaction = await db.Database.BeginTransactionAsync(cancellationToken);
+        try
         {
-            // Auto-provision initial customer entity
-            customer = new Customer
-            {
-                Email = otpRecord.Email,
-                NormalizedEmail = normalizedEmail,
-                FirstName = "Customer",
-                LastName = "",
-                PhoneNumber = "",
-                Status = CustomerStatus.Prospect,
-                RegistrationDate = now,
-                IsActive = true,
-                LastLoginAt = now
-            };
-            db.Customers.Add(customer);
+            // Consume before issuing a session; the concurrency token permits only one successful verifier.
+            await db.SaveChangesAsync(cancellationToken);
         }
-        else
+        catch (DbUpdateConcurrencyException)
         {
-            if (!customer.IsActive)
-                return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.Deactivated);
-
-            customer.LastLoginAt = now;
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCode);
         }
 
+        // A verified first-time customer may race with lead conversion; the email's unique key decides the winner.
+        await db.Database.ExecuteSqlAsync($"""
+            INSERT INTO customers (first_name, last_name, email, normalized_email, phone_number, status,
+                                   registration_date, is_active, last_login_at)
+            VALUES ({"Customer"}, {""}, {otpRecord.Email}, {normalizedEmail}, {""},
+                    {CustomerStatus.Prospect.ToString()}, {now}, {true}, {now})
+            ON CONFLICT (normalized_email) DO NOTHING
+            """, cancellationToken);
+        var customer = await db.Customers.SingleAsync(c => c.NormalizedEmail == normalizedEmail, cancellationToken);
+        if (!customer.IsActive)
+            return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.Deactivated);
+        customer.LastLoginAt = now;
         await db.SaveChangesAsync(cancellationToken);
+        await transaction.CommitAsync(cancellationToken);
 
         var (token, expiresAt) = IssueCustomerToken(customer);
         var response = new CustomerSessionResponse(
@@ -220,11 +228,10 @@ public class CustomerAuthService(
         return (token, expiresAt);
     }
 
-    private static string HashOtp(string otp, string salt)
+    private string HashOtp(string otp, string salt)
     {
-        using var sha = SHA256.Create();
         var bytes = Encoding.UTF8.GetBytes(otp + ":" + salt);
-        var hash = sha.ComputeHash(bytes);
+        var hash = HMACSHA256.HashData(Encoding.UTF8.GetBytes(jwtOptions.Value.Secret), bytes);
         return Convert.ToBase64String(hash);
     }
 }

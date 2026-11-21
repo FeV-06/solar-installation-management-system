@@ -15,7 +15,8 @@ public sealed class SameOriginCheck(RequestDelegate next, IProblemDetailsService
     {
         var request = context.Request;
         var guarded = ChangesData(request.Method) &&
-                      (request.Cookies.ContainsKey(Session.CookieName) || request.Path.StartsWithSegments("/api/auth"));
+                      (request.Cookies.ContainsKey(Session.CookieName) || request.Cookies.ContainsKey(Session.CustomerCookieName)
+                       || request.Path.StartsWithSegments("/api/auth") || request.Path.StartsWithSegments("/api/customer-auth"));
 
         if (guarded && request.Headers.Origin.Count > 0 && !IsSameOrigin(request.Headers.Origin.ToString(), request))
         {

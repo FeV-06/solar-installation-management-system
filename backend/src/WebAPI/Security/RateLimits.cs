@@ -29,6 +29,9 @@ public static class RateLimits
     /// <summary>POST /api/auth/login and PUT /api/auth/password: one budget for both</summary>
     public const string PasswordChecks = "password-checks";
 
+    public const string CustomerOtpRequest = "customer-otp-request";
+    public const string CustomerOtpVerify = "customer-otp-verify";
+
     public const int QuoteFormPerMinute = 5;
     public const int PasswordChecksPerMinute = 10;
 
@@ -46,6 +49,8 @@ public static class RateLimits
             options.OnRejected = WriteTooManyRequestsAsync;
             options.AddPolicy(QuoteForm, context => PerClient(context, QuoteFormPerMinute));
             options.AddPolicy(PasswordChecks, context => PerClient(context, PasswordChecksPerMinute));
+            options.AddPolicy(CustomerOtpRequest, context => PerClient(context, QuoteFormPerMinute));
+            options.AddPolicy(CustomerOtpVerify, context => PerClient(context, PasswordChecksPerMinute));
         });
         return services;
     }

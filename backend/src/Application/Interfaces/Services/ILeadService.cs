@@ -13,6 +13,8 @@ public interface ILeadService
     /// <summary>A new lead and its two notifications, or the open lead this email already has (BR-L1).</summary>
     Task<LeadCreated> CreateAsync(CreateLeadRequest request);
 
+    Task<LeadCreated> CreateForCustomerAsync(CreateLeadRequest request, int customerId);
+
     /// <summary>Contacted, Disqualified or Lost, as BR-L2 allows; the time is now.</summary>
     Task<Result<LeadResponse>> UpdateStatusAsync(int id, UpdateLeadStatusRequest request);
 

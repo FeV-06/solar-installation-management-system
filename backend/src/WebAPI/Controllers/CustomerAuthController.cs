@@ -5,6 +5,7 @@ using Infrastructure.Auth;
 using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Cors;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.RateLimiting;
 using WebAPI.Security;
 
 namespace WebAPI.Controllers;
@@ -14,7 +15,7 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
 {
     [HttpPost("request-otp")]
     [AllowAnonymous]
-    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [EnableRateLimiting(RateLimits.CustomerOtpRequest)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<IActionResult> RequestOtp([FromBody] RequestOtpRequest request)
@@ -26,7 +27,7 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
 
     [HttpPost("verify-otp")]
     [AllowAnonymous]
-    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [EnableRateLimiting(RateLimits.CustomerOtpVerify)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status400BadRequest)]
     public async Task<ActionResult<CustomerSessionResponse>> VerifyOtp([FromBody] VerifyOtpRequest request)
@@ -39,7 +40,8 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Lax,
+            SameSite = SameSiteMode.Strict,
+            Path = "/api",
             Expires = result.Value.ExpiresAt
         };
 
@@ -48,8 +50,7 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
     }
 
     [HttpGet("me")]
-    [AllowAnonymous]
-    [EnableCors(CrossSiteCalls.QuoteForm)]
+    [Authorize(Policy = Policies.Customer)]
     [ProducesResponseType(StatusCodes.Status200OK)]
     [ProducesResponseType(StatusCodes.Status401Unauthorized)]
     public async Task<ActionResult<CustomerSessionResponse>> Me()
@@ -71,7 +72,8 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
         {
             HttpOnly = true,
             Secure = true,
-            SameSite = SameSiteMode.Lax
+            SameSite = SameSiteMode.Strict,
+            Path = "/api"
         });
         return NoContent();
     }

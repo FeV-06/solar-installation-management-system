@@ -38,6 +38,7 @@ public class CustomerOtpConfig : IEntityTypeConfiguration<CustomerOtp>
 
         builder.Property(o => o.FailedAttempts)
             .HasColumnName("failed_attempts")
+            .IsConcurrencyToken()
             .IsRequired();
 
         builder.Property(o => o.CreatedAtUtc)
@@ -49,7 +50,8 @@ public class CustomerOtpConfig : IEntityTypeConfiguration<CustomerOtp>
             .IsRequired();
 
         builder.Property(o => o.ConsumedAtUtc)
-            .HasColumnName("consumed_at_utc");
+            .HasColumnName("consumed_at_utc")
+            .IsConcurrencyToken();
 
         builder.Property(o => o.CreatedByIp)
             .HasColumnName("created_by_ip")
