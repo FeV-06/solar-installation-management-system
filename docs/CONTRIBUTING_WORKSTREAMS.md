@@ -9,7 +9,7 @@ This document provides a starter guide for Frontend and Testing contributors, pa
 Role assignments are provisional to enable rapid parallel work during the 24-hour sprint. Team members collaborate across boundaries as priorities shift:
 
 - **Backend Workstream (Main user + assistant):**
-  - Database schema, Prisma migrations, and SQLite persistence.
+  - Database schema, Drizzle migrations, and SQLite persistence.
   - Core domain services, transactional state transitions, and server-side Zod validation.
   - Authenticated session handling and API route handlers.
   - Protected local storage and streaming for photos and signatures.
@@ -98,7 +98,7 @@ All API endpoints follow a strict contract:
 - **File Storage:** Uploaded photos and signatures are saved in a protected directory outside `public/`. They are accessible only via authenticated file streaming endpoints (`/api/company/files/*`) that verify permissions.
 
 ### 4.3 Transactional State Guarantees
-- Multi-entity writes (e.g., Order Confirmation -> Project + Warehouse Task + Installation Job) are wrapped in atomic database transactions (`prisma.$transaction`).
+- Multi-entity writes (e.g., Order Confirmation -> Project + Warehouse Task + Installation Job) must be wrapped in atomic database transactions (`db.transaction`); keep SQLite's synchronous driver transaction callbacks synchronous.
 - Business rules are enforced on the server. UI validation and disabled buttons provide user guidance, but server handlers must reject invalid transitions with `400 Bad Request` or `409 Conflict`.
 
 ---
@@ -112,12 +112,12 @@ All API endpoints follow a strict contract:
 - **File Paths:**
   - Always use Node's `path.join()` or POSIX forward slashes (`/`) in application and tool scripts. Avoid hardcoded Windows backslashes (`\`).
 - **SQLite Native Driver:**
-  - The selected Prisma SQLite adapter uses `better-sqlite3`, a native dependency. On Windows or locked-down environments, ensure a compatible prebuilt binary or native build tools are available and that the project folder is writable.
+  - Drizzle uses `better-sqlite3`, a native dependency. On Windows or locked-down environments, ensure a compatible prebuilt binary or native build tools are available and that the project folder is writable.
 
 ---
 
 ## 6. Scaffold Phase Reality Check
 
-- **Current State:** The repository contains a minimal Next.js application, the `/api/health` route, Prisma configuration and an initial Enquiry table/migration, and basic test harnesses. Authentication and business APIs remain unimplemented.
+- **Current State:** The repository contains a minimal Next.js application, the `/api/health` route, Drizzle configuration and an initial Enquiry table/migration, and basic test harnesses. Authentication and business APIs remain unimplemented.
 - **Do Not Assume Endpoints Exist:** Do not write frontend code assuming `/api/quotes`, `/api/inventory`, or `/api/dispatch` are operational today.
 - Workstream integration will proceed iteratively as domain endpoints are merged and verified.

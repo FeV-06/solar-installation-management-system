@@ -4,7 +4,7 @@ import { describe, expect, it, vi, beforeEach } from "vitest";
 vi.mock("@/server/db", () => {
   return {
     db: {
-      $queryRaw: vi.fn(),
+      get: vi.fn(),
     },
   };
 });
@@ -19,7 +19,7 @@ describe("GET /api/health (route integration)", () => {
   });
 
   it("returns 200 with ok data envelope when database query succeeds", async () => {
-    vi.mocked(db.$queryRaw).mockResolvedValueOnce([{ "?column?": 1 }]);
+    vi.mocked(db.get).mockReturnValueOnce({ "?column?": 1 });
 
     const response = await GET();
     expect(response.status).toBe(200);
@@ -35,7 +35,7 @@ describe("GET /api/health (route integration)", () => {
   });
 
   it("returns 503 with DATABASE_UNAVAILABLE error envelope when database query fails", async () => {
-    vi.mocked(db.$queryRaw).mockRejectedValueOnce(new Error("Connection refused"));
+    vi.mocked(db.get).mockImplementationOnce(() => { throw new Error("Connection refused"); });
 
     const response = await GET();
     expect(response.status).toBe(503);

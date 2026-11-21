@@ -30,13 +30,13 @@ The proposed application uses a unified Next.js App Router application, a local 
 |                                    v                                     |
 |                       Server-Side Zod Validation                         |
 |                                    v                                     |
-|                        Prisma ORM (Transactions)                         |
+|                        Drizzle ORM (Transactions)                        |
 +------------------------------------|-------------------------------------+
                                      v
 +--------------------------------------------------------------------------+
 |                           Persistence Layer                              |
 |  +-------------------------------+   +--------------------------------+  |
-|  |     SQLite Database (Prisma)  |   |    Private Upload Directory    |  |
+|  |     SQLite Database          |   |    Private Upload Directory    |  |
 |  |    (Local dev/demo database)  |   | (Protected photos & signatures)|  |
 |  +-------------------------------+   +--------------------------------+  |
 +--------------------------------------------------------------------------+
@@ -163,6 +163,6 @@ All route handlers adhere to a standardized JSON response envelope.
 
 ## 4. Current Scaffold State & Next Steps
 
-- **Implemented:** Root Next.js structure, `/api/health`, Prisma 7 configuration, SQLite local database file connection, and initial Vitest/Playwright harnesses.
+- **Implemented:** Root Next.js structure, `/api/health`, Drizzle configuration and initial migration, SQLite local database file connection, and initial Vitest/Playwright harnesses.
 - **Pending Implementation:** Remaining domain entities and their migrations, staff authentication and authorization, protected file handling, and domain route handlers. An initial Enquiry table and migration exist but no enquiry API or UI exists yet.
 - **Boundaries:** No third-party gateway integrations, external government subsidy APIs, or certified accounting ledgers are in scope. All demo data must be synthetic.

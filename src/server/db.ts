@@ -1,13 +1,19 @@
 import "server-only";
-import { PrismaBetterSqlite3 } from "@prisma/adapter-better-sqlite3";
-import { PrismaClient } from "@/generated/prisma/client";
+import Database from "better-sqlite3";
+import { drizzle } from "drizzle-orm/better-sqlite3";
+import * as schema from "@/server/db/schema";
 
-function createClient(): PrismaClient {
+function createClient() {
   const url = process.env.DATABASE_URL;
-  if (!url) throw new Error("DATABASE_URL is required; see .env.example");
-  return new PrismaClient({ adapter: new PrismaBetterSqlite3({ url }) });
+  if (!url?.startsWith("file:") || url.length === "file:".length) {
+    throw new Error("DATABASE_URL must be a non-empty file: SQLite URL; see .env.example");
+  }
+  // Opening the health endpoint must not silently create a missing, unmigrated DB.
+  const sqlite = new Database(url.slice("file:".length), { fileMustExist: true });
+  sqlite.pragma("foreign_keys = ON");
+  return drizzle(sqlite, { schema });
 }
 
-const globalForDb = globalThis as unknown as { prisma?: PrismaClient };
-export const db = globalForDb.prisma ?? createClient();
-if (process.env.NODE_ENV !== "production") globalForDb.prisma = db;
+const globalForDb = globalThis as unknown as { db?: ReturnType<typeof createClient> };
+export const db = globalForDb.db ?? createClient();
+if (process.env.NODE_ENV !== "production") globalForDb.db = db;

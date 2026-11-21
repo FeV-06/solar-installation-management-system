@@ -2,7 +2,7 @@
 
 ## Status
 
-- **Version:** 1.0 proposed plan; ready for team review, not a claim that software has been built.
+- **Version:** 1.1 proposed plan; Drizzle replaces the originally proposed Prisma stack. This is not a claim that the full product has been built.
 - **Chosen challenge:** Solar Installation Management System.
 - **Agreed priority:** A complete customer-to-service journey with an operational company dashboard first.
 - **Team:** Three builders and one person dedicated to testing and breaking the product.
@@ -121,7 +121,7 @@ A support user records parts quantities/unit charge prices and labour hours/rate
 ### Stack
 
 - **Single application:** Next.js App Router + TypeScript, using a responsive React UI and server route handlers in one repository. Avoid a separate frontend/backend deployment for the first slice.
-- **Database:** SQLite stored on the demo host, accessed through Prisma ORM with the documented local SQLite driver/adapter. Use migrations and seeded synthetic package/fixture data; do not keep live business records solely in static JSON.
+- **Database:** SQLite stored on the demo host, accessed through Drizzle ORM and the `better-sqlite3` driver. Use migrations and seeded synthetic package/fixture data; do not keep live business records solely in static JSON.
 - **Validation:** Shared TypeScript request schemas with Zod, applied on the server. Client-side validation improves feedback but is not the security boundary.
 - **Files:** Store uploaded demo photos and signatures in a private local directory outside the public static assets; persist references in the database and serve access through authenticated, authorized routes. Validate file type and size. Do not commit uploads, database files, secrets or real customer data to Git.
 - **Testing:** Unit/integration tests for business rules and persistence, plus Playwright for browser-based flow/validation tests where available. The dedicated tester also conducts manual exploratory and phone-width tests.
@@ -131,7 +131,7 @@ A support user records parts quantities/unit charge prices and labour hours/rate
 
 ### Setup Proof at Kickoff
 
-On the actual demo host, within the first two hours: install dependencies from the committed lockfile; initialize and migrate a local database; seed clearly labeled fixtures; start the app; submit a request; reload after a restart and verify the record persists. Have a second builder and the tester pull/setup as early as possible. Confirm the actual Node/pnpm versions and record exact setup commands in the repository README after they work. Prisma's SQLite adapter uses a native dependency; explicitly resolve pnpm build-approval and Windows/native build problems early. If it blocks the timebox, choose a proven alternative together and change this plan/contract rather than quietly faking persistence.
+On the actual demo host, within the first two hours: install dependencies from the committed lockfile; initialize and migrate a local database; seed clearly labeled fixtures; start the app; submit a request; reload after a restart and verify the record persists. Have a second builder and the tester pull/setup as early as possible. Confirm the actual Node/pnpm versions and record exact setup commands in the repository README after they work. The `better-sqlite3` driver is native; explicitly resolve pnpm build-approval and Windows/native build problems early. If it blocks the timebox, choose a proven alternative together and change this plan/contract rather than quietly faking persistence.
 
 ### Deployment and Connectivity
 
@@ -374,7 +374,7 @@ The workflow and test sections define priority failures. Additional rules:
 ## Assumptions & Open Questions
 
 1. **Hardware:** Will there be a USB/Bluetooth scanner, suitable labels and a reliable network at the venue? Without verified real scanning, this explicit requirement remains unmet.
-2. **Teams and stack:** The team authorized choosing a practical stack; this document proposes Next.js/TypeScript/Prisma/SQLite. Confirm familiarity and setup on each member's machine before freezing it.
+2. **Teams and stack:** The selected stack is Next.js/TypeScript/Drizzle/SQLite. Confirm familiarity and setup on each member's machine.
 3. **Policy:** Does any positive advance qualify, who approves surveys, and may internal drafts exist before survey approval? The demo defaults are not production policies.
 4. **Packages:** Who can validate 1–5 kW package contents and pricing? Synthetic example components and prices must not be sold as engineered designs.
 5. **Panel warranties:** How are non-serialized panels identified, and what product-specific durations and replacement rules apply?
@@ -385,7 +385,8 @@ The workflow and test sections define priority failures. Additional rules:
 ## Revision History and References
 
 - **1.0 proposed:** First concrete execution spec, based on the user's selected customer-to-service-first priority and three-builder/one-tester team. All dates, prices, customers and equipment in a demo must be synthetic.
+- **1.1:** User selected Drizzle in place of Prisma; migration and local setup instructions live in the repository README.
 - **Overall product brief:** `Solar_Installation_Management_System_SPEC.md` in the same directory.
 - **Challenge source:** User-supplied `Solar_Installation_Management_System.pdf`.
 - **Hackathon source:** Event description supplied in the conversation; dynamic/real-time data, responsive UI, validation, navigation and multi-member Git are must-haves; backend/local/offline capabilities are nice-to-haves.
-- **Technical references to recheck at setup:** Next.js route handlers `https://nextjs.org/docs/app/getting-started/route-handlers`; Next.js installation `https://nextjs.org/docs/app/getting-started/installation`; Prisma local SQLite `https://www.prisma.io/docs/orm/v7/core-concepts/supported-databases/sqlite`; Prisma SQLite quickstart `https://www.prisma.io/docs/v7/prisma-orm/quickstart/sqlite`.
+- **Technical references to recheck at setup:** Next.js route handlers `https://nextjs.org/docs/app/getting-started/route-handlers`; Next.js installation `https://nextjs.org/docs/app/getting-started/installation`; Drizzle SQLite `https://orm.drizzle.team/docs/get-started/sqlite-new`.

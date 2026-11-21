@@ -10,7 +10,7 @@ Testing in this 24-hour hackathon project is organized into four complementary l
 
 1. **Domain & Unit Layer (Vitest):**
    - Business rules, state machine transitions, date arithmetic (warranty start/end boundaries), currency calculations in integer paise.
-   - Future database-writing tests must use an isolated local test SQLite database. The initial health unit tests do not write business data.
+   - Database-writing tests must use an isolated local test SQLite database. The initial migration/persistence test creates and removes its own temporary database.
 2. **API & Integration Layer (Vitest):**
    - HTTP route handlers, Zod request/response validation, authentication middleware checks.
    - Negative testing: missing fields, malformed inputs, unauthorized access, out-of-order state transitions.
@@ -38,7 +38,7 @@ Tests are executed using project package scripts:
   - Linux/macOS: `pnpm test:e2e`
   - Windows: `pnpm.cmd test:e2e`
 - **Isolated Test Database:**
-  - Tests must never mutate development or demo SQLite database files. Before adding database-writing tests, configure and verify a dedicated test database (e.g., `test.db`); this isolation has not yet been implemented by the scaffold.
+  - Tests must never mutate development or demo SQLite database files. The migration/persistence integration test isolates its own database; the current browser smoke tests only read health/homepage. Before adding browser tests that write data, configure and verify a dedicated test database for the managed server.
 
 ---
 
@@ -74,5 +74,5 @@ The following matrix covers the primary acceptance criteria (AC) established in 
 ## 4. Current Scaffold Verification Status
 
 At the current initial scaffold stage:
-- **Baseline Health Check:** The scaffold contains `/api/health`, which performs a Prisma SQLite query; execute it locally to verify your environment.
+- **Baseline Health Check:** The scaffold contains `/api/health`, which performs a Drizzle SQLite query; execute it locally to verify your environment.
 - **Domain Coverage:** All domain test cases (`TC-01` through `TC-20`) are currently `PENDING`. As endpoints and services are implemented, real execution results will be recorded with commit hashes and test output logs.

@@ -8,7 +8,7 @@ Welcome to the team repository for SunPower Solutions Solar Installation Managem
 
 The repository is in its initial scaffold phase:
 - **Framework:** Next.js (App Router) with TypeScript (`src/app`).
-- **Database & ORM:** SQLite with Prisma 7 (`prisma/schema.prisma`).
+- **Database & ORM:** SQLite with Drizzle (`src/server/db/schema.ts`; migrations in `drizzle/`).
 - **Verification:** Vitest for unit/integration tests and Playwright for browser testing.
 - **Active Endpoints:** Baseline `/api/health` and database connectivity verification only.
 - **Status:** All domain features, department dashboards, authentication, and file upload endpoints are **unimplemented**. Do not assume functional routes or dashboards exist beyond baseline connectivity.
@@ -20,7 +20,7 @@ The repository is in its initial scaffold phase:
 Role assignments are provisional and designed to facilitate parallel execution during the 24-hour sprint. Team members can assist across workstreams as priorities demand:
 
 1. **Backend Workstream (Main user + assistant):**
-   - Core domain models, Prisma schema & migrations.
+   - Core domain models, Drizzle schema & migrations.
    - Transactional business logic (order creation, serialized dispatch, delivery warranties).
    - Server-side validation (Zod) and authenticated API route handlers.
    - Protected local file storage for installation evidence and signatures.
@@ -44,7 +44,7 @@ Role assignments are provisional and designed to facilitate parallel execution d
 The project standardizes on **Node.js LTS** and **pnpm**:
 - **Unix / macOS:** Standard `pnpm <command>` invocations.
 - **Windows:** Use `pnpm.cmd <command>` in PowerShell or Command Prompt if `pnpm` is not globally aliased in your shell.
-- **Prisma & SQLite:** The selected adapter uses the native `better-sqlite3` dependency. If no compatible prebuilt binary is available, ensure native build prerequisites are met.
+- **Drizzle & SQLite:** The selected driver is the native `better-sqlite3` dependency. If no compatible prebuilt binary is available, ensure native build prerequisites are met.
 - **Line Endings & Paths:** Git should manage line endings (LF preferred). Avoid hardcoded POSIX or Windows file path separators in application code; use Node's `path` module.
 
 ---

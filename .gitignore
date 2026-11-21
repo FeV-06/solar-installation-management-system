@@ -9,11 +9,10 @@
 /next-env.d.ts
 *.tsbuildinfo
 
-# Local configuration and generated client
+# Local configuration
 .env
 .env.*
 !.env.example
-/src/generated/
 
 # Local databases, private evidence, and logs
 *.db
