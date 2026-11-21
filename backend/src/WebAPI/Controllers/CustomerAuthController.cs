@@ -20,7 +20,9 @@ public class CustomerAuthController(ICustomerAuthService service) : ApiControlle
     public async Task<IActionResult> RequestOtp([FromBody] RequestOtpRequest request)
     {
         var clientIp = HttpContext.Connection.RemoteIpAddress?.ToString();
-        var result = await service.RequestOtpAsync(request, clientIp);
+        var origin = Request.Headers.Origin.ToString();
+        var siteUrl = !string.IsNullOrWhiteSpace(origin) ? origin : Request.Headers.Referer.ToString();
+        var result = await service.RequestOtpAsync(request, clientIp, siteUrl);
         return result.IsSuccess
             ? Ok(new { success = true, message = "If the email is valid, a verification code has been sent." })
             : Problem(result.Error);

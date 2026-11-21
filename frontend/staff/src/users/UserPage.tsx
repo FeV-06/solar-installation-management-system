@@ -119,7 +119,7 @@ function Account({ user, isYou }: { user: User; isYou: boolean }) {
           </div>
           <div className="state">
             <span className="ring"><Icon icon={ClipboardCheck} /></span>
-            <p className="a-heading">Not built yet</p>
+            <p className="a-heading">Empty</p>
             <p>The installations {firstName(user.name)} is assigned to, their role on each, and whether their part is done.</p>
           </div>
         </section>

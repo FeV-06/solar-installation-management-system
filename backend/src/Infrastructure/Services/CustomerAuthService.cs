@@ -30,7 +30,7 @@ public class CustomerAuthService(
 {
     private static readonly JsonWebTokenHandler TokenHandler = new();
 
-    public async Task<Result<bool>> RequestOtpAsync(RequestOtpRequest request, string? clientIp, CancellationToken cancellationToken = default)
+    public async Task<Result<bool>> RequestOtpAsync(RequestOtpRequest request, string? clientIp, string? siteUrl = null, CancellationToken cancellationToken = default)
     {
         if (string.IsNullOrWhiteSpace(request.Email) || request.Email.Trim().Length > 255 ||
             !new EmailAddressAttribute().IsValid(request.Email.Trim()))
@@ -75,7 +75,7 @@ public class CustomerAuthService(
         }
 
         // Send Email via configured EmailSender
-        var rendered = CustomerEmails.OtpVerification(otpString, request.Email.Trim(), 5);
+        var rendered = CustomerEmails.OtpVerification(otpString, request.Email.Trim(), 5, siteUrl);
         var emailMessage = new EmailMessage(
             $"CustomerOtp:{otpRecord.Id}",
             request.Email.Trim(),

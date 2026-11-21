@@ -17,7 +17,7 @@ export function SectionPage({ section }: { section: Section }) {
       <div className="state-box">
         <div className="state">
           <span className="ring"><Icon icon={section.icon} /></span>
-          <p className="a-heading">Not built yet</p>
+          <p className="a-heading">Empty</p>
           <p>{section.holds}</p>
         </div>
       </div>
