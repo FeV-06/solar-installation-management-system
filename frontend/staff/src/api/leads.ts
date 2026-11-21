@@ -64,12 +64,18 @@ export const LEADS_PAGE_SIZE = 20;
 
 /** The leads' places in TanStack Query's cache: every list page and every lead start with it. */
 export const LEADS_KEY = ['leads'] as const;
-export const leadsPageKey = (statuses: readonly LeadStatus[], page: number) => [...LEADS_KEY, 'page', statuses.join(','), page] as const;
+export const leadsPageKey = (statuses: readonly LeadStatus[], page: number, q = '') =>
+  [...LEADS_KEY, 'page', statuses.join(','), page, q] as const;
 export const leadKey = (id: number) => [...LEADS_KEY, id] as const;
 
-/** One page of the leads in these statuses (all of them when none is given), newest first. */
-export function fetchLeads(statuses: readonly LeadStatus[], page: number, signal?: AbortSignal) {
-  const query = new URLSearchParams([...statuses.map(s => ['status', s]), ['page', String(page)], ['pageSize', String(LEADS_PAGE_SIZE)]]);
+/** One page of the leads in these statuses (all of them when none is given), newest first. Optional search query. */
+export function fetchLeads(statuses: readonly LeadStatus[], page: number, q = '', signal?: AbortSignal) {
+  const query = new URLSearchParams([
+    ...statuses.map(s => ['status', s]),
+    ['page', String(page)],
+    ['pageSize', String(LEADS_PAGE_SIZE)],
+    ...(q.trim() ? [['q', q.trim()]] : []),
+  ]);
   return request(`/leads?${query}`, { schema: leadsPageSchema, signal });
 }
 

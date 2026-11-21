@@ -1,0 +1,119 @@
+flowchart LR
+    %% Users and client applications
+    Customer([Customer])
+    Staff([Staff member])
+
+    subgraph Frontends["Frontend applications"]
+        Marketing["Marketing / customer app<br/>React + TypeScript + Vite<br/>:5173"]
+        StaffApp["Staff workspace<br/>React + TypeScript + Vite<br/>:5174/staff"]
+    end
+
+    Customer --> Marketing
+    Staff --> StaffApp
+
+    subgraph Api["ASP.NET Core Web API<br/>.NET 10 :5228"]
+        Middleware["HTTP pipeline<br/>CORS · sessions · authorization<br/>rate limits · ProblemDetails · Serilog"]
+
+        subgraph Docs["Development tools"]
+            Scalar["Scalar / OpenAPI<br/>/scalar/v1"]
+            HangfireDashboard["Hangfire dashboard"]
+            Measurement["Measurement harness<br/>/api/dev/email-fault"]
+        end
+
+        subgraph Controllers["API controllers"]
+            CustomerAuth["CustomerAuthController<br/>/api/customer-auth"]
+            CustomerPortal["CustomerPortalController<br/>/api/customer-portal"]
+            Auth["AuthController<br/>/api/auth"]
+            Leads["LeadsController<br/>/api/leads"]
+            Customers["CustomersController<br/>/api/customers"]
+            Surveys["SurveysController<br/>/api/surveys"]
+            Installations["InstallationsController<br/>/api/installations"]
+            Users["UsersController<br/>/api/users"]
+            Quotes["QuotesController<br/>/api/...quotes"]
+            Notifications["NotificationsController<br/>/api/notifications"]
+        end
+
+        subgraph Application["Application layer"]
+            Services["Business services<br/>Auth · Customer · Lead · Survey<br/>User · Notification · Portal · Quote"]
+            Validators["FluentValidation validators"]
+            DTOs["DTOs and response models"]
+            Interfaces["Repository and service interfaces"]
+        end
+
+        subgraph Infrastructure["Infrastructure layer"]
+            Repositories["Repositories + Unit of Work"]
+            AuthInfra["Authentication infrastructure<br/>JWT session cookies · password hashing"]
+            Email["Email services<br/>Recording provider / Gmail SMTP"]
+            Outbox["Outbox processor<br/>reliable notifications"]
+            Jobs["Hangfire recurring jobs"]
+            EF["Entity Framework Core<br/>Npgsql provider"]
+        end
+
+        Domain["Domain layer<br/>entities · enums · business rules"]
+    end
+
+    Marketing -->|"REST / JSON + customer cookie"| Middleware
+    StaffApp -->|"REST / JSON + staff cookie"| Middleware
+    Middleware --> Controllers
+
+    Scalar -.documents.-> Controllers
+    HangfireDashboard -.monitors.-> Jobs
+    Measurement -.development only.-> Email
+
+    Controllers --> Services
+    Services --> Validators
+    Services --> DTOs
+    Services --> Interfaces
+    Interfaces --> Repositories
+    Services --> AuthInfra
+    Services --> Email
+    Repositories --> EF
+    Repositories --> Domain
+    AuthInfra --> Domain
+    Outbox --> Email
+    Jobs --> Outbox
+    Jobs --> EF
+
+    subgraph Data["Local runtime services"]
+        PostgreSQL[("PostgreSQL<br/>Docker :5433<br/>database: sol")]
+        Adminer["Adminer<br/>browser DB viewer :8080"]
+        CloudBeaver["Optional CloudBeaver<br/>browser DB viewer :8978"]
+    end
+
+    EF --> PostgreSQL
+    Jobs --> PostgreSQL
+    Adminer -->|"host.docker.internal:5433"| PostgreSQL
+    CloudBeaver -->|"host.docker.internal:5433"| PostgreSQL
+
+    subgraph DatabaseModel["Main persisted data"]
+        CoreTables["Customers · Leads · Addresses<br/>Users · Customer OTPs"]
+        DeliveryTables["Installations · Surveys<br/>Quotes · Quote items<br/>Packing orders"]
+        ReliabilityTables["Outbox messages<br/>Email deliveries<br/>Hangfire schema"]
+    end
+
+    PostgreSQL --> CoreTables
+    PostgreSQL --> DeliveryTables
+    PostgreSQL --> ReliabilityTables
+
+    subgraph Tests["Verification"]
+        UnitTests["Unit tests<br/>Domain and application"]
+        IntegrationTests["Integration tests<br/>Testcontainers PostgreSQL"]
+        FrontendTests["Frontend tests<br/>forms · API clients · views"]
+    end
+
+    UnitTests -.tests.-> Domain
+    UnitTests -.tests.-> Services
+    IntegrationTests -.tests.-> Middleware
+    IntegrationTests -.isolated DB.-> PostgreSQL
+    FrontendTests -.tests.-> Marketing
+    FrontendTests -.tests.-> StaffApp
+
+    classDef client fill:#e8f1ff,stroke:#3578c4,color:#102a43
+    classDef api fill:#fff3d6,stroke:#c58b17,color:#4a3200
+    classDef data fill:#e7f7ed,stroke:#2f855a,color:#123b25
+    classDef test fill:#f2e8ff,stroke:#805ad5,color:#322052
+
+    class Customer,Staff,Marketing,StaffApp client
+    class Middleware,Domain,Scalar,HangfireDashboard,Measurement api
+    class PostgreSQL,Adminer,CloudBeaver,CoreTables,DeliveryTables,ReliabilityTables data
+    class UnitTests,IntegrationTests,FrontendTests test

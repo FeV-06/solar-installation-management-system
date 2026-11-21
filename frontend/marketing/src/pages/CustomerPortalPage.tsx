@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { CheckCircle2, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, ShieldCheck, Zap } from 'lucide-react';
+import { CheckCircle2, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, Info, LoaderCircle, PackageCheck, Search, ShieldCheck, Zap } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
 
@@ -107,6 +107,11 @@ export function CustomerPortalPage() {
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [paySuccess, setPaySuccess] = useState<string | null>(null);
+
+  // Quote search and pagination
+  const [quoteSearch, setQuoteSearch] = useState('');
+  const [quotePage, setQuotePage] = useState(1);
+  const QUOTES_PER_PAGE = 5;
 
   const fetchPortal = async () => {
     try {
@@ -570,42 +575,126 @@ export function CustomerPortalPage() {
           </div>
         )}
 
-        {/* All quotes history table */}
-        {data?.quotes && data.quotes.length > 1 && (
-          <div style={{
-            marginTop: '2rem',
-            padding: '1.75rem',
-            background: 'var(--bg-raised)',
-            borderRadius: 'var(--radius-xl)',
-            boxShadow: 'inset 0 0 0 1px var(--line)'
-          }}>
-            <h3 className="display" style={{ fontSize: '1.15rem', margin: '0 0 1.25rem', color: 'var(--fg)' }}>All Your Requests</h3>
-            <div style={{ overflowX: 'auto' }}>
-              <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
-                <thead>
-                  <tr style={{ borderBottom: '1px solid var(--line-strong)' }}>
-                    <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>ID</th>
-                    <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Status</th>
-                    <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Property</th>
-                    <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Monthly Bill</th>
-                    <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Date</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {data.quotes.map(q => (
-                    <tr key={q.id} style={{ borderBottom: '1px solid var(--line)' }}>
-                      <td style={{ padding: '0.75rem 0.8rem', fontWeight: 600, color: 'var(--fg)' }}>#{q.id}</td>
-                      <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.status}</td>
-                      <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.propertyAddress}</td>
-                      <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.monthlyBillRange}</td>
-                      <td style={{ padding: '0.75rem 0.8rem', color: 'var(--muted)' }}>{new Date(q.createdAt).toLocaleDateString()}</td>
-                    </tr>
-                  ))}
-                </tbody>
-              </table>
+        {/* All quotes history table with Search & Pagination */}
+        {data?.quotes && data.quotes.length > 0 && (() => {
+          const filteredQuotes = (data.quotes ?? []).filter(q => {
+            if (!quoteSearch.trim()) return true;
+            const term = quoteSearch.toLowerCase();
+            return (
+              q.id.toString().includes(term) ||
+              q.propertyAddress.toLowerCase().includes(term) ||
+              q.status.toLowerCase().includes(term) ||
+              q.monthlyBillRange.toLowerCase().includes(term)
+            );
+          });
+          const totalQuotePages = Math.max(1, Math.ceil(filteredQuotes.length / QUOTES_PER_PAGE));
+          const currentPageQuotes = filteredQuotes.slice((quotePage - 1) * QUOTES_PER_PAGE, quotePage * QUOTES_PER_PAGE);
+
+          return (
+            <div style={{
+              marginTop: '2rem',
+              padding: '1.75rem',
+              background: 'var(--bg-raised)',
+              borderRadius: 'var(--radius-xl)',
+              boxShadow: 'inset 0 0 0 1px var(--line)'
+            }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '1.25rem', flexWrap: 'wrap', gap: '1rem' }}>
+                <div>
+                  <h3 className="display" style={{ fontSize: '1.15rem', margin: 0, color: 'var(--fg)' }}>All Your Requests</h3>
+                  <span className="label" style={{ color: 'var(--faint)', fontSize: '0.75rem' }}>
+                    Showing {filteredQuotes.length === 0 ? 0 : (quotePage - 1) * QUOTES_PER_PAGE + 1}–{Math.min(quotePage * QUOTES_PER_PAGE, filteredQuotes.length)} of {filteredQuotes.length} requests
+                  </span>
+                </div>
+
+                {/* Search Box */}
+                <div style={{ position: 'relative', minWidth: '16rem', maxWidth: '22rem', width: '100%' }}>
+                  <input
+                    type="search"
+                    placeholder="Search by ID, address, status…"
+                    value={quoteSearch}
+                    onChange={e => { setQuoteSearch(e.target.value); setQuotePage(1); }}
+                    style={{
+                      width: '100%',
+                      padding: '0.5rem 1rem 0.5rem 2.2rem',
+                      background: 'var(--bg)',
+                      border: '1px solid var(--line)',
+                      borderRadius: 'var(--radius-md)',
+                      color: 'var(--fg)',
+                      fontSize: '0.85rem'
+                    }}
+                  />
+                  <span style={{ position: 'absolute', left: '0.75rem', top: '50%', transform: 'translateY(-50%)', color: 'var(--muted)', pointerEvents: 'none' }}>
+                    <Icon icon={Search} />
+                  </span>
+                </div>
+              </div>
+
+              {filteredQuotes.length === 0 ? (
+                <div style={{ textAlign: 'center', padding: '2rem 1rem', color: 'var(--muted)' }}>
+                  No requests matching “{quoteSearch}”.
+                </div>
+              ) : (
+                <>
+                  <div style={{ overflowX: 'auto' }}>
+                    <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.9rem' }}>
+                      <thead>
+                        <tr style={{ borderBottom: '1px solid var(--line-strong)' }}>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>ID</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Status</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Property</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Monthly Bill</th>
+                          <th style={{ padding: '0.6rem 0.8rem', color: 'var(--faint)' }}>Date</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {currentPageQuotes.map(q => (
+                          <tr key={q.id} style={{ borderBottom: '1px solid var(--line)' }}>
+                            <td style={{ padding: '0.75rem 0.8rem', fontWeight: 600, color: 'var(--fg)' }}>#{q.id}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.status}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.propertyAddress}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--fg)' }}>{q.monthlyBillRange}</td>
+                            <td style={{ padding: '0.75rem 0.8rem', color: 'var(--muted)' }}>{new Date(q.createdAt).toLocaleDateString()}</td>
+                          </tr>
+                        ))}
+                      </tbody>
+                    </table>
+                  </div>
+
+                  {/* Pagination Controls */}
+                  {totalQuotePages > 1 && (
+                    <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginTop: '1.25rem', paddingTop: '1rem', borderTop: '1px solid var(--line)' }}>
+                      <span style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                        Page {quotePage} of {totalQuotePages}
+                      </span>
+                      <div style={{ display: 'flex', gap: '0.5rem' }}>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={quotePage <= 1}
+                          onClick={() => setQuotePage(p => Math.max(1, p - 1))}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <Icon icon={ChevronLeft} />
+                          <span>Previous</span>
+                        </button>
+                        <button
+                          type="button"
+                          className="btn btn-secondary btn-sm"
+                          disabled={quotePage >= totalQuotePages}
+                          onClick={() => setQuotePage(p => Math.min(totalQuotePages, p + 1))}
+                          style={{ display: 'inline-flex', alignItems: 'center', gap: '4px' }}
+                        >
+                          <span>Next</span>
+                          <Icon icon={ChevronRight} />
+                        </button>
+                      </div>
+                    </div>
+                  )}
+                </>
+              )}
             </div>
-          </div>
-        )}
+          );
+        })()}
       </div>
     </div>
   );

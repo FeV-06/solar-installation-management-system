@@ -13,8 +13,15 @@ export type Filter = (typeof FILTERS)[number];
 /** The filter an address asks for; the list opens on All, every lead newest first (Hocine, 2026-11-21). */
 export const filterFrom = (value: string | null): Filter => FILTERS.find(f => f.key === value) ?? FILTERS[0];
 
-/** The list's address for a filter and a page; the first page has no page number. */
-export const leadsHref = (filter: Filter, page = 1) => `/leads?status=${filter.key}${page > 1 ? `&page=${page}` : ''}`;
+/** The list's address for a filter, page, and optional search term; the first page has no page number. */
+export const leadsHref = (filter: Filter, page = 1, q = '') => {
+  const params = new URLSearchParams();
+  if (filter.key !== 'all') params.set('status', filter.key);
+  if (page > 1) params.set('page', String(page));
+  if (q.trim()) params.set('q', q.trim());
+  const str = params.toString();
+  return str ? `/leads?${str}` : '/leads';
+};
 
 /** What the empty list says, for each filter */
 export const EMPTY: Record<Filter['key'], { title: string; text: string }> = {

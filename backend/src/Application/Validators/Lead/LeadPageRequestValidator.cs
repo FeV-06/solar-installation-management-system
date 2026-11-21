@@ -14,5 +14,9 @@ public class LeadPageRequestValidator : AbstractValidator<LeadPageRequest>
         RuleForEach(x => x.Status)
             .IsEnumName(typeof(LeadStatus), caseSensitive: true)
             .WithMessage($"Status must be one of: {string.Join(", ", Enum.GetNames<LeadStatus>())}");
+
+        RuleFor(x => x.Q)
+            .MaximumLength(LeadPageRequest.MaxSearchLength)
+            .WithMessage($"Search cannot exceed {LeadPageRequest.MaxSearchLength} characters");
     }
 }

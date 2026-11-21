@@ -9,10 +9,13 @@ public interface ILeadRepo : IGenericRepo<Lead>
 {
     /// <summary>
     /// One page of the leads in these statuses (every lead when none is given), newest first, with their address, and
-    /// how many leads match.
+    /// how many leads match. Optional search by name, email, phone or address.
     /// </summary>
-    Task<(IReadOnlyList<Lead> Items, int TotalCount)> GetPageAsync(IReadOnlyCollection<LeadStatus> statuses, int skip,
+    Task<(IReadOnlyList<Lead> Items, int TotalCount)> GetPageAsync(IReadOnlyCollection<LeadStatus> statuses, string? search, int skip,
         int take);
+
+    Task<(IReadOnlyList<Lead> Items, int TotalCount)> GetPageAsync(IReadOnlyCollection<LeadStatus> statuses, int skip,
+        int take) => GetPageAsync(statuses, null, skip, take);
 
     /// <summary>
     /// The ID of an open lead (New or Contacted) with this email, compared as <c>Emails.Normalize</c> does, other than

@@ -8,5 +8,9 @@ namespace Application.DTOs.Lead;
 /// </summary>
 public sealed class LeadPageRequest : PageRequest
 {
+    public const int MaxSearchLength = 100;
+
     public List<string> Status { get; set; } = [];
+
+    public string? Q { get; set; }
 }

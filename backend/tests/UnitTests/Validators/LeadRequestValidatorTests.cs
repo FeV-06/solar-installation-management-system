@@ -100,4 +100,14 @@ public class LeadRequestValidatorTests
         MessagesOf(validator.Validate(new CustomerPageRequest { Q = new string('a', 101) }), "Q")
             .Should().Equal("Search cannot exceed 100 characters");
     }
+
+    [Fact]
+    public void LeadPage_SearchUpTo100Characters()
+    {
+        var validator = new LeadPageRequestValidator();
+
+        validator.Validate(new LeadPageRequest { Q = new string('a', 100) }).IsValid.Should().BeTrue();
+        MessagesOf(validator.Validate(new LeadPageRequest { Q = new string('a', 101) }), "Q")
+            .Should().Equal("Search cannot exceed 100 characters");
+    }
 }

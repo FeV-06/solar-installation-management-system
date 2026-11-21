@@ -26,7 +26,7 @@ public class LeadService(
     public async Task<PagedResponse<LeadSummaryResponse>> GetPageAsync(LeadPageRequest request)
     {
         var statuses = request.Status.Select(Enum.Parse<LeadStatus>).ToHashSet();
-        var (items, totalCount) = await leads.GetPageAsync(statuses, request.Offset(), request.PageSize);
+        var (items, totalCount) = await leads.GetPageAsync(statuses, request.Q, request.Offset(), request.PageSize);
         return new PagedResponse<LeadSummaryResponse>(items.Select(LeadSummaryResponse.From).ToList(), request.Page,
             request.PageSize, totalCount);
     }

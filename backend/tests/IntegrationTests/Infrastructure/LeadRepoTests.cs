@@ -120,6 +120,39 @@ public class LeadRepoTests(PostgresFixture database) : IntegrationTestBase(datab
     }
 
     [Fact]
+    public async Task GetPageAsync_WithSearch_FiltersAcrossFields()
+    {
+        // Arrange
+        var addr1 = AddressFactory.CreateFakeAddress(id: 1, city: "Amritsar", street: "Mall Road");
+        var addr2 = AddressFactory.CreateFakeAddress(id: 2, city: "Ludhiana", street: "Ferozepur Rd");
+        await SeedAsync(addr1, addr2);
+
+        var lead1 = LeadFactory.CreateFakeLead(id: 1, addressId: 1, firstName: "Aarav", lastName: "Sharma", email: "aarav@solar.in", phoneNumber: "9876543210");
+        var lead2 = LeadFactory.CreateFakeLead(id: 2, addressId: 2, firstName: "Priya", lastName: "Kaur", email: "priya@gmail.com", phoneNumber: "9812345678");
+        await SeedAsync(lead1, lead2);
+
+        // Act & Assert - Name search
+        var (byName, count1) = await Repo.GetPageAsync([], "Aarav", 0, 10);
+        byName.Should().ContainSingle(x => x.Id == 1);
+        count1.Should().Be(1);
+
+        // Act & Assert - City search
+        var (byCity, count2) = await Repo.GetPageAsync([], "Amritsar", 0, 10);
+        byCity.Should().ContainSingle(x => x.Id == 1);
+        count2.Should().Be(1);
+
+        // Act & Assert - Email search
+        var (byEmail, count3) = await Repo.GetPageAsync([], "priya@", 0, 10);
+        byEmail.Should().ContainSingle(x => x.Id == 2);
+        count3.Should().Be(1);
+
+        // Act & Assert - Phone search
+        var (byPhone, count4) = await Repo.GetPageAsync([], "981234", 0, 10);
+        byPhone.Should().ContainSingle(x => x.Id == 2);
+        count4.Should().Be(1);
+    }
+
+    [Fact]
     public async Task GetPageAsync_ReturnsDetachedEntities()
     {
         // Arrange

@@ -1,7 +1,9 @@
-import { useQuery } from '@tanstack/react-query';
+import { useEffect, useState } from 'react';
+import { keepPreviousData, useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { Inbox } from 'lucide-react';
+import { Inbox, Search, SearchX, X } from 'lucide-react';
 import { fetchLeads, LEADS_PAGE_SIZE, leadsPageKey } from '../api/leads';
+import { Icon } from '../components/Icon';
 import { PageHead } from '../components/PageHead';
 import { Pager } from '../components/Pager';
 import { formatMoment } from '../lib/dates';
@@ -13,23 +15,54 @@ import { QueryView } from '../states/QueryView';
 import { LeadChip } from './LeadChip';
 import { cityLine, EMPTY, filterFrom, FILTERS, leadsHref } from './view';
 
+/** How long typing pauses before the list follows the search */
+const SEARCH_DELAY_MS = 300;
+
 /**
  * The lead list (FR-L3), from the approved design: newest first, opening on All, with New, Contacted and Closed beside it.
- * The filter and the page are in the address. A name opens the lead, where its actions are. Below 768 px the rows
- * become cards.
+ * Filter, search query and page are in the address. Below 768 px the rows become cards.
  */
 export function LeadsPage() {
   const me = useCurrentUser();
-  const [params] = useSearchParams();
+  const [params, setParams] = useSearchParams();
   const filter = filterFrom(params.get('status'));
+  const q = (params.get('q') ?? '').trim();
   const page = pageFrom(params.get('page'));
+  const [typed, setTyped] = useState(params.get('q') ?? '');
+
+  const [shownQ, setShownQ] = useState(q);
+  if (shownQ !== q) {
+    setShownQ(q);
+    if (typed.trim() !== q) setTyped(q);
+  }
+
   const query = useQuery({
-    queryKey: leadsPageKey(filter.statuses, page),
-    queryFn: ({ signal }) => fetchLeads(filter.statuses, page, signal),
+    queryKey: leadsPageKey(filter.statuses, page, q),
+    queryFn: ({ signal }) => fetchLeads(filter.statuses, page, q, signal),
     enabled: me.role === 'Admin',
+    placeholderData: keepPreviousData,
   });
 
+  // The address follows what is typed, once typing pauses; a new search starts at the first page
+  useEffect(() => {
+    if (typed.trim() === q) return;
+    const timer = setTimeout(() => {
+      const nextParams: Record<string, string> = {};
+      if (filter.key !== 'all') nextParams.status = filter.key;
+      if (typed.trim()) nextParams.q = typed.trim();
+      setParams(nextParams, { replace: true });
+    }, SEARCH_DELAY_MS);
+    return () => clearTimeout(timer);
+  }, [typed, q, filter.key, setParams]);
+
   if (!opensFor(me.role, '/leads')) return <NotAllowed />;
+
+  const clear = () => {
+    setTyped('');
+    const nextParams: Record<string, string> = {};
+    if (filter.key !== 'all') nextParams.status = filter.key;
+    setParams(nextParams, { replace: true });
+  };
 
   const empty = EMPTY[filter.key];
   const caption = `Leads, ${filter.label.toLowerCase()}, newest first`;
@@ -38,13 +71,36 @@ export function LeadsPage() {
       <PageHead title="Leads">
         <nav className="filters" aria-label="Filter leads">
           {FILTERS.map(f => (
-            <Link key={f.key} to={leadsHref(f)} aria-current={f.key === filter.key ? 'true' : undefined}>{f.label}</Link>
+            <Link key={f.key} to={leadsHref(f, 1, q)} aria-current={f.key === filter.key ? 'true' : undefined}>{f.label}</Link>
           ))}
         </nav>
+        <div className="control list-search">
+          <Icon icon={Search} />
+          <label className="sr" htmlFor="leads-q">Search leads</label>
+          <input
+            id="leads-q"
+            type="search"
+            placeholder="Name, email, phone, city…"
+            autoComplete="off"
+            spellCheck={false}
+            maxLength={100}
+            value={typed}
+            onChange={e => setTyped(e.target.value)}
+          />
+        </div>
       </PageHead>
       <QueryView
-        query={query} what="the leads" note="Your filter is kept." isEmpty={data => data.totalCount === 0}
-        empty={<Empty icon={Inbox} title={empty.title}>{empty.text}</Empty>}
+        query={query} what="the leads" note={q ? 'Your search is kept.' : 'Your filter is kept.'} isEmpty={data => data.totalCount === 0}
+        empty={q ? (
+          <div className="state-box">
+            <div className="state">
+              <span className="ring"><Icon icon={SearchX} /></span>
+              <p className="a-heading">No leads match “{q}”</p>
+              <p>Search by name, email, phone number, or property address.</p>
+              <button className="btn btn-secondary btn-sm" type="button" onClick={clear}><Icon icon={X} />Clear the search</button>
+            </div>
+          </div>
+        ) : <Empty icon={Inbox} title={empty.title}>{empty.text}</Empty>}
       >
         {data => (
           <>
@@ -81,7 +137,7 @@ export function LeadsPage() {
                 </li>
               ))}
             </ul>
-            <Pager label="Pages of leads" page={page} pageSize={LEADS_PAGE_SIZE} totalCount={data.totalCount} hrefFor={p => leadsHref(filter, p)} />
+            <Pager label="Pages of leads" page={page} pageSize={LEADS_PAGE_SIZE} totalCount={data.totalCount} hrefFor={p => leadsHref(filter, p, q)} />
           </>
         )}
       </QueryView>
