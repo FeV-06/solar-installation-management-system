@@ -10,6 +10,7 @@ import { NotFound } from '../states/States';
 import { QueryView } from '../states/QueryView';
 import { StageChip } from '../customers/Chips';
 import { RooftopFieldProofSection } from './RooftopFieldProofSection';
+import { WarehousePackingSection } from './WarehousePackingSection';
 
 export function CommissioningPage() {
   const user = useCurrentUser();
@@ -87,7 +88,10 @@ export function CommissioningPage() {
             </div>
           </div>
 
-          {/* Dedicated Commissioning Section */}
+          {/* Hardware Kit Packing & Delivery Handover (Scene 3) */}
+          <WarehousePackingSection installation={installation} />
+
+          {/* Dedicated Commissioning Section (Scene 4) */}
           <RooftopFieldProofSection
             installationId={installation.id}
             customerName={installation.customerName}
