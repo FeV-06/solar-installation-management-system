@@ -1,0 +1,41 @@
+{
+  "name": "solar-installation-management-system",
+  "version": "0.1.0",
+  "private": true,
+  "engines": { "node": ">=22.13 <23" },
+  "packageManager": "pnpm@11.15.1",
+  "scripts": {
+    "dev": "pnpm db:generate && next dev --hostname 127.0.0.1",
+    "build": "pnpm db:generate && next build",
+    "start": "next start --hostname 127.0.0.1",
+    "lint": "eslint .",
+    "typecheck": "pnpm db:generate && tsc --noEmit",
+    "test": "vitest run",
+    "test:e2e": "playwright test",
+    "db:generate": "prisma generate",
+    "db:migrate": "prisma migrate dev",
+    "db:deploy": "prisma migrate deploy"
+  },
+  "dependencies": {
+    "@prisma/adapter-better-sqlite3": "7.10.1",
+    "@prisma/client": "7.10.1",
+    "dotenv": "^17.2.3",
+    "next": "16.4.6",
+    "react": "19.3.1",
+    "react-dom": "19.3.1",
+    "server-only": "^0.0.1",
+    "zod": "^4.6.7"
+  },
+  "devDependencies": {
+    "@playwright/test": "1.65.1",
+    "@types/better-sqlite3": "^7.6.13",
+    "@types/node": "^22.20.5",
+    "@types/react": "^19.2.14",
+    "@types/react-dom": "^19.2.3",
+    "eslint": "^9.39.2",
+    "eslint-config-next": "16.4.6",
+    "prisma": "7.10.1",
+    "typescript": "~5.9.3",
+    "vitest": "5.1.1"
+  }
+}
