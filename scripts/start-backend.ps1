@@ -20,7 +20,6 @@ if (Test-Path $envFile) {
     }
 }
 
-# Ensure both configured port (e.g. 55229) and standard proxy port (5228) are bound
 $urls = [Environment]::GetEnvironmentVariable("ASPNETCORE_URLS", "Process")
 if (-not $urls) {
     $urls = "http://localhost:5228"
@@ -30,5 +29,5 @@ if (-not $urls) {
 [Environment]::SetEnvironmentVariable("ASPNETCORE_URLS", $urls, "Process")
 
 Write-Host "Starting WebAPI on $urls..." -ForegroundColor Green
-Set-Location -LiteralPath $repoRoot
-dotnet run --project backend/src/WebAPI --no-launch-profile
+Set-Location -LiteralPath "$repoRoot\backend\src\WebAPI"
+dotnet bin\Debug\net10.0\WebAPI.dll
