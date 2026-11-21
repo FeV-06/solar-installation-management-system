@@ -15,7 +15,7 @@ public class SurveyService(
     public async Task<PagedResponse<SurveyResponse>> GetPageAsync(SurveyPageRequest request, int userId, bool isAdmin)
     {
         var status = request.Status is null ? (SurveyStatus?)null : Enum.Parse<SurveyStatus>(request.Status);
-        var (items, total) = await surveys.GetPageAsync(userId, isAdmin, status, request.Offset(), request.PageSize);
+        var (items, total) = await surveys.GetPageAsync(userId, isAdmin, status, request.InstallationId, request.Offset(), request.PageSize);
         return new PagedResponse<SurveyResponse>(items.Select(SurveyResponse.From).ToList(), request.Page, request.PageSize, total);
     }
 

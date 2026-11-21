@@ -104,8 +104,8 @@ function LeadView({ lead }: { lead: Lead }) {
     keep(changed);
     void queryClient.invalidateQueries({ queryKey: CUSTOMERS_KEY });
     setOpen(null);
-    // The installation's page comes with the installations; until then, the customer it belongs to
-    if (changed.customer) navigate(`/customers/${changed.customer.id}`);
+    if (changed.installationId) navigate(`/installations/${changed.installationId}`);
+    else if (changed.customer) navigate(`/customers/${changed.customer.id}`);
   };
 
   const edited = (changed: Lead) => {

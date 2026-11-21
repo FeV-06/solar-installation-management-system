@@ -16,6 +16,7 @@ export type Section = {
 export const OFFICE: readonly Section[] = [
   { path: '/leads', label: 'Leads', title: 'Leads', icon: Inbox, holds: 'Every lead, newest first, filtered by status, a page at a time.' },
   { path: '/customers', label: 'Customers', title: 'Customers', icon: House, holds: 'Every customer, searched by name or email.' },
+  { path: '/surveys', label: 'Surveys', title: 'Surveys', icon: ClipboardCheck, holds: 'Site surveys, appointments and reviews.' },
   { path: '/installations', label: 'Installations', title: 'Installations', icon: SolarPanel, holds: 'Every installation, filtered by stage.' },
   { path: '/production', label: 'Production', title: 'Production', icon: ChartColumn, holds: 'For the last complete day: how many installations are at each health level, and the 20 doing worst.' },
   { path: '/notifications', label: 'Notifications', title: 'Failed notifications', icon: Mail, holds: 'The emails that still failed after 24 hours of retries, each ready to retry.' },

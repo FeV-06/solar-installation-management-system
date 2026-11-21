@@ -60,6 +60,27 @@ public class SurveysTests(PostgresFixture database) : ApiTestBase(database)
     }
 
     [Fact]
+    public async Task InstallationDetailsAndSurveyFilter_RespectRoleAndProject()
+    {
+        var admin = await CreateClientAsAsync(UserRole.Admin);
+        var technician = await CreateClientAsAsync(UserRole.Technician);
+        var technicianId = await IdOfAsync(TestTechnician.Email);
+        var installationId = await CreateInstallation(admin);
+        var surveyId = await CreateSurvey(admin, installationId, technicianId);
+        var details = await admin.GetAsync($"/api/installations/{installationId}", Ct);
+        details.StatusCode.Should().Be(HttpStatusCode.OK);
+        (await Json(details)).GetProperty("customerName").GetString().Should().Be("Jane Doe");
+        (await technician.GetAsync($"/api/installations/{installationId}", Ct)).StatusCode.Should().Be(HttpStatusCode.Forbidden);
+        (await admin.GetAsync("/api/installations/9999", Ct)).StatusCode.Should().Be(HttpStatusCode.NotFound);
+        var page = await Json(await admin.GetAsync($"/api/surveys?installationId={installationId}", Ct));
+        page.GetProperty("items").EnumerateArray().Single().GetProperty("id").GetInt32().Should().Be(surveyId);
+        (await Json(await admin.GetAsync("/api/surveys?installationId=9999", Ct))).GetProperty("totalCount").GetInt32().Should().Be(0);
+        (await admin.GetAsync("/api/surveys?installationId=0", Ct)).StatusCode.Should().Be(HttpStatusCode.BadRequest);
+        var other = await OtherTechnician();
+        (await Json(await other.GetAsync($"/api/surveys?installationId={installationId}", Ct))).GetProperty("totalCount").GetInt32().Should().Be(0);
+    }
+
+    [Fact]
     public async Task CustomerToApprovedSurvey_PersistsAndMovesInstallationToDesign()
     {
         var admin = await CreateClientAsAsync(UserRole.Admin);

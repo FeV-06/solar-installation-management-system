@@ -5,6 +5,7 @@ namespace Application.DTOs.Survey;
 public sealed class SurveyPageRequest : PageRequest
 {
     public string? Status { get; set; }
+    public int? InstallationId { get; set; }
 }
 
 public sealed class ScheduleSurveyRequest

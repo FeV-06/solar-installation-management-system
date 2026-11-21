@@ -2,8 +2,8 @@ import { describe, expect, it } from 'vitest';
 import { opensFor, sectionsFor } from './sections';
 
 describe('sectionsFor', () => {
-  it("shows the office its six sections, in the design's order", () => {
-    expect(sectionsFor('Admin').map(s => s.path)).toEqual(['/leads', '/customers', '/installations', '/production', '/notifications', '/users']);
+  it("shows the office its sections, in the design's order", () => {
+    expect(sectionsFor('Admin').map(s => s.path)).toEqual(['/leads', '/customers', '/surveys', '/installations', '/production', '/notifications', '/users']);
   });
 
   it('shows a technician only their own work', () => {

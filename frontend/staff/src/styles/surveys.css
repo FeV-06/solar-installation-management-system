@@ -1,0 +1,26 @@
+/* Survey screens extend the staff app's existing tokens, cards, tables and fields. */
+.survey-panel { display: grid; gap: .85rem; margin-top: 1.5rem; padding: 1.25rem 1.4rem; background: var(--bg-raised); border-radius: var(--radius-lg); box-shadow: inset 0 0 0 1px var(--line); }
+.survey-panel > p, .survey-empty { color: var(--muted); font-size: .875rem; }
+.survey-form { display: grid; gap: 1rem; }
+.survey-fields { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 1rem; }
+.survey-unit { color: var(--muted); font-weight: 400; }
+.survey-actions { display: flex; flex-wrap: wrap; gap: .5rem; align-items: center; }
+.survey-measurements { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 1rem; }
+.survey-measurements > div { min-width: 0; padding-top: .75rem; border-top: 1px solid var(--line); }
+.survey-measurements dt { color: var(--muted); font-size: .8125rem; }
+.survey-measurements dd { margin-top: .2rem; font-size: .95rem; font-weight: 600; font-variant-numeric: tabular-nums; overflow-wrap: anywhere; }
+.survey-notes { white-space: pre-wrap; overflow-wrap: anywhere; }
+.survey-notes b { color: var(--fg); }
+.survey-followup { margin-top: 1rem; }
+.survey-history { display: grid; border-radius: var(--radius-lg); background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); overflow: hidden; }
+.survey-history li + li { border-top: 1px solid var(--line); }
+.survey-history a { display: flex; justify-content: space-between; align-items: center; gap: 1rem; padding: .85rem 1rem; color: var(--fg); text-decoration: none; }
+.survey-history a:hover { background: var(--surface); }
+.survey-history a > span:first-child { display: grid; min-width: 0; }
+.survey-history small { color: var(--muted); }
+@media (max-width: 767.98px) {
+  .survey-panel { padding: 1rem; }
+  .survey-fields, .survey-measurements { grid-template-columns: 1fr; }
+  .survey-actions .btn { flex: 1 1 auto; }
+  .survey-history a { align-items: flex-start; }
+}

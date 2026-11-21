@@ -13,6 +13,7 @@ public class SurveyPageRequestValidator : AbstractValidator<SurveyPageRequest>
         RuleFor(x => x.Status).IsEnumName(typeof(SurveyStatus), caseSensitive: true)
             .When(x => x.Status is not null)
             .WithMessage($"Status must be one of: {string.Join(", ", Enum.GetNames<SurveyStatus>())}");
+        RuleFor(x => x.InstallationId).GreaterThan(0).When(x => x.InstallationId.HasValue);
     }
 }
 
