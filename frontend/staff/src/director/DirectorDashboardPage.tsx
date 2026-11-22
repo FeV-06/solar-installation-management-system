@@ -105,20 +105,8 @@ export function DirectorDashboardPage() {
 
   return (
     <div className="director-container">
-      <PageHead title="Director's Month-End Financials" />
-
-      {/* Header with Timeframe filters & Export actions */}
-      <div className="director-header no-print">
-        <div>
-          <h1 style={{ fontSize: '1.5rem', fontWeight: 700, margin: 0, color: 'var(--fg)' }}>
-            Director's Operations & Financials
-          </h1>
-          <p style={{ margin: '0.25rem 0 0', color: 'var(--muted)', fontSize: '0.875rem' }}>
-            Real job-level unit economics, cash vs. receivables, PM Surya Ghar subsidy pipeline, and crew payroll.
-          </p>
-        </div>
-
-        <div className="director-actions">
+      <PageHead title="Director's Operations & Financials">
+        <div className="director-actions no-print">
           {/* Timeframe pill selector */}
           <div className="timeframe-bar">
             {TIMEFRAMES.map(t => (
@@ -151,7 +139,11 @@ export function DirectorDashboardPage() {
             <Printer size={14} style={{ marginRight: '0.35rem' }} /> Print
           </button>
         </div>
-      </div>
+      </PageHead>
+
+      <p style={{ margin: '-0.75rem 0 0.25rem', color: 'var(--muted)', fontSize: '0.875rem' }} className="no-print">
+        Real job-level unit economics, cash vs. receivables, PM Surya Ghar subsidy pipeline, and crew payroll.
+      </p>
 
       <QueryView
         query={overviewQuery}
@@ -362,17 +354,17 @@ export function DirectorDashboardPage() {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--faint)' }}>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Job #</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Customer</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>System</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Collected (Rev)</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Receivable</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>BOM Cost</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Tech Pay</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Net Margin</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Cost Overrun & Status Breakdown</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }} className="no-print">
+                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Job #</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Customer</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>System</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Collected (Rev)</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Receivable</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>BOM Cost</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Tech Pay</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Net Margin</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Cost Overrun & Status Breakdown</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }} className="no-print">
                             Action
                           </th>
                         </tr>
@@ -513,15 +505,15 @@ export function DirectorDashboardPage() {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--faint)' }}>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Claim #</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Customer & Property</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>System</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Subsidy Amount</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Portal Reference</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Status</th>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Timeline</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Action</th>
+                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Claim #</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Customer & Property</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>System</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Subsidy Amount</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Portal Reference</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Status</th>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Timeline</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Action</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -714,14 +706,14 @@ export function DirectorDashboardPage() {
                   <div style={{ overflowX: 'auto' }}>
                     <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.85rem' }}>
                       <thead>
-                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--faint)' }}>
-                          <th style={{ padding: '0.6rem 0.65rem' }}>Technician</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'center' }}>Surveys Completed</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'center' }}>Installs Done</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'center' }}>Repairs Done</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Total Hours Logged</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Hourly Rate</th>
-                          <th style={{ padding: '0.6rem 0.65rem', textAlign: 'right' }}>Total Compensation</th>
+                        <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                          <th style={{ padding: '0.75rem 0.75rem' }}>Technician</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'center' }}>Surveys Completed</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'center' }}>Installs Done</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'center' }}>Repairs Done</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Total Hours Logged</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Hourly Rate</th>
+                          <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Total Compensation</th>
                         </tr>
                       </thead>
                       <tbody>

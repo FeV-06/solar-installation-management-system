@@ -7,7 +7,7 @@
 .users-table .who a { font-weight: 500; color: var(--fg); text-decoration: none; }
 .users-table .who a:hover { text-decoration: underline; text-underline-offset: .2em; }
 .users-table .who small { color: var(--muted); font-size: .8rem; }
-.you { font: 500 .6rem/1 var(--font-mono); letter-spacing: .1em; text-transform: uppercase; color: var(--faint); margin-left: .4rem; }
+.you { display: inline-flex; align-items: center; padding: .15rem .45rem; border-radius: var(--radius-xs); background: color-mix(in srgb, var(--accent) 15%, transparent); color: var(--accent); box-shadow: inset 0 0 0 1px color-mix(in srgb, var(--accent) 30%, transparent); font: 600 .65rem/1 var(--font-mono); letter-spacing: .08em; text-transform: uppercase; margin-left: .5rem; vertical-align: middle; }
 .never { color: var(--faint); }
 .user-cards { display: none; }
 .user-card { display: grid; gap: .55rem; padding: .95rem 1rem; border-radius: var(--radius-lg); background: var(--bg-raised); box-shadow: inset 0 0 0 1px var(--line); color: inherit; text-decoration: none; transition: box-shadow var(--duration-fast), background-color var(--duration-fast); }

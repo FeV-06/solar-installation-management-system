@@ -75,13 +75,13 @@ export function InstallationsPage() {
               <div style={{ overflowX: 'auto' }}>
                 <table style={{ width: '100%', borderCollapse: 'collapse', textAlign: 'left', fontSize: '0.875rem' }}>
                   <thead>
-                    <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--faint)' }}>
-                      <th style={{ padding: '0.6rem 0.75rem' }}>Project ID</th>
-                      <th style={{ padding: '0.6rem 0.75rem' }}>Customer</th>
-                      <th style={{ padding: '0.6rem 0.75rem' }}>Property Address</th>
-                      <th style={{ padding: '0.6rem 0.75rem' }}>Stage</th>
-                      <th style={{ padding: '0.6rem 0.75rem' }}>Created</th>
-                      <th style={{ padding: '0.6rem 0.75rem', textAlign: 'right' }}>Action</th>
+                    <tr style={{ borderBottom: '1px solid var(--line)', color: 'var(--muted)', fontSize: '0.75rem', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+                      <th style={{ padding: '0.75rem 0.75rem' }}>Project ID</th>
+                      <th style={{ padding: '0.75rem 0.75rem' }}>Customer</th>
+                      <th style={{ padding: '0.75rem 0.75rem' }}>Property Address</th>
+                      <th style={{ padding: '0.75rem 0.75rem' }}>Stage</th>
+                      <th style={{ padding: '0.75rem 0.75rem' }}>Created</th>
+                      <th style={{ padding: '0.75rem 0.75rem', textAlign: 'right' }}>Action</th>
                     </tr>
                   </thead>
                   <tbody>

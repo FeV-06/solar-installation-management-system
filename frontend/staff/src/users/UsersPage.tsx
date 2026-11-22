@@ -1,7 +1,7 @@
 import { useState } from 'react';
 import { useQuery } from '@tanstack/react-query';
 import { Link, useSearchParams } from 'react-router-dom';
-import { HardHat, Lock, UserPlus, Users } from 'lucide-react';
+import { ArrowRight, HardHat, Lock, UserPlus, Users } from 'lucide-react';
 import { fetchUsers, USERS_PAGE_SIZE, usersPageKey, type User, type UsersPage as Page } from '../api/users';
 import { Icon } from '../components/Icon';
 import { PageHead } from '../components/PageHead';
@@ -55,7 +55,13 @@ export function UsersPage() {
               <table className="table">
                 <caption className="sr">Staff accounts, active first</caption>
                 <thead>
-                  <tr><th scope="col">Name</th><th scope="col">Role</th><th scope="col">Status</th><th scope="col" className="r">Last signed in</th></tr>
+                  <tr>
+                    <th scope="col">Name</th>
+                    <th scope="col">Role</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Last signed in</th>
+                    <th scope="col" className="r">Action</th>
+                  </tr>
                 </thead>
                 <tbody>
                   {data.items.map(u => (
@@ -71,7 +77,12 @@ export function UsersPage() {
                       </td>
                       <td>{u.role}{u.id === me.id && <span className="you">You</span>}</td>
                       <td><StatusChip isActive={u.isActive} /></td>
-                      <td className="num r">{lastSignIn(u) ?? <span className="never">Never</span>}</td>
+                      <td className="num">{lastSignIn(u) ?? <span className="never">Never</span>}</td>
+                      <td className="r">
+                        <Link to={`/users/${u.id}`} className="btn btn-secondary btn-sm" style={{ padding: '0.2rem 0.65rem' }}>
+                          Manage <Icon icon={ArrowRight} style={{ marginLeft: '0.25rem', width: '0.85rem', height: '0.85rem' }} />
+                        </Link>
+                      </td>
                     </tr>
                   ))}
                 </tbody>
