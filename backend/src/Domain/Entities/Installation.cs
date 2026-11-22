@@ -36,6 +36,7 @@ public class Installation
     public List<ServiceTicket> ServiceTickets { get; set; } = [];
     public InstallationProof? Proof { get; set; }
     public SubsidyClaim? SubsidyClaim { get; set; }
+    public bool IsDemo { get; set; } = false;
 
     /// <summary>A new installation for a converted lead: at Survey, at the lead's property, in its state's time zone.</summary>
     public static Installation ForConvertedLead(Lead lead, int customerId, string timeZone, DateTime now) => new()

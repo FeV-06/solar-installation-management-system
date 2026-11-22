@@ -42,6 +42,11 @@ public class InstallationConfig : IEntityTypeConfiguration<Installation>
             .HasColumnName("created_at")
             .IsRequired();
 
+        builder.Property(i => i.IsDemo)
+            .HasColumnName("is_demo")
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.HasIndex(i => i.CustomerId)
             .HasDatabaseName("ix_installations_customer_id");
 

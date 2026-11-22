@@ -87,6 +87,11 @@ public class LeadConfiguration : IEntityTypeConfiguration<Lead>
         builder.Property(l => l.CustomerId)
             .HasColumnName("customer_id");
 
+        builder.Property(l => l.IsDemo)
+            .HasColumnName("is_demo")
+            .HasDefaultValue(false)
+            .IsRequired();
+
         // Indexes
         builder.HasIndex(l => l.Status)
             .HasDatabaseName("ix_leads_status");

@@ -65,6 +65,11 @@ public class CustomerConfig : IEntityTypeConfiguration<Customer>
             .HasDefaultValue(true)
             .IsRequired();
 
+        builder.Property(c => c.IsDemo)
+            .HasColumnName("is_demo")
+            .HasDefaultValue(false)
+            .IsRequired();
+
         builder.Property(c => c.LastLoginAt)
             .HasColumnName("last_login_at");
 

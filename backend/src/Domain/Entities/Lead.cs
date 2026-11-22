@@ -40,6 +40,7 @@ public class Lead
     // Relationships
     public int? CustomerId { get; set; }
     public Customer? Customer { get; set; }
+    public bool IsDemo { get; set; } = false;
 
     public string FullName => $"{FirstName} {LastName}";
 

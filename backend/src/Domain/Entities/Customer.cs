@@ -27,6 +27,7 @@ public class Customer
     public DateTime RegistrationDate { get; set; }
 
     public bool IsActive { get; set; } = true;
+    public bool IsDemo { get; set; } = false;
     public DateTime? LastLoginAt { get; set; }
     public DateTime? SessionsValidFrom { get; set; }
 

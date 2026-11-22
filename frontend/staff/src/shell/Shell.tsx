@@ -4,6 +4,7 @@ import { Link, NavLink, Outlet, ScrollRestoration, useLocation, useMatches } fro
 import { Menu, X } from 'lucide-react';
 import { signOut } from '../api/auth';
 import { Icon } from '../components/Icon';
+import { DemoModeToggle } from '../components/DemoModeToggle';
 import { landingFor, REASON_KEY, SESSION_KEY, useCurrentUser } from '../session/session';
 import { ChangePasswordDialog } from '../users/AccountDialogs';
 import { AccountMenu } from './AccountMenu';
@@ -112,7 +113,10 @@ export function Shell() {
           <Icon icon={Menu} />
         </button>
         <Logo to={home} />
-        {account('account-top', true)}
+        <div style={{ marginLeft: 'auto', display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+          <DemoModeToggle />
+          {account('account-top', true)}
+        </div>
       </header>
 
       {/* A click on the backdrop (the dialog itself, outside its panel) closes it, as Escape does. */}
@@ -123,10 +127,21 @@ export function Shell() {
             <button className="btn btn-quiet btn-icon" type="button" aria-label="Close the menu" onClick={closeDrawer}><Icon icon={X} /></button>
           </div>
           <Nav sections={sections} label={navLabel} onPick={closeDrawer} />
+          <div style={{ marginTop: 'auto', paddingTop: '1rem', borderTop: '1px solid var(--line)' }}>
+            <DemoModeToggle />
+          </div>
         </div>
       </dialog>
 
       <main id="main" className="main" tabIndex={-1}>
+        <div className="staff-topbar no-print">
+          <div style={{ marginRight: 'auto', display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+            <span style={{ fontSize: '0.75rem', fontWeight: 600, color: 'var(--muted)', textTransform: 'uppercase', letterSpacing: '0.08em', fontFamily: 'var(--font-mono)' }}>
+              {user.role} Workspace
+            </span>
+          </div>
+          <DemoModeToggle />
+        </div>
         <Outlet />
       </main>
       {changingPassword && <ChangePasswordDialog onClose={() => setChangingPassword(false)} />}

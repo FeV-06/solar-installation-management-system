@@ -17,6 +17,7 @@ public class Address
     /// <summary>Known only when the address came from a picked suggestion; never guessed.</summary>
     public decimal? Latitude { get; set; }
     public decimal? Longitude { get; set; }
+    public bool IsDemo { get; set; } = false;
 
     /* --------- natural key to check ---------- */
     public string UniqueAddressHash { get; set; } = string.Empty;

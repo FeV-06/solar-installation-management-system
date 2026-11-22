@@ -53,6 +53,10 @@ public class AddressConfiguration : IEntityTypeConfiguration<Address>
             .HasColumnName("unique_address_hash")
             .HasMaxLength(64);
 
+        builder.Property(a => a.IsDemo)
+            .HasColumnName("is_demo")
+            .HasDefaultValue(false);
+
         // Indexes
         builder.HasIndex(a => a.UniqueAddressHash)
             .HasDatabaseName("ux_addresses_unique_address_hash")
