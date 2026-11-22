@@ -1021,6 +1021,70 @@ namespace Infrastructure.Migrations
                     b.ToTable("service_tickets", (string)null);
                 });
 
+            modelBuilder.Entity("Domain.Entities.SubsidyClaim", b =>
+                {
+                    b.Property<int>("Id")
+                        .ValueGeneratedOnAdd()
+                        .HasColumnType("integer")
+                        .HasColumnName("id");
+
+                    NpgsqlPropertyBuilderExtensions.UseIdentityByDefaultColumn(b.Property<int>("Id"));
+
+                    b.Property<string>("ApplicationReference")
+                        .IsRequired()
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("application_reference");
+
+                    b.Property<DateTime?>("ClearedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("cleared_at");
+
+                    b.Property<DateTime?>("DisbursedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("disbursed_at");
+
+                    b.Property<string>("DisbursementReference")
+                        .HasMaxLength(100)
+                        .HasColumnType("character varying(100)")
+                        .HasColumnName("disbursement_reference");
+
+                    b.Property<int>("InstallationId")
+                        .HasColumnType("integer")
+                        .HasColumnName("installation_id");
+
+                    b.Property<string>("Notes")
+                        .HasColumnType("text")
+                        .HasColumnName("notes");
+
+                    b.Property<string>("Status")
+                        .IsRequired()
+                        .HasMaxLength(50)
+                        .HasColumnType("character varying(50)")
+                        .HasColumnName("status");
+
+                    b.Property<DateTime>("SubmittedAt")
+                        .HasColumnType("timestamp with time zone")
+                        .HasColumnName("submitted_at");
+
+                    b.Property<decimal>("SubsidyAmountRupees")
+                        .HasPrecision(12, 2)
+                        .HasColumnType("numeric(12,2)")
+                        .HasColumnName("subsidy_amount_rupees");
+
+                    b.HasKey("Id")
+                        .HasName("pk_subsidy_claims");
+
+                    b.HasIndex("InstallationId")
+                        .IsUnique()
+                        .HasDatabaseName("ix_subsidy_claims_installation_id");
+
+                    b.HasIndex("Status")
+                        .HasDatabaseName("ix_subsidy_claims_status");
+
+                    b.ToTable("subsidy_claims", (string)null);
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.Property<int>("Id")
@@ -1510,6 +1574,18 @@ namespace Infrastructure.Migrations
                     b.Navigation("ReplacementPackingOrder");
                 });
 
+            modelBuilder.Entity("Domain.Entities.SubsidyClaim", b =>
+                {
+                    b.HasOne("Domain.Entities.Installation", "Installation")
+                        .WithOne("SubsidyClaim")
+                        .HasForeignKey("Domain.Entities.SubsidyClaim", "InstallationId")
+                        .OnDelete(DeleteBehavior.Cascade)
+                        .IsRequired()
+                        .HasConstraintName("fk_subsidy_claims_installations_installation_id");
+
+                    b.Navigation("Installation");
+                });
+
             modelBuilder.Entity("Domain.Entities.Survey", b =>
                 {
                     b.HasOne("Domain.Entities.User", null)
@@ -1589,6 +1665,8 @@ namespace Infrastructure.Migrations
                     b.Navigation("Quotes");
 
                     b.Navigation("ServiceTickets");
+
+                    b.Navigation("SubsidyClaim");
 
                     b.Navigation("Warranties");
                 });

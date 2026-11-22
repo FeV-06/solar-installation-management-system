@@ -23,6 +23,7 @@ import { InstallationPage } from './surveys/InstallationPage';
 import { InstallationsPage } from './surveys/InstallationsPage';
 import { CommissioningPage } from './surveys/CommissioningPage';
 import { TicketsPage } from './tickets/TicketsPage';
+import { DirectorDashboardPage } from './director/DirectorDashboardPage';
 
 const handle = (title: string): RouteHandle => ({ title });
 
@@ -30,6 +31,7 @@ const handle = (title: string): RouteHandle => ({ title });
 const BUILT: Record<string, ReactNode> = {
   '/leads': <LeadsPage />, '/customers': <CustomersPage />, '/notifications': <NotificationsPage />, '/users': <UsersPage />,
   '/surveys': <SurveysPage />, '/my-work': <SurveysPage />, '/installations': <InstallationsPage />, '/tickets': <TicketsPage />,
+  '/director': <DirectorDashboardPage />,
 };
 
 export const STAFF_BASENAME = '/staff';

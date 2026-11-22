@@ -19,6 +19,7 @@ public class AppDbContext(DbContextOptions<AppDbContext> options) : DbContext(op
     public DbSet<Warranty> Warranties { get; set; }
     public DbSet<ServiceTicket> ServiceTickets { get; set; }
     public DbSet<InstallationProof> InstallationProofs { get; set; }
+    public DbSet<SubsidyClaim> SubsidyClaims { get; set; }
     public DbSet<User> Users { get; set; }
 
     /// <summary>Notifications waiting to be sent, saved with the event that causes them (BR-N1).</summary>

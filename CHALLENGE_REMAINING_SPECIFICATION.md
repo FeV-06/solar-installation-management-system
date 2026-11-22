@@ -11,7 +11,7 @@
 | **Scene 3: Dispatch Day & Serial Scanning** | High-value hardware serial scanning gate, warehouse dispatch, technician delivery permissions, automated 2-yr & 20-yr warranty clocks, sub-second lookup. | **COMPLETED** | `warranties` table, `POST /api/packing-orders/{id}/dispatch`, `POST /api/packing-orders/{id}/deliver`, `DispatchAndWarrantyTests.cs`. |
 | **Scene 4: On the Roof** | Mobile field execution: start/finish times, kW generation test readout, photo evidence, customer digital signature, mobile packing handover. | **COMPLETED** | `InstallationProof.cs`, `CommissioningPage.tsx`, `RooftopFieldProofSection.tsx`, Customer Portal Handover Certificate. |
 | **Scene 5: Rainy Season Breakdown** | Sub-second warranty check, fault ticket intake, ₹0 covered vs billable logic, technician scheduling, replacement commissioning certificate, customer restoration signoff gate. | **COMPLETED** | `ServiceTicket.cs`, `ServiceTicketsController.cs`, `TicketsPage.tsx`, Customer Portal Claims Desk & Replacement Certificate. |
-| **Scene 6: Director's Month-End** | Job-level unit economics (profit/loss), cash vs receivables, subsidy tracker, technician compensation, exportable reports. | **PENDING** | **Final Target** |
+| **Scene 6: Director's Month-End** | Job-level unit economics (profit/loss), cash vs receivables, subsidy tracker, technician compensation, exportable reports. | **COMPLETED** | `DirectorController.cs`, `FinancialService.cs`, `SubsidiesController.cs`, `DirectorDashboardPage.tsx`, `DirectorFinancialsTests.cs`. |
 
 ---
 
