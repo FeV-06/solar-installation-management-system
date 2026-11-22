@@ -9,10 +9,12 @@
   },
   "scripts": {
     "start": "node --env-file=.env src/index.js",
-    "start:check": "node --check src/index.js && node --check src/conversation.js"
+    "call:me": "node --env-file=.env src/call.js",
+    "start:check": "node --check src/index.js && node --check src/conversation.js && node --check src/voice.js && node --check src/call.js"
   },
   "dependencies": {
     "@whiskeysockets/baileys": "7.0.0-rc14",
-    "qrcode-terminal": "^0.12.0"
+    "qrcode-terminal": "^0.12.0",
+    "ws": "^8.23.0"
   }
 }

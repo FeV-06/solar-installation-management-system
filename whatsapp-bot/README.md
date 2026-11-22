@@ -10,12 +10,27 @@ Requirements: Node.js 20.6 or newer, npm, the Sol API and marketing website runn
 
 1. From this folder, if `.env` does not exist, copy `.env.example` to `.env`; adjust the API/site URLs if needed.
 2. Run `npm install`.
-3. Run `npm start` and scan the QR code from WhatsApp → Settings → Linked devices → Link a device.
+3. Run `npm start` and scan the QR code from WhatsApp â†’ Settings â†’ Linked devices â†’ Link a device.
 4. Send `MENU` to the linked account from a separate WhatsApp account, then try the quote request flow.
 
 The bot requires the API at `SOL_API_BASE_URL` and the marketing site at `SOL_CUSTOMER_SITE_URL`. A completed quote request is saved in the app database through the existing lead endpoint and triggers the app's existing notifications.
 
 The app defaults to a recording email provider in Development, so email OTP sign-in will not send a code to an inbox with that default. Configure a real development mail sender in the backend before using the `ACCOUNT` menu; the bot itself does not send or log OTP codes.
+
+## Phone-call bot (Twilio + Deepgram)
+
+The same service can answer inbound phone calls. Twilio Programmable Voice supplies the phone number and bidirectional call-audio stream. Deepgram Voice Agent handles live listening, conversational answers, and speech. The voice assistant uses managed Gemini 2.5 Flash at a lower temperature and a small read-only knowledge lookup for documented app workflows. This can make answers steadier, but LLM output is not fully deterministic. WhatsApp keeps its existing menu and guided intake. The phone assistant answers questions only: it cannot see private customer records, submit quote or callback requests, create tickets, or change data. The project itself describes Sol Energy as a fictional software demo; quote requests are stored and email-confirmed but are not followed up.
+
+1. In `whatsapp-bot/.env`, set `SOL_VOICE_PUBLIC_URL` to the public HTTPS origin that forwards `/voice/*` to this service, `SOL_VOICE_STREAM_TOKEN` to a random secret of at least 32 characters, `SOL_TWILIO_AUTH_TOKEN`, and `DEEPGRAM_API_KEY`. Optionally set `SOL_VOICE_PHONE_NUMBER` and `SOL_GEMINI_API_KEY`. Leave `SOL_GEMINI_API_KEY` blank to use Deepgram's managed Gemini 2.5 Flash; set a Google AI Studio API key to use your own Gemini account instead. Managed model usage is billed through Deepgram; with your own key, Gemini usage is billed through Google, while Deepgram still handles voice services.
+2. Expose `SOL_VOICE_PORT` (default `3100`) behind HTTPS/WSS on port 443. Twilio must be able to reach it; do not expose the local development server directly.
+3. In Twilio, assign or port the phone number you choose, then set its incoming Voice webhook to `https://<public-host>/voice/incoming` using HTTP POST. The app does not purchase, assign, or configure the number in your Twilio account.
+4. Start the existing bot service with `npm start`. When voice settings are missing, voice calling stays disabled and WhatsApp works as before.
+
+The inbound webhook validates Twilio's signature. The WebSocket stream requires the configured stream token. Twilio call audio is sent to Deepgram Voice Agent as 8 kHz mu-law audio, and generated audio is relayed back to Twilio. The service does not record calls or persist transcripts. Callers can interrupt the agent while it is speaking. Real calls require a Twilio account and number, a reachable HTTPS/WSS host, and Deepgram API access; local code checks do not establish those provider-side settings.
+
+### One-off outbound voice test
+
+Set `SOL_TWILIO_ACCOUNT_SID` and `SOL_VOICE_CALL_TARGET` in `.env`. The `npm run call:me` command places one outbound call from `SOL_VOICE_PHONE_NUMBER` and connects it to the same Deepgram voice bot. `SOL_VOICE_OUTBOUND_MAX_SECONDS` is blank by default, which removes the app-level duration limit; set it from 1 to 14,400 seconds to add a cap. Twilio trial accounts only call verified destinations. Calls are chargeable and continue until the caller hangs up or Twilio ends them.
 
 ## Data and session handling
 
