@@ -3,6 +3,7 @@ import { fileURLToPath } from 'node:url';
 import makeWASocket, { DisconnectReason, useMultiFileAuthState } from '@whiskeysockets/baileys';
 import qrcode from 'qrcode-terminal';
 import { createConversationHandler, extractText } from './conversation.js';
+import { startVoiceService } from './voice.js';
 
 const here = path.dirname(fileURLToPath(import.meta.url));
 const root = path.resolve(here, '..');
@@ -10,7 +11,6 @@ const apiBaseUrl = requiredUrl('SOL_API_BASE_URL');
 const siteUrl = requiredUrl('SOL_CUSTOMER_SITE_URL');
 const authDir = path.resolve(root, process.env.SOL_WHATSAPP_AUTH_DIR || './runtime/auth');
 const allowGroups = process.env.SOL_ALLOW_GROUPS === 'true';
-
 const handleMessage = createConversationHandler({
   apiBaseUrl,
   siteUrl,
@@ -19,6 +19,8 @@ const handleMessage = createConversationHandler({
     await socket.sendMessage(jid, { text });
   },
 });
+
+const voiceServer = startVoiceService();
 
 let socket;
 let reconnectTimer;
@@ -90,6 +92,7 @@ function shutdown() {
   stopped = true;
   clearTimeout(reconnectTimer);
   socket?.end(new Error('Bot is shutting down.'));
+  voiceServer?.close();
 }
 
 process.once('SIGINT', shutdown);

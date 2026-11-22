@@ -61,7 +61,7 @@ export function createConversationHandler({ apiBaseUrl, siteUrl, send }) {
   }
 
   async function saveLead(jid, answers, alternateJid) {
-    const phoneNumber = phoneFromJid(jid) ?? phoneFromJid(alternateJid);
+    const phoneNumber = phoneFromJid(jid) ?? phoneFromJid(alternateJid) ?? phoneFromVoiceId(jid);
     if (!phoneNumber) {
       conversations.delete(jid);
       await reply(jid, `I could not read a phone number from this chat. Please send the request through our secure quote form: ${siteUrl}/quote`);
@@ -411,4 +411,9 @@ export function createConversationHandler({ apiBaseUrl, siteUrl, send }) {
 function phoneFromJid(jid) {
   const match = /^(\d{7,15})@s\.whatsapp\.net$/.exec(jid);
   return match ? `+${match[1]}` : null;
+}
+
+function phoneFromVoiceId(id) {
+  const match = /^voice:(\+[1-9]\d{6,14})$/.exec(id ?? '');
+  return match?.[1] ?? null;
 }
