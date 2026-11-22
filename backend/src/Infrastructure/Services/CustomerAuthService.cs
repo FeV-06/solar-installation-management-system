@@ -296,6 +296,12 @@ public class CustomerAuthService(
 
         if (customer == null || string.IsNullOrEmpty(customer.PasswordHash))
         {
+            var isStaffUser = await db.Users.AnyAsync(u => u.NormalizedEmail == normalizedEmail, cancellationToken);
+            if (isStaffUser)
+            {
+                return Result.Failure<CustomerSignedIn>(new Error(ErrorKind.Conflict, "customer.is_staff", "This email is registered as a Staff account. Please sign in at the Staff Portal: /staff/login"));
+            }
+
             passwordHasher.VerifyNothing(request.Password);
             return Result.Failure<CustomerSignedIn>(CustomerAuthErrors.InvalidCredentials);
         }

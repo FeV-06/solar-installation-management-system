@@ -21,7 +21,7 @@ public static class Policies
     /// <summary>Admins and sales staff may read leads.</summary>
     public const string LeadReaders = nameof(LeadReaders);
 
-    /// <summary>Any staff account: an Admin or a technician.</summary>
+    /// <summary>Any staff account: an Admin, a technician, or sales staff.</summary>
     public const string Staff = nameof(Staff);
 
     /// <summary>An authenticated customer.</summary>
@@ -35,7 +35,7 @@ public static class Policies
             .AddPolicy(Technician, policy => policy.RequireRole(nameof(UserRole.Technician)))
             .AddPolicy(Sales, policy => policy.RequireRole(nameof(UserRole.Sales)))
             .AddPolicy(LeadReaders, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Sales)))
-            .AddPolicy(Staff, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Technician)))
+            .AddPolicy(Staff, policy => policy.RequireRole(nameof(UserRole.Admin), nameof(UserRole.Technician), nameof(UserRole.Sales)))
             .AddPolicy(Customer, policy => policy.RequireRole(Infrastructure.Auth.Session.CustomerRole));
         return services;
     }

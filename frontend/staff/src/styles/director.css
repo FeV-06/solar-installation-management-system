@@ -1,202 +1,303 @@
-/* Director Executive Financials & Operations Suite */
+/* Director Executive Financials & Operations Suite — Impeccable Refined Dark UX */
 .director-container {
   display: flex;
   flex-direction: column;
   gap: 1.5rem;
-}
-
-.director-header {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  flex-wrap: wrap;
-  gap: 1rem;
+  width: 100%;
 }
 
 .timeframe-bar {
   display: inline-flex;
-  gap: 0.35rem;
+  gap: 0.25rem;
   padding: 0.25rem;
-  background: var(--surface, rgba(0, 0, 0, 0.04));
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
 }
 
 .timeframe-btn {
   padding: 0.35rem 0.85rem;
-  font-size: 0.8125rem;
+  font-size: 0.78rem;
   font-weight: 500;
   border: none;
   background: transparent;
   color: var(--muted);
-  border-radius: var(--radius-sm, 6px);
+  border-radius: var(--radius-sm);
   cursor: pointer;
   transition: all 0.15s ease;
+  font-family: var(--font-mono);
+  letter-spacing: 0.04em;
 }
 
 .timeframe-btn.active {
-  background: var(--bg-raised, #ffffff);
+  background: var(--bg-raised);
   color: var(--fg);
   font-weight: 600;
-  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.1);
+  box-shadow: 0 1px 3px rgba(0, 0, 0, 0.25);
 }
 
 .director-actions {
   display: flex;
   align-items: center;
-  gap: 0.5rem;
+  gap: 0.65rem;
 }
 
+/* 6-Card Executive Summary Grid */
 .kpi-grid {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(210px, 1fr));
   gap: 1rem;
 }
 
+@media (min-width: 1440px) {
+  .kpi-grid {
+    grid-template-columns: repeat(6, 1fr);
+  }
+}
+
 .kpi-card {
   display: flex;
   flex-direction: column;
-  gap: 0.35rem;
+  justify-content: space-between;
+  min-height: 110px;
   padding: 1.15rem 1.25rem;
-  border-radius: var(--radius-lg, 12px);
+  border-radius: var(--radius-lg);
   background: var(--bg-raised);
   box-shadow: inset 0 0 0 1px var(--line);
+  transition: border-color 0.2s ease, transform 0.15s ease;
+}
+
+.kpi-card:hover {
+  box-shadow: inset 0 0 0 1px var(--line-strong);
 }
 
 .kpi-card.highlight {
-  border-left: 4px solid var(--accent, #eab308);
+  border-left: 3px solid var(--accent);
 }
 
 .kpi-card.positive {
-  border-left: 4px solid var(--positive, #16a34a);
+  border-left: 3px solid #22c55e;
 }
 
 .kpi-card.negative {
-  border-left: 4px solid #dc2626;
+  border-left: 3px solid #f87171;
 }
 
 .kpi-label {
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 600;
   text-transform: uppercase;
-  letter-spacing: 0.05em;
+  letter-spacing: 0.08em;
   color: var(--muted);
+  font-family: var(--font-mono);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
 .kpi-value {
-  font-size: 1.5rem;
+  font-size: 1.45rem;
   font-weight: 700;
   color: var(--fg);
-  font-family: var(--font-mono, monospace);
-  line-height: 1.2;
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
+  line-height: 1.15;
+  margin: 0.35rem 0 0.25rem;
 }
 
 .kpi-sub {
-  font-size: 0.8125rem;
+  font-size: 0.78rem;
   color: var(--muted);
   display: flex;
   align-items: center;
-  gap: 0.35rem;
+  gap: 0.4rem;
+  line-height: 1.3;
 }
 
+/* Margin Badges */
 .margin-badge {
   display: inline-flex;
   align-items: center;
   gap: 0.25rem;
   padding: 0.2rem 0.55rem;
   border-radius: 9999px;
-  font-size: 0.75rem;
+  font-size: 0.72rem;
   font-weight: 700;
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
+  letter-spacing: 0.02em;
 }
 
 .margin-badge.profitable {
-  color: #15803d;
-  background: #dcfce7;
-  border: 1px solid #bbf7d0;
+  color: #4ade80;
+  background: color-mix(in srgb, #22c55e 14%, transparent);
+  border: 1px solid color-mix(in srgb, #22c55e 28%, transparent);
 }
 
 .margin-badge.loss {
-  color: #b91c1c;
-  background: #fee2e2;
-  border: 1px solid #fecaca;
+  color: #f87171;
+  background: color-mix(in srgb, #ef4444 14%, transparent);
+  border: 1px solid color-mix(in srgb, #ef4444 28%, transparent);
 }
 
+/* Refined Dark Status & Overrun Chips */
 .overrun-chip {
-  display: inline-block;
-  padding: 0.15rem 0.45rem;
-  background: #fef2f2;
-  color: #991b1b;
-  border: 1px solid #fecaca;
-  border-radius: 4px;
-  font-size: 0.72rem;
-  line-height: 1.3;
+  display: inline-flex;
+  align-items: center;
+  gap: 0.3rem;
+  padding: 0.2rem 0.55rem;
+  border-radius: 6px;
+  font-size: 0.73rem;
+  line-height: 1.25;
+  width: fit-content;
 }
 
+.overrun-chip.warning {
+  background: color-mix(in srgb, #f59e0b 12%, transparent);
+  color: #fbbf24;
+  border: 1px solid color-mix(in srgb, #f59e0b 26%, transparent);
+}
+
+.overrun-chip.alert {
+  background: color-mix(in srgb, #ef4444 12%, transparent);
+  color: #f87171;
+  border: 1px solid color-mix(in srgb, #ef4444 26%, transparent);
+}
+
+.overrun-chip.healthy {
+  background: color-mix(in srgb, #22c55e 12%, transparent);
+  color: #4ade80;
+  border: 1px solid color-mix(in srgb, #22c55e 26%, transparent);
+}
+
+/* Module Navigation Tabs */
+.director-tabs-bar {
+  display: flex;
+  gap: 0.5rem;
+  border-bottom: 1px solid var(--line);
+  padding-bottom: 0.5rem;
+  margin-top: 0.25rem;
+  flex-wrap: wrap;
+}
+
+.director-tab-btn {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  padding: 0.45rem 0.85rem;
+  border-radius: var(--radius-md);
+  font-size: 0.8125rem;
+  font-weight: 500;
+  border: 1px solid transparent;
+  background: transparent;
+  color: var(--muted);
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.director-tab-btn:hover {
+  background: var(--surface);
+  color: var(--fg);
+}
+
+.director-tab-btn.active {
+  background: var(--surface);
+  color: var(--fg);
+  font-weight: 600;
+  border-color: var(--line);
+  box-shadow: inset 0 -2px 0 var(--accent);
+}
+
+.tab-badge {
+  padding: 0.1rem 0.45rem;
+  border-radius: 9999px;
+  font-size: 0.7rem;
+  font-family: var(--font-mono);
+  font-weight: 600;
+  background: color-mix(in srgb, var(--fg) 10%, transparent);
+  color: var(--muted);
+}
+
+.director-tab-btn.active .tab-badge {
+  background: color-mix(in srgb, var(--accent) 18%, transparent);
+  color: var(--accent);
+}
+
+/* PM Surya Ghar Funnel */
 .subsidy-funnel {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
-  gap: 0.75rem;
+  gap: 0.85rem;
   margin-bottom: 1.25rem;
 }
 
 .subsidy-step-card {
-  padding: 1rem;
-  background: var(--surface, rgba(0, 0, 0, 0.02));
+  padding: 1rem 1.15rem;
+  background: var(--surface);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
+  gap: 0.3rem;
 }
 
 .subsidy-step-card.active {
-  border-color: var(--accent, #eab308);
-  background: color-mix(in srgb, var(--accent, #eab308) 5%, transparent);
+  border-color: color-mix(in srgb, var(--accent) 40%, transparent);
+  background: color-mix(in srgb, var(--accent) 6%, transparent);
+}
+
+.subsidy-step-card.cleared {
+  border-color: color-mix(in srgb, #22c55e 40%, transparent);
+  background: color-mix(in srgb, #22c55e 6%, transparent);
 }
 
 .subsidy-step-title {
-  font-size: 0.8125rem;
+  font-size: 0.78rem;
   font-weight: 600;
-  color: var(--fg);
+  color: var(--muted);
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  font-family: var(--font-mono);
 }
 
 .subsidy-step-amount {
-  font-size: 1.2rem;
+  font-size: 1.3rem;
   font-weight: 700;
   color: var(--fg);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
+/* Operations Backlog */
 .backlog-grid {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
-  gap: 0.75rem;
+  grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+  gap: 0.85rem;
 }
 
 .backlog-box {
-  padding: 1rem;
+  padding: 1.15rem;
   background: var(--bg-raised);
   border: 1px solid var(--line);
-  border-radius: var(--radius-md, 8px);
+  border-radius: var(--radius-md);
   text-decoration: none;
   color: inherit;
   display: flex;
   flex-direction: column;
-  gap: 0.25rem;
-  transition: transform 0.1s ease, border-color 0.15s ease;
+  gap: 0.35rem;
+  transition: transform 0.15s ease, border-color 0.15s ease;
 }
 
 .backlog-box:hover {
-  border-color: var(--fg);
+  border-color: var(--line-strong);
   transform: translateY(-1px);
 }
 
 .backlog-count {
-  font-size: 1.6rem;
+  font-size: 1.75rem;
   font-weight: 700;
   color: var(--fg);
-  font-family: var(--font-mono, monospace);
+  font-family: var(--font-mono);
+  font-variant-numeric: tabular-nums;
 }
 
 /* Printable report styles */
@@ -218,7 +319,7 @@
   }
 
   .kpi-grid {
-    grid-template-columns: repeat(4, 1fr) !important;
+    grid-template-columns: repeat(3, 1fr) !important;
     gap: 0.5rem !important;
   }
 

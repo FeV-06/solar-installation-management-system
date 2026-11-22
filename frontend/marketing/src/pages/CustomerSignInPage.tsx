@@ -205,7 +205,14 @@ export function CustomerSignInPage() {
           {error && (
             <div className="notice tone-negative" style={{ marginBottom: '1.5rem', display: 'flex', gap: '0.6rem', alignItems: 'center' }}>
               <Icon icon={CircleAlert} />
-              <span>{error}</span>
+              <span>
+                {error}{' '}
+                {error.includes('Staff') && (
+                  <a href="/staff/login" style={{ color: 'var(--accent)', textDecoration: 'underline', fontWeight: 600, marginLeft: '0.25rem' }}>
+                    Open Staff Login &rarr;
+                  </a>
+                )}
+              </span>
             </div>
           )}
 

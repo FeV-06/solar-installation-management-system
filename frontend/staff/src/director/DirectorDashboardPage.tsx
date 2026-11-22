@@ -14,6 +14,7 @@ import {
   ClipboardCheck,
   Package,
   ArrowRight,
+  Info,
   X,
 } from 'lucide-react';
 import {
@@ -205,10 +206,10 @@ export function DirectorDashboardPage() {
 
                 {/* 4. Technician Labor Pay */}
                 <div className="kpi-card">
-                  <div className="kpi-label">Crew Payroll (Hours × ₹500)</div>
+                  <div className="kpi-label">Crew Payroll</div>
                   <div className="kpi-value">{formatInr(summary.totalTechnicianLaborCostRupees)}</div>
                   <div className="kpi-sub">
-                    <Users size={13} /> {crewPayroll.totalLoggedHours.toFixed(1)} hrs field labor logged
+                    <Users size={13} /> {crewPayroll.totalLoggedHours.toFixed(1)}h logged @ ₹500/hr
                   </div>
                 </div>
 
@@ -217,19 +218,19 @@ export function DirectorDashboardPage() {
                   <div className="kpi-label">Net Job Margin / Profit</div>
                   <div
                     className="kpi-value"
-                    style={{ color: summary.netProfitRupees >= 0 ? '#15803d' : '#b91c1c' }}
+                    style={{ color: summary.netProfitRupees >= 0 ? '#4ade80' : '#f87171' }}
                   >
                     {formatInr(summary.netProfitRupees)}
                   </div>
-                  <div className="kpi-sub">
+                  <div className="kpi-sub" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.25rem' }}>
                     <span
-                      className={`margin-badge ${summary.netMarginPercentage >= 0 ? 'profitable' : 'loss'}`}
+                      className={`margin-badge ${summary.netProfitRupees >= 0 ? 'profitable' : 'loss'}`}
                     >
-                      {summary.netMarginPercentage >= 0 ? '+' : ''}
+                      {summary.netMarginPercentage > 0 ? '+' : ''}
                       {summary.netMarginPercentage.toFixed(1)}% Margin
                     </span>
-                    <span style={{ fontSize: '0.75rem' }}>
-                      ({summary.profitableJobsCount} profitable / {summary.lossMakingJobsCount} loss)
+                    <span style={{ fontSize: '0.72rem', color: 'var(--muted)', fontFamily: 'var(--font-mono)' }}>
+                      {summary.profitableJobsCount}P / {summary.lossMakingJobsCount}L
                     </span>
                   </div>
                 </div>
@@ -237,7 +238,7 @@ export function DirectorDashboardPage() {
                 {/* 6. PM Surya Ghar Subsidies */}
                 <div className="kpi-card">
                   <div className="kpi-label">Govt Subsidies Disbursed</div>
-                  <div className="kpi-value" style={{ color: '#0369a1' }}>
+                  <div className="kpi-value" style={{ color: '#38bdf8' }}>
                     {formatInr(summary.totalSubsidyDisbursedRupees)}
                   </div>
                   <div className="kpi-sub">
@@ -247,47 +248,42 @@ export function DirectorDashboardPage() {
               </div>
 
               {/* Navigation Tabs for Executive Sections */}
-              <div
-                className="no-print"
-                style={{
-                  display: 'flex',
-                  gap: '0.5rem',
-                  borderBottom: '1px solid var(--line)',
-                  paddingBottom: '0.5rem',
-                  marginTop: '0.5rem',
-                }}
-              >
+              <div className="director-tabs-bar no-print">
                 <button
                   type="button"
-                  className={activeTab === 'economics' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
+                  className={`director-tab-btn ${activeTab === 'economics' ? 'active' : ''}`}
                   onClick={() => setActiveTab('economics')}
                 >
-                  <TrendingUp size={14} style={{ marginRight: '0.35rem' }} />
-                  Job Unit Economics ({jobEconomics.length})
+                  <TrendingUp size={14} />
+                  <span>Job Unit Economics</span>
+                  <span className="tab-badge">{jobEconomics.length}</span>
                 </button>
                 <button
                   type="button"
-                  className={activeTab === 'subsidies' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
+                  className={`director-tab-btn ${activeTab === 'subsidies' ? 'active' : ''}`}
                   onClick={() => setActiveTab('subsidies')}
                 >
-                  <IndianRupee size={14} style={{ marginRight: '0.35rem' }} />
-                  PM Surya Ghar Pipeline ({subsidyPipeline.totalClaims})
+                  <IndianRupee size={14} />
+                  <span>PM Surya Ghar Pipeline</span>
+                  <span className="tab-badge">{subsidyPipeline.totalClaims}</span>
                 </button>
                 <button
                   type="button"
-                  className={activeTab === 'backlog' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
+                  className={`director-tab-btn ${activeTab === 'backlog' ? 'active' : ''}`}
                   onClick={() => setActiveTab('backlog')}
                 >
-                  <Clock size={14} style={{ marginRight: '0.35rem' }} />
-                  Operations Backlog ({operationsBacklog.totalBacklogCount})
+                  <Clock size={14} />
+                  <span>Operations Backlog</span>
+                  <span className="tab-badge">{operationsBacklog.totalBacklogCount}</span>
                 </button>
                 <button
                   type="button"
-                  className={activeTab === 'payroll' ? 'btn btn-primary btn-sm' : 'btn btn-secondary btn-sm'}
+                  className={`director-tab-btn ${activeTab === 'payroll' ? 'active' : ''}`}
                   onClick={() => setActiveTab('payroll')}
                 >
-                  <Users size={14} style={{ marginRight: '0.35rem' }} />
-                  Crew Payroll ({crewPayroll.technicians.length})
+                  <Users size={14} />
+                  <span>Crew Payroll</span>
+                  <span className="tab-badge">{crewPayroll.technicians.length}</span>
                 </button>
               </div>
 
@@ -312,11 +308,24 @@ export function DirectorDashboardPage() {
                     className="no-print"
                   >
                     <div>
-                      <h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: 0, color: 'var(--fg)' }}>
-                        Installation Profit & Loss Ledger
-                      </h2>
-                      <div style={{ fontSize: '0.8125rem', color: 'var(--muted)' }}>
-                        Revenue Collected − Direct BOM Equipment Cost − Technician Labor Pay − Warranty Absorption
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem', flexWrap: 'wrap' }}>
+                        <h2 style={{ fontSize: '1.15rem', fontWeight: 600, margin: 0, color: 'var(--fg)' }}>
+                          Installation Profit &amp; Loss Ledger
+                        </h2>
+                        <div style={{
+                          display: 'inline-flex',
+                          alignItems: 'center',
+                          gap: '0.35rem',
+                          padding: '0.2rem 0.55rem',
+                          borderRadius: '6px',
+                          background: 'var(--surface)',
+                          fontSize: '0.74rem',
+                          color: 'var(--muted)',
+                          border: '1px solid var(--line)'
+                        }}>
+                          <Info size={12} style={{ color: 'var(--accent)' }} />
+                          <span>Rev Collected − BOM Equipment − Tech Labor − Warranty Absorbed</span>
+                        </div>
                       </div>
                     </div>
 
@@ -333,15 +342,16 @@ export function DirectorDashboardPage() {
                           border: '1px solid var(--line)',
                           background: 'var(--bg-raised)',
                           color: 'var(--fg)',
+                          minWidth: '180px',
                         }}
                       />
 
-                      <div style={{ display: 'inline-flex', gap: '0.25rem' }}>
+                      <div className="timeframe-bar">
                         {(['all', 'profitable', 'loss'] as const).map(mf => (
                           <button
                             key={mf}
                             type="button"
-                            className={`btn btn-sm ${marginFilter === mf ? 'btn-primary' : 'btn-secondary'}`}
+                            className={`timeframe-btn ${marginFilter === mf ? 'active' : ''}`}
                             onClick={() => setMarginFilter(mf)}
                           >
                             {mf === 'all' ? 'All' : mf === 'profitable' ? 'Profitable' : 'Loss / Overruns'}
@@ -415,7 +425,9 @@ export function DirectorDashboardPage() {
                                 <div
                                   style={{
                                     fontWeight: 700,
-                                    color: job.isProfitable ? '#15803d' : '#b91c1c',
+                                    color: job.isProfitable ? '#4ade80' : '#f87171',
+                                    fontFamily: 'var(--font-mono)',
+                                    fontVariantNumeric: 'tabular-nums'
                                   }}
                                 >
                                   {formatInr(job.netProfitRupees)}
@@ -423,20 +435,24 @@ export function DirectorDashboardPage() {
                                 <span
                                   className={`margin-badge ${job.isProfitable ? 'profitable' : 'loss'}`}
                                 >
-                                  {job.netMarginPercentage >= 0 ? '+' : ''}
-                                  {job.netMarginPercentage.toFixed(1)}%
+                                  {job.netProfitRupees < 0 && (job.totalQuotedAmountRupees === 0 || job.netMarginPercentage === 0)
+                                    ? 'Cost Only'
+                                    : `${job.netMarginPercentage > 0 ? '+' : ''}${job.netMarginPercentage.toFixed(1)}%`}
                                 </span>
                               </td>
                               <td style={{ padding: '0.65rem 0.65rem' }}>
                                 <div style={{ display: 'flex', flexDirection: 'column', gap: '0.25rem' }}>
                                   {job.costOverrunReasons.length > 0 ? (
-                                    job.costOverrunReasons.map((r, idx) => (
-                                      <span key={idx} className="overrun-chip">
-                                        ⚠️ {r}
-                                      </span>
-                                    ))
+                                    job.costOverrunReasons.map((r, idx) => {
+                                      const isAlert = r.toLowerCase().includes('uncollected') || r.toLowerCase().includes('warranty');
+                                      return (
+                                        <span key={idx} className={`overrun-chip ${isAlert ? 'alert' : 'warning'}`}>
+                                          {isAlert ? '⏳' : '⚠️'} {r}
+                                        </span>
+                                      );
+                                    })
                                   ) : (
-                                    <span style={{ fontSize: '0.75rem', color: '#16a34a' }}>
+                                    <span className="overrun-chip healthy">
                                       ✓ Margin healthy, on budget
                                     </span>
                                   )}

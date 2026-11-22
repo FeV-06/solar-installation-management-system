@@ -94,7 +94,7 @@ public class FinancialService(AppDbContext db) : IFinancialService
             var netProfit = revenueCollected - bomHardwareCost - technicianLaborCost - postSalesRepairCost;
             var netMarginPct = totalQuoted > 0
                 ? Math.Round((netProfit / totalQuoted) * 100m, 1)
-                : 0m;
+                : (netProfit < 0 ? -100.0m : 0m);
 
             var isProfitable = netProfit > 0;
             var overruns = new List<string>();
@@ -109,7 +109,7 @@ public class FinancialService(AppDbContext db) : IFinancialService
             }
             if (proofHours > 5.5)
             {
-                overruns.Add($"Extended rooftop labor duration ({proofHours:0.1}h)");
+                overruns.Add($"Extended rooftop labor duration ({proofHours:F1}h)");
             }
             var cablingCost = quote?.Items.Where(i => i.Category == BOMCategory.Cabling).Sum(i => i.TotalCostRupees) ?? 0m;
             if (cablingCost > 3000m)
@@ -160,7 +160,7 @@ public class FinancialService(AppDbContext db) : IFinancialService
         var totalQuotedAll = jobEconomics.Sum(j => j.TotalQuotedAmountRupees);
         var netMarginTotalPct = totalQuotedAll > 0
             ? Math.Round((netProfitTotal / totalQuotedAll) * 100m, 1)
-            : 0m;
+            : (netProfitTotal < 0 ? -100.0m : 0m);
 
         // 5. Subsidy Pipeline Summary
         IQueryable<SubsidyClaim> claimsQuery = db.SubsidyClaims
