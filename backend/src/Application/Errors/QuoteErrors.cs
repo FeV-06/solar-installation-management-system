@@ -17,6 +17,7 @@ public static class QuoteErrors
 
     public static Error UnpackedItemsRemaining(int count) => new(ErrorKind.Conflict, "packing_order.unpacked_items", $"Cannot dispatch truck: {count} item(s) are not yet marked as packed.");
     public static Error MissingSerialNumbers(string missingItems) => new(ErrorKind.Conflict, "packing_order.missing_serials", $"Cannot dispatch truck: High-value hardware requires scanned serial numbers before dispatch. Missing serial numbers on: {missingItems}.");
+    public static Error DuplicateSerialNumber(string serial) => new(ErrorKind.Conflict, "packing_order.duplicate_serial", $"Serial number '{serial}' is already active on another installed system.");
     public static readonly Error PackingOrderNotDispatched = new(ErrorKind.Conflict, "packing_order.not_dispatched", "Cannot record delivery: The packing order has not been dispatched yet.");
     public static readonly Error AlreadyDelivered = new(ErrorKind.Conflict, "packing_order.already_delivered", "This packing order has already been delivered and warranties are active.");
 }

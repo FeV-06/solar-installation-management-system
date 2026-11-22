@@ -25,6 +25,7 @@ public class QuoteConfig : IEntityTypeConfiguration<Quote>
         builder.Property(q => q.PaymentStatus).HasColumnName("payment_status").HasConversion<string>().HasMaxLength(30).IsRequired();
         builder.Property(q => q.Notes).HasColumnName("notes").HasMaxLength(2000);
         builder.Property(q => q.PaymentReference).HasColumnName("payment_reference").HasMaxLength(100);
+        builder.Property(q => q.ReceiptPhotoUrl).HasColumnName("receipt_photo_url");
         builder.Property(q => q.CreatedAt).HasColumnName("created_at");
         builder.Property(q => q.SentAt).HasColumnName("sent_at");
         builder.Property(q => q.AcceptedAt).HasColumnName("accepted_at");

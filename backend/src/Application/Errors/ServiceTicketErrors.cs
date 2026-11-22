@@ -16,6 +16,9 @@ public static class ServiceTicketErrors
     public static readonly Error CannotCloseWithoutCustomerConfirmation =
         new(ErrorKind.Conflict, "service_ticket.closure_forbidden", "Ticket cannot be closed by staff alone: Homeowner must explicitly confirm power is restored.");
 
+    public static Error DuplicateSerialNumber(string serial) =>
+        new(ErrorKind.Conflict, "service_ticket.duplicate_serial", $"Replacement serial number '{serial}' is already registered to another active installation.");
+
     public static readonly Error Unauthorized =
         new(ErrorKind.Unauthorized, "service_ticket.unauthorized", "You are not authorized to view or modify this ticket.");
 }

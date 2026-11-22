@@ -77,6 +77,7 @@ public class CustomerPortalService(AppDbContext db) : ICustomerPortalService
                 latestQuote.PaymentStatus.ToString(),
                 latestQuote.Notes,
                 latestQuote.PaymentReference,
+                latestQuote.ReceiptPhotoUrl,
                 latestQuote.CreatedAt,
                 latestQuote.SentAt,
                 latestQuote.AcceptedAt,

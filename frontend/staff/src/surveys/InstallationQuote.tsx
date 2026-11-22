@@ -90,6 +90,58 @@ export function InstallationQuote({ installation }: { installation: Installation
       </div>
 
       <div className="rec-card" style={{ padding: '1.5rem' }}>
+        {quote.paymentStatus !== 'Pending' && (
+          <div style={{
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'space-between',
+            flexWrap: 'wrap',
+            gap: '1rem',
+            padding: '1rem',
+            marginBottom: '1.25rem',
+            background: 'color-mix(in srgb, var(--positive, #16a34a) 8%, var(--bg))',
+            borderRadius: 'var(--radius-md)',
+            border: '1px solid color-mix(in srgb, var(--positive, #16a34a) 25%, transparent)'
+          }}>
+            <div>
+              <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.9rem' }}>
+                Order Confirmed &amp; Paid: ₹{quote.amountPaidRupees.toLocaleString('en-IN')} ({quote.paymentStatus})
+              </div>
+              <div style={{ fontSize: '0.78rem', color: 'var(--muted)', marginTop: '0.2rem' }}>
+                Ref: {quote.paymentReference} &bull; Paid on {quote.paidAt ? formatMoment(quote.paidAt) : 'N/A'}
+              </div>
+            </div>
+
+            {quote.receiptPhotoUrl && (
+              <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                <a
+                  href={quote.receiptPhotoUrl}
+                  target="_blank"
+                  rel="noreferrer"
+                  style={{ textDecoration: 'none' }}
+                >
+                  <img
+                    src={quote.receiptPhotoUrl}
+                    alt="Customer Attached Receipt"
+                    style={{ width: '48px', height: '48px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--line)', cursor: 'pointer' }}
+                  />
+                </a>
+                <div>
+                  <a
+                    href={quote.receiptPhotoUrl}
+                    target="_blank"
+                    rel="noreferrer"
+                    className="btn btn-secondary btn-sm"
+                    style={{ fontSize: '0.75rem', padding: '0.2rem 0.55rem' }}
+                  >
+                    View Receipt Image
+                  </a>
+                </div>
+              </div>
+            )}
+          </div>
+        )}
+
         {/* Top Control Bar for Admin to customize package */}
         {quote.status === 'Draft' && (
           <div style={{

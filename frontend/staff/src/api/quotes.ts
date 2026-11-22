@@ -28,6 +28,7 @@ export const quoteSchema = z.object({
   paymentStatus: z.string(),
   notes: z.string().nullable().optional(),
   paymentReference: z.string().nullable().optional(),
+  receiptPhotoUrl: z.string().nullable().optional(),
   createdAt: z.string(),
   sentAt: z.string().nullable().optional(),
   acceptedAt: z.string().nullable().optional(),

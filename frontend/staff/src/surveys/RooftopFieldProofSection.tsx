@@ -191,11 +191,32 @@ function RooftopHandoverForm({
   ) => {
     const file = e.target.files?.[0];
     if (!file) return;
+
     const reader = new FileReader();
-    reader.onload = () => {
-      if (typeof reader.result === 'string') {
-        setter(reader.result);
-      }
+    reader.onload = (uploadEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1280;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.82);
+        setter(compressed);
+      };
+      img.src = uploadEvent.target?.result as string;
     };
     reader.readAsDataURL(file);
   };
@@ -225,6 +246,16 @@ function RooftopHandoverForm({
   const handleSubmit = (e: FormEvent) => {
     e.preventDefault();
     setNotice(null);
+
+    if (new Date(endTime) <= new Date(startTime)) {
+      setNotice('Work completion time must be strictly after work start time.');
+      return;
+    }
+
+    if (generationKw <= 0) {
+      setNotice('Tested live generation reading must be greater than 0 kW.');
+      return;
+    }
 
     if (!panelPhoto || !inverterPhoto || !meterPhoto) {
       setNotice('Please capture or upload all 3 field verification photos before customer sign-off.');

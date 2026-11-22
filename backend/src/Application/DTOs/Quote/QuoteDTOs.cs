@@ -25,6 +25,7 @@ public record QuoteDto(
     string PaymentStatus,
     string? Notes,
     string? PaymentReference,
+    string? ReceiptPhotoUrl,
     DateTime CreatedAt,
     DateTime? SentAt,
     DateTime? AcceptedAt,
@@ -37,7 +38,8 @@ public record GenerateQuoteRequest(
     string? Notes);
 
 public record CustomerPayQuoteRequest(
-    string PaymentType); // "Advance" or "Full"
+    string PaymentType,
+    string? ReceiptPhotoUrl = null); // "Advance" or "Full"
 
 public record PackingOrderItemDto(
     int Id,

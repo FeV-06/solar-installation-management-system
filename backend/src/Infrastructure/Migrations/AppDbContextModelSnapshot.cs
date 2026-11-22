@@ -773,6 +773,10 @@ namespace Infrastructure.Migrations
                         .HasColumnType("character varying(30)")
                         .HasColumnName("payment_status");
 
+                    b.Property<string>("ReceiptPhotoUrl")
+                        .HasColumnType("text")
+                        .HasColumnName("receipt_photo_url");
+
                     b.Property<DateTime?>("SentAt")
                         .HasColumnType("timestamp with time zone")
                         .HasColumnName("sent_at");

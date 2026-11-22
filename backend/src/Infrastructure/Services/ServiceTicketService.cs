@@ -306,6 +306,10 @@ public class ServiceTicketService(AppDbContext db) : IServiceTicketService
         var now = DateTime.UtcNow;
         var newSerial = request.ReplacementSerialNumber.Trim();
 
+        var isDuplicate = await db.Warranties.AnyAsync(w => w.SerialNumber == newSerial && w.InstallationId != ticket.InstallationId && w.Status == WarrantyStatus.Active, ct);
+        if (isDuplicate)
+            return Result.Failure<ServiceTicketDto>(ServiceTicketErrors.DuplicateSerialNumber(newSerial));
+
         ticket.ReplacementSerialNumber = newSerial;
         ticket.TestedGenerationKw = request.TestedGenerationKw;
         ticket.ReplacementPhotoUrl = request.ReplacementPhotoUrl;

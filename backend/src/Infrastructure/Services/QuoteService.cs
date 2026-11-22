@@ -139,6 +139,7 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         quote.AmountPaidRupees = paymentAmount;
         quote.PaymentStatus = isFull ? PaymentStatus.FullyPaid : PaymentStatus.AdvancePaid;
         quote.PaymentReference = $"PAY-{now:yyyyMMdd}-{Guid.NewGuid().ToString("N")[..6].ToUpperInvariant()}";
+        quote.ReceiptPhotoUrl = request.ReceiptPhotoUrl;
 
         // Transition installation status to Installation (crew queue now active)
         quote.Installation.Status = InstallationStatus.Installation;
@@ -201,7 +202,12 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         item.IsPacked = isPacked;
         if (!string.IsNullOrWhiteSpace(serialNumber))
         {
-            item.SerialNumber = serialNumber.Trim();
+            var cleanSerial = serialNumber.Trim();
+            var duplicate = await db.Warranties.AnyAsync(w => w.SerialNumber == cleanSerial && w.InstallationId != packingOrder.InstallationId, ct);
+            if (duplicate)
+                return Result.Failure<PackingOrderDto>(QuoteErrors.DuplicateSerialNumber(cleanSerial));
+
+            item.SerialNumber = cleanSerial;
         }
 
         if (packingOrder.Items.All(i => i.IsPacked))
@@ -242,6 +248,20 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         if (missingSerials.Count > 0)
         {
             return Result.Failure<PackingOrderDto>(QuoteErrors.MissingSerialNumbers(string.Join(", ", missingSerials)));
+        }
+
+        // Gate 3: Serial numbers must be unique across all active systems
+        var serials = packingOrder.Items
+            .Where(i => i.RequiresSerialNumber && !string.IsNullOrWhiteSpace(i.SerialNumber))
+            .Select(i => i.SerialNumber!.Trim())
+            .ToList();
+
+        var duplicateWarranty = await db.Warranties
+            .FirstOrDefaultAsync(w => serials.Contains(w.SerialNumber) && w.InstallationId != packingOrder.InstallationId, ct);
+
+        if (duplicateWarranty != null)
+        {
+            return Result.Failure<PackingOrderDto>(QuoteErrors.DuplicateSerialNumber(duplicateWarranty.SerialNumber));
         }
 
         var now = DateTime.UtcNow;
@@ -419,6 +439,7 @@ public class QuoteService(AppDbContext db, IQuoteTemplateEngine templateEngine) 
         q.PaymentStatus.ToString(),
         q.Notes,
         q.PaymentReference,
+        q.ReceiptPhotoUrl,
         q.CreatedAt,
         q.SentAt,
         q.AcceptedAt,

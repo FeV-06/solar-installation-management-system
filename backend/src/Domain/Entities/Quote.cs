@@ -42,6 +42,7 @@ public class Quote
 
     public string? Notes { get; set; }
     public string? PaymentReference { get; set; }
+    public string? ReceiptPhotoUrl { get; set; }
 
     public DateTime CreatedAt { get; set; }
     public DateTime? SentAt { get; set; }

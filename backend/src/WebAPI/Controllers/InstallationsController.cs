@@ -52,6 +52,15 @@ public class InstallationsController(IInstallationRepo installations, AppDbConte
         if (installation is null)
             return Problem(SurveyErrors.InstallationNotFound(id));
 
+        if (request.WorkStartedAt != default && request.WorkCompletedAt != default && request.WorkCompletedAt <= request.WorkStartedAt)
+            return Problem(SurveyErrors.InvalidWorkHours);
+
+        if (request.TestedGenerationKw < 0)
+            return Problem(SurveyErrors.InvalidGenerationKw);
+
+        if (string.IsNullOrWhiteSpace(request.CustomerSignatureData) && string.IsNullOrWhiteSpace(installation.Proof?.CustomerSignatureData))
+            return Problem(SurveyErrors.SignatureRequired);
+
         var technician = await context.Users.FindAsync(CurrentUserId.Value)
                          ?? await context.Users.FirstOrDefaultAsync(u => u.Role == UserRole.Technician)
                          ?? await context.Users.FirstAsync();

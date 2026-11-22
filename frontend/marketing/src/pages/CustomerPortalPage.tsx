@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { Link, Navigate } from 'react-router-dom';
-import { Calendar, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, FileText, Info, LoaderCircle, PackageCheck, Plus, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
+import { Calendar, Camera, CheckCircle2, ChevronDown, ChevronLeft, ChevronRight, CircleAlert, Clock, CreditCard, FileText, Info, LoaderCircle, PackageCheck, Plus, Search, ShieldCheck, Wrench, Zap } from 'lucide-react';
 import { Icon } from '../components/Icon';
 import { useCustomerAuth } from '../lib/customerAuthContext';
 import { STATES } from '../content/states';
@@ -50,6 +50,7 @@ type Proposal = {
   paymentStatus: string;
   notes?: string;
   paymentReference?: string;
+  receiptPhotoUrl?: string;
   createdAt: string;
   sentAt?: string;
   acceptedAt?: string;
@@ -157,6 +158,7 @@ export function CustomerPortalPage() {
   const [error, setError] = useState<string | null>(null);
   const [paying, setPaying] = useState(false);
   const [paySuccess, setPaySuccess] = useState<string | null>(null);
+  const [receiptPhotoUrl, setReceiptPhotoUrl] = useState<string | null>(null);
 
   // Quote search and pagination
   const [quoteSearch, setQuoteSearch] = useState('');
@@ -324,6 +326,39 @@ export function CustomerPortalPage() {
     fetchPortal();
   }, [customer]);
 
+  const handleReceiptUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (uploadEvent) => {
+      const img = new Image();
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const maxDim = 1200;
+        let w = img.width;
+        let h = img.height;
+        if (w > maxDim || h > maxDim) {
+          if (w > h) {
+            h = Math.round((h * maxDim) / w);
+            w = maxDim;
+          } else {
+            w = Math.round((w * maxDim) / h);
+            h = maxDim;
+          }
+        }
+        canvas.width = w;
+        canvas.height = h;
+        const ctx = canvas.getContext('2d');
+        ctx?.drawImage(img, 0, 0, w, h);
+        const compressed = canvas.toDataURL('image/jpeg', 0.82);
+        setReceiptPhotoUrl(compressed);
+      };
+      img.src = uploadEvent.target?.result as string;
+    };
+    reader.readAsDataURL(file);
+  };
+
   const handlePay = async (quoteId: number, paymentType: 'Advance' | 'Full') => {
     try {
       setPaying(true);
@@ -331,13 +366,14 @@ export function CustomerPortalPage() {
       const res = await fetch(`${API_BASE}/customer-portal/quotes/${quoteId}/pay`, {
         method: 'POST',
         headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ paymentType }),
+        body: JSON.stringify({ paymentType, receiptPhotoUrl: receiptPhotoUrl || undefined }),
       });
       if (!res.ok) {
         const err = await res.json().catch(() => null);
         throw new Error(err?.detail ?? err?.title ?? 'Payment failed. Please try again.');
       }
       setPaySuccess(paymentType === 'Advance' ? 'Advance payment received! Order confirmed.' : 'Full payment received! Order confirmed.');
+      setReceiptPhotoUrl(null);
       await fetchPortal();
     } catch (e: any) {
       setError(e.message || 'Payment error');
@@ -714,6 +750,51 @@ export function CustomerPortalPage() {
                     <span>Pay Full Amount (₹{proposal.totalAmountRupees.toLocaleString('en-IN')})</span>
                   </button>
                 </div>
+
+                {/* Optional Payment Receipt / Transfer Screenshot Upload */}
+                <div style={{ width: '100%', marginTop: '1rem', paddingTop: '1rem', borderTop: '1px solid var(--line)', display: 'flex', alignItems: 'center', justifyContent: 'space-between', flexWrap: 'wrap', gap: '0.75rem' }}>
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                    <input
+                      type="file"
+                      accept="image/*"
+                      id="receipt-file-input"
+                      style={{ display: 'none' }}
+                      onChange={handleReceiptUpload}
+                    />
+                    <label
+                      htmlFor="receipt-file-input"
+                      className="btn btn-secondary btn-sm"
+                      style={{ cursor: 'pointer', display: 'inline-flex', alignItems: 'center', gap: '0.4rem', fontSize: '0.78rem' }}
+                    >
+                      <Camera size={14} />
+                      {receiptPhotoUrl ? 'Change Receipt Screenshot' : 'Attach Transfer Receipt / Screenshot'}
+                    </label>
+
+                    {receiptPhotoUrl && (
+                      <div style={{ display: 'flex', alignItems: 'center', gap: '0.5rem' }}>
+                        <img
+                          src={receiptPhotoUrl}
+                          alt="Receipt Preview"
+                          style={{ width: '38px', height: '38px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--line)' }}
+                        />
+                        <span style={{ fontSize: '0.78rem', color: 'var(--positive, #5fd39a)', fontWeight: 500 }}>
+                          Receipt Attached ✓
+                        </span>
+                        <button
+                          type="button"
+                          className="btn btn-quiet btn-sm"
+                          style={{ padding: '0.1rem 0.4rem', fontSize: '0.72rem' }}
+                          onClick={() => setReceiptPhotoUrl(null)}
+                        >
+                          Remove
+                        </button>
+                      </div>
+                    )}
+                  </div>
+                  <span style={{ fontSize: '0.75rem', color: 'var(--muted)' }}>
+                    Optional: Upload bank transfer or UPI screenshot
+                  </span>
+                </div>
               </div>
             ) : (
               <div style={{
@@ -723,17 +804,41 @@ export function CustomerPortalPage() {
                 border: '1px solid color-mix(in srgb, var(--positive, #5fd39a) 30%, transparent)',
                 display: 'flex',
                 alignItems: 'center',
-                gap: '0.75rem'
+                justifyContent: 'space-between',
+                flexWrap: 'wrap',
+                gap: '1rem'
               }}>
-                <ShieldCheck color="var(--positive, #5fd39a)" size={24} />
-                <div>
-                  <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.95rem' }}>
-                    Order Confirmed & Paid: ₹{proposal.amountPaidRupees.toLocaleString('en-IN')} ({proposal.paymentStatus})
-                  </div>
-                  <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
-                    Payment Reference: {proposal.paymentReference} &bull; Warehouse packing list generated &bull; Field crew scheduled
+                <div style={{ display: 'flex', alignItems: 'center', gap: '0.75rem' }}>
+                  <ShieldCheck color="var(--positive, #5fd39a)" size={24} />
+                  <div>
+                    <div style={{ fontWeight: 600, color: 'var(--fg)', fontSize: '0.95rem' }}>
+                      Order Confirmed &amp; Paid: ₹{proposal.amountPaidRupees.toLocaleString('en-IN')} ({proposal.paymentStatus})
+                    </div>
+                    <div style={{ fontSize: '0.8rem', color: 'var(--muted)' }}>
+                      Payment Reference: {proposal.paymentReference} &bull; Warehouse packing list generated &bull; Field crew scheduled
+                    </div>
                   </div>
                 </div>
+
+                {proposal.receiptPhotoUrl && (
+                  <div style={{ display: 'flex', alignItems: 'center', gap: '0.65rem' }}>
+                    <a
+                      href={proposal.receiptPhotoUrl}
+                      target="_blank"
+                      rel="noreferrer"
+                      style={{ textDecoration: 'none', display: 'flex', alignItems: 'center', gap: '0.5rem' }}
+                    >
+                      <img
+                        src={proposal.receiptPhotoUrl}
+                        alt="Payment Receipt"
+                        style={{ width: '42px', height: '42px', objectFit: 'cover', borderRadius: '6px', border: '1px solid var(--line)', cursor: 'pointer' }}
+                      />
+                      <span className="btn btn-secondary btn-sm" style={{ fontSize: '0.75rem', padding: '0.2rem 0.5rem' }}>
+                        View Receipt
+                      </span>
+                    </a>
+                  </div>
+                )}
               </div>
             )}
           </div>
